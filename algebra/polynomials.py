@@ -11,14 +11,14 @@ class Polynomial(object):
         variable name.
 
         Input:
-            * "L" - A list or tuple of integers or rationals.
-            * "x" - A string.
+            * L - A list or tuple of integers.
+            * x - A string.
 
         Output:
-            * "f" - A Polynomial object.
+            * f - A Polynomial object.
 
         Details:
-            "L" can be a list or tuple of numbers, or nothing at all. If L is
+            L can be a list or tuple of numbers, or nothing at all. If L is
             None, then f is initialized to be a polynomial of degree 1 with no
             constant term. If L is [], then f is initialized to be the zero
             polynomial. If len(L) > 0, then f is Initialized to be the
@@ -308,8 +308,8 @@ class Polynomial(object):
         leading coefficient of v(x).
 
         Input:
-            * "self" - A Polynomial of degree m >= 0.
-            * "other" - A Polynomial of degree 0 <= n <= m.
+            * self - A Polynomial of degree m >= 0.
+            * other - A Polynomial of degree 0 <= n <= m.
 
         Output:
             * (quo, rem) - quotient and remainder of the division of self by
@@ -418,11 +418,11 @@ def mul_classical(M, N):
     = N[0] + N[1]*x + ... + N[l - 1]*x^{l - 1}.
     
     Input:
-        * "M" - A list or tuple of numbers.
-        * "N" - A list or tuple of numbers.
+        * M - A list or tuple of numbers.
+        * N - A list or tuple of numbers.
 
     Output:
-        * "L" - A list of numbers. These are the coefficients of the product of
+        * L - A list of numbers. These are the coefficients of the product of
         f(x) * g(x), where M and N are the lists of their coefficients,
         respectively.
 
@@ -455,11 +455,11 @@ def mul_karatsuba(M, N):
     N[1]*x + ... + N[k]*x^k.
      
     Input:
-        * "M" - A list or tuple of numbers.
-        * "N" - A list or tuple of numbers.
+        * M - A list or tuple of numbers.
+        * N - A list or tuple of numbers.
 
     Output:
-        * "L" - A list of numbers. These are the coefficients of the product of
+        * L - A list of numbers. These are the coefficients of the product of
         f(x) * g(x), where M and N are the lists of their coefficients,
         respectively.
 
@@ -520,11 +520,11 @@ def power_jcp(A, k):
     f(x)^k, where f(x) is the polynomial f(x) = A[0] + A[1]*x + ... + A[n]*x^n.
 
     Input:
-        * "A" - A list or tuple of numbers
-        * "k" - a nonnegative integer
+        * A - A list or tuple of numbers
+        * k - a nonnegative integer
 
     Output:
-        * "P" - A list of numbers. These are the coefficients of f(x)^k, where
+        * P - A list of numbers. These are the coefficients of f(x)^k, where
         f(x) is the polynomial with coefficients given by the list A.
 
     Details:
@@ -571,11 +571,11 @@ def list_add(A, B):
     where we assume that coefficients not appearing in a polynomial are zero.
 
     Input:
-        * "A" - A list of numbers.
-        * "B" - A list of numbers.
+        * A - A list of numbers.
+        * B - A list of numbers.
 
     Output:
-        * "C" - A list of numbers.
+        * C - A list of numbers.
 
     Examples:
         >>> list_add([0, 1, 2], [1, -1, 1])
@@ -603,11 +603,11 @@ def list_sub(A, B):
     where we assume that coefficients not appearing in a polynomial are zero.
 
     Input:
-        * "A" - A list of numbers.
-        * "B" - A list of numbers.
+        * A - A list of numbers.
+        * B - A list of numbers.
 
     Output:
-        * "C" - A list of numbers.
+        * C - A list of numbers.
 
     Examples:
         >>> list_sub([0, 1, 2], [1, -1, 1])
