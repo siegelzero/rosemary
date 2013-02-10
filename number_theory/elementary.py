@@ -15,16 +15,16 @@ def gcd(x, y=None):
     """
     Returns the greatest common divisor of x and y.
 
-    Returns the greatest common divisor of the integers x and y. If y is omitted
-    and x is a list or tuple, then the greatest common divisor of the elements
-    of x is returned.
+    Returns the greatest common divisor of the integers x and y. If y is
+    omitted and x is a list or tuple, then the greatest common divisor of the
+    elements of x is returned.
 
     Input:
-        * "x, y" - Two integers.
-        * "x" - A list or tuple of integers.
+        * x, y - Two integers.
+        * x - A list or tuple of integers.
 
     Output:
-        * "d" - The integer d = gcd(x, y).
+        * d - The integer d = gcd(x, y).
 
     Details:
         This function uses the classical Euclidean algorithm. If x and y are
@@ -68,7 +68,7 @@ def ext_gcd(x, y):
     b*y = g = gcd(x, y).
 
     Input:
-        * "x, y" - Nonnegative integers.
+        * x, y - Nonnegative integers.
 
     Output:
         * (a, b, g) - A tuple of integers such that a*x + b*y = g = gcd(x, y).
@@ -101,10 +101,10 @@ def inverse_mod(a, m):
     a modulo m; i.e. returns b such that a*b = 1 (mod m).
 
     Input:
-        * "a, m" - Relatively prime integers.
+        * a, m - Relatively prime integers.
 
     Output:
-        * "b" - Integer such that a*b = 1 (mod m).
+        * b - Integer such that a*b = 1 (mod m).
 
     Details:
         This function computes the modular inverse using the extended Euclidean
@@ -124,7 +124,7 @@ def inverse_mod(a, m):
         v += m
     return v
 
-def lcm(x, y = None):
+def lcm(x, y=None):
     """
     Returns the least common multiple of x and y.
 
@@ -133,11 +133,11 @@ def lcm(x, y = None):
     multiple of the elements on x.
 
     Input:
-        * "x, y" - two integers
-        * "x" - list or tuple of integers
+        * x, y - two integers
+        * x" - list or tuple of integers
 
     Output:
-        * "m" - Integer such that m = lcm(x, y).
+        * m - Integer such that m = lcm(x, y).
     
     Details:
         This function uses the identity x * y  = gcd(x, y) * lcm(x, y).
@@ -163,13 +163,14 @@ def bit_count(n):
     Returns the number of set bits
 
     Given an integer n, this function returns the number of set bits in the
-    binary expansion of n; i.e. the number of 1s appearing in the binary string.
+    binary expansion of n; i.e. the number of 1s appearing in the binary
+    string.
 
     Input:
-        * "n" - An integer.
+        * n - An integer.
 
     Output:
-        * "d" - An integer counting the number of set bits of n.
+        * d - An integer counting the number of set bits of n.
 
     Details:
         This function repeatedly replaces n with n & (n - 1). Each iteration of
@@ -200,16 +201,16 @@ def integer_log(a, b):
     that b**n <= a < b**(n + 1).
 
     Input:
-        * "a" - A positive integer. This is the argument of the logarithm.
-        * "b" - A positive integer. This is the base of the logarithm.
+        * a - A positive integer. This is the argument of the logarithm.
+        * b - A positive integer. This is the base of the logarithm.
 
     Output:
-        * "n" - The integer with b**n <= a < b**(n + 1).
+        * n - The integer with b**n <= a < b**(n + 1).
 
     Details:
         This function computes powers b, b**2, b**4, b**8, b**16, ..., and then
-        performs a binary search. This gives the algorithm a logarithmic runtime
-        instead of the linear runtime of the naive search method.
+        performs a binary search. This gives the algorithm a logarithmic
+        runtime instead of the linear runtime of the naive search method.
 
     Examples:
         >>> integer_log(8, 2)
@@ -251,11 +252,11 @@ def integer_nth_root(n, k):
     root of k. This is the number r such that r**n <= k < r**(n + 1)
 
     Input:
-        * "n" - A positive integer. This is the radicand.
-        * "k" - A positive integer. This is the exponent.
+        * n - A positive integer. This is the radicand.
+        * k - A positive integer. This is the exponent.
 
     Output:
-        * "r" - The positive integer such that r**n <= k < r**(n + 1).
+        * r - The positive integer such that r**n <= k < r**(n + 1).
 
     Details:
         This algorithm is based off of Newton's Method.
@@ -286,14 +287,14 @@ def integer_sqrt(n):
     """
     Returns the integer part of the square root of n.,
 
-    Given a positive integer n, this returns the integer part of the square root
-    of k; i.e. the integer r with r**2 <= n < (r + 1)**2.
+    Given a positive integer n, this returns the integer part of the square
+    root of k; i.e. the integer r with r**2 <= n < (r + 1)**2.
 
     Input:
-        * "n" - A positive integer.
+        * n - A positive integer.
 
     Output:
-        * "r" - The positive integer r such that r**2 <= n < (r + 1)**2.
+        * r - The positive integer r such that r**2 <= n < (r + 1)**2.
 
     Details:
         The algorithm used is based on Newton's Method.
@@ -326,30 +327,51 @@ def is_power(x, n=None):
     """
     Determines if x in a perfect power.
 
-    Given a positive integer x, this function returns 
-    is_power(x, n = None):
-    Given an integer x, this algorithm determines if x is a nth power.
+    Given a positive integer x, this function returns a tuple (True, n, r) if x
+    = r^n for some positive integers r, n, and returns (False, 1, x) otherwise.
+    If n is not None, the function returns (True, n, r) if x = r^n for some
+    positive integer r, and returns (False, 1, x) otherwise.
+
+    Input:
+        * x, n - Positive integers.
+        * x - A positive integer.
+
+    Output:
+        * (b, n, r) - A triple where b is a Boolean value, and n, r are
+        positive integers.
+
+    Details:
+        The algorithms is simple: if n is not None, this computes the integer
+        nth root of x, and checks if the nth power of this is x. If n is none,
+        the function performs trial division to find small divisors <= sqrt(x)
+        and checks if x is a power of each.
+
+    Examples:
+        >>> is_power(36, 2)
+        2
+        >>> is_power(1331)
+        3
+        >>> is_power(20)
+        0
     """
     if n is not None:
         r = integer_nth_root(n, x)
         if r**n == x:
-            return True
+            return (True, n, r)
         else:
-            return False
-
-    # Attempt to find a prime divisor of x
-    bound = min(PRIME_LIST[-1], integer_sqrt(x))
-    d = trial_division(x, bound)
-    k = 0
-
-    while x % d == 0:
-        x = x // d
-        k += 1
-
-    if x == 1:
-        return True
-    else:
-        return False
+            return (False, 1, x)
+    
+    d = 2
+    while d*d <= x:
+        m = x
+        k = 0
+        while m % d == 0:
+            m = m // d
+            k += 1
+        if m == 1:
+            return (True, k, d)
+        d += 1
+    return (False, 1, x)
 
 def is_primitive_root(a, n):
     phi_n = euler_phi(n)
@@ -364,16 +386,28 @@ def is_primitive_root(a, n):
 
 def is_square(n):
     """
-    is_square(n):
+    Determines if n is a perfect square.
+
     Given a nonnegative integer n, this returns True of n is a perfect square,
     other returns False.
 
-    Examples:
-    >>> is_square(16)
-    True
+    Input:
+        * n - A nonnegative integer.
 
-    >>> is_square(15)
-    False
+    Output:
+        * b - A Boolean value.
+
+    Details:
+        If n is a nonnegative integer, the function computes the integer square
+        root of n, and checks if this root squared is n. If n is in factored
+        form, this checks if the exponents in the prime factorization are all
+        even.
+
+    Examples:
+        >>> is_square(16)
+        True
+        >>> is_square(15)
+        False
     """
     if isinstance(n, list):
         if n[0][0] == -1:
@@ -383,7 +417,6 @@ def is_square(n):
             if e % 2 == 1:
                 return False
         return True
-
     else:
         s = integer_sqrt(n)
         if s*s == n:
@@ -392,9 +425,27 @@ def is_square(n):
 
 def is_squarefree(n):
     """
-    is_squarefree(n):
+    Determines if n is squarefree.
+
     Given a nonnegative integer n, this return True iff n is not divisible by
     the square of an integer > 1.
+
+    Input:
+        * n - A nonnegative integer.
+
+    Output:
+        * b - A Boolean value.
+
+    Details:
+        If n is a nonnegative integer, this factors n and checks if n is
+        divisible by the square of a prime.  If n is in factored form, this
+        directly checks the prime factorization.
+
+    Examples:
+        >>> is_squarefree(35)
+        True
+        >>> is_squarefree(100)
+        False
     """
     if isinstance(n, (int, long)):
         n_fac = factor(abs(n))
@@ -415,8 +466,26 @@ def is_squarefree(n):
 
 def power_mod(a, k, m):
     """
-    power_mod(a, k, m):
-    For integers a, k, m, this algorithm return a^k (mod m).
+    Returns a^k (mod m).
+
+    Given a nonnegative integers a, k and a positive integers m, this returns
+    a^k (mod m).
+
+    Input:
+        * a, k, m - Integers a >= 0, b >= 0, k > 0.
+
+    Output:
+        * r - A nonnegative integer.
+
+    Details:
+        This computes a^k using a binary exponentiation method, reducing modulo
+        m at each step along the way.
+
+    Examples:
+        >>> power_mod(2, 45, 17)
+        15
+        >>> power_mod(3, 100, 101)
+        1
     """
     if a == m:
         return 0
@@ -1366,11 +1435,30 @@ def lucas_lehmer(p):
 
 def primes(n):
     """
-    primes(n):
-    This returns a list of primes <= n.
+    Returns a list of all primes <= n.
+
+    This program uses the sieve of Eratosthenes to generate a list of all
+    primes <= n.
+
+    Input:
+        * n - A positive integer.
+
+    Output:
+        * L - a list of primes.
+
+    Details:
+        This highly optimized sieve only looks at the numbers <= n that are
+        coprime to 6. The code is based on some found on stackoverflow.
+
+    Examples:
+        >>> primes(100)
+        [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61,
+            67, 71, 73, 79, 83, 89, 97]
+        >>> len(primes(10**7))
+        664579
     """
     n += 1
-    correction = (n%6 > 1)
+    offset = (n%6 > 1)
 
     n = { 0:n,
           1:n - 1,
@@ -1386,17 +1474,37 @@ def primes(n):
     for i in xrange(sr // 3 + 1):
         if sieve[i]:
             k = (3*i + 1)|1
-            sieve[(k*k) // 3::2*k] \
-                    = [False]*((n // 6 - (k*k) // 6 - 1) // k + 1)
-            sieve[(k*k + 4*k - 2*k*(i&1)) // 3::2*k] \
-                    = [False]*((n // 6 - (k*k + 4*k - 2*k*(i&1)) // 6 - 1) // k + 1)
+            kk = k*k
+            sieve[kk // 3::2*k] = [False]*((n // 6 - kk // 6 - 1) // k + 1)
+            sieve[(kk + 4*k - 2*k*(i&1)) // 3::2*k] \
+                = [False]*((n // 6 - (kk + 4*k - 2*k*(i&1)) // 6 - 1) // k + 1)
 
-    return [2, 3] + [ (3*i + 1)|1 for i in xrange(1, n // 3 - correction) if sieve[i] ]
+    P = [2, 3] + [(3*i + 1)|1 for i in xrange(1, n // 3 - offset) if sieve[i]]
+    return P
 
-def eratosthenes2(n):
+def eratosthenes(n):
     """
-    eratosthenes(n):
-    This uses the sieve of Eratosthenes to generate a list of all prime <= n.
+    Returns a list of all primes <= n.
+
+    This program uses the sieve of Eratosthenes to generate a list of all
+    primes <= n.
+
+    Input:
+        * n - A positive integer.
+
+    Output:
+        * L - a list of primes.
+
+    Details:
+        This slightly optimized sieve only looks at the odd numbers <= n. The
+        implementation is included mainly for reference.
+
+    Examples:
+        >>> eratosthenes(100)
+        [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61,
+            67, 71, 73, 79, 83, 89, 97]
+        >>> len(eratosthenes(10**7))
+        664579
     """
     m = n // 2 + 1
     b_list = [True] * m
@@ -1409,33 +1517,36 @@ def eratosthenes2(n):
             how_many = (m - start) // k + ((m - start) % k > 0)
             b_list[start::k] = [False] * how_many
 
-    p_list = [2] + [ 2*i + 1 for i in xrange(1, n // 2 + n%2) if b_list[i] ]
-    return p_list
-
-def eratosthenes(n):
-    """
-    eratosthenes(n):
-    This uses the sieve of Eratosthenes to generate a list of all prime <= n.
-    """
-    b_list = [True] * (n + 1)
-    b_list[0] = False
-    b_list[1] = False
-    b_list[4::2] = [False] * (n // 2 - 1)
-    N = integer_sqrt(n) + 1
-
-    for i in xrange(3, N, 2):
-        if b_list[i]:
-            b_list[i*i::i] = [False] * (n // i + 1 - i)
-
-    p_list = [ i for i in xrange(n + 1) if b_list[i] ]
-    return p_list
+    P = [2] + [ 2*i + 1 for i in xrange(1, n // 2 + n%2) if b_list[i] ]
+    return P
 
 def segmented_sieve(n):
     """
-    segmented_sieve(n, d):
-    Given positive integers n and d, this finds all primes < n by breaking up
-    the interval from 1 to n into ceil(n / d) intervals of size d and sieving
-    them separately.
+    Returns an iterator over all primes <= n.
+
+    Given a positive integer n, this finds all primes <= n by breaking up the
+    interval from 1 to n into intervals of size sqrt(d) and sieving them
+    separately.
+
+    Input:
+        * n - A positive integer.
+
+    Output:
+        * X - an iterator over all primes <= n.
+
+    Details:
+        The algorithm used is a standard segmented sieve. The main improvement
+        is that this algorithm uses O(sqrt(n)) space, a significant improvement
+        over the O(n) space used in th standard sieve of Eratosthenes.  See
+        chapter 9 of "Algorithmic Number Theory I - Efficient Algorithms" by
+        Bach and Shallit for details.
+
+    Examples:
+        >>> len(segmented_sieve(10**7))
+        664579
+        >>> X = segmented_sieve(1000)
+        >>> len([p for p in X if p % 4 == 1])
+        80
     """
     # compute the primes <= sqrt(n)
     delta = integer_sqrt(n)
@@ -1456,16 +1567,17 @@ def segmented_sieve(n):
 
 def sieve_interval(a, b):
     """
-    Returns an iterator over all primes p, a <= p <= b.
+    Returns an iterator over all primes in the interval [a, b].
 
-    This algorithm finds all primes in an interval [a, b].
+    Given positive integers a and b with a*a > b, this returns an interator
+    over all primes in the interval [a, b].
 
     Input:
-        * "a" - A positive integer
-        * "b" - A positive integer
+        * a - A positive integer.
+        * b - A positive integer.
 
     Output:
-        * "X" - An iterator over all primes in [a, b].
+        * X - An iterator over all primes in [a, b].
 
     Details:
         This algorithm is from Section 3.2.2 of "Prime Numbers - A Computational
@@ -1510,14 +1622,15 @@ def number_of_primes_in_interval(a, b):
     """
     Returns the number of primes p, a <= p <= b.
 
-    This algorithm counts the number of primes in the interval [a, b].
+    Given positive integers a and b with a*a > b, this returns the number of
+    primes in the interval [a, b].
 
     Input:
-        * "a" - A positive integer
-        * "b" - A positive integer
+        * a - A positive integer.
+        * b - A positive integer.
 
     Output:
-        * "c" - The number of primes in the interval [a, b].
+        * c - The number of primes in the interval [a, b].
 
     Details:
         This algorithm is from Section 3.2.2 of "Prime Numbers - A Computational
@@ -1558,24 +1671,3 @@ def number_of_primes_in_interval(a, b):
             q_list[k] = (-diff) % pk
         count += sum(b_list)
     return count
-
-def square_free_numbers(n):
-    """
-    square_free_numbers(n):
-    This returns a list of all square-free numbers <= n.
-    """
-    p_list = primes(n)
-    sf_list = list(p_list)
-    inf = float('inf')
-
-    def backtrack(prod, last):
-        for p in p_list:
-            if p >= last or p * prod > n:
-                break
-            sf_list.append(prod * p)
-            backtrack(prod * p, p)
-
-    backtrack(1, inf)
-    sf_list.sort()
-    return sf_list
-
