@@ -92,10 +92,10 @@ def longest_ap(A):
             i -= 1
 
     progs = []
-    for (a, b) in L:
-        if L[(a, b)] == longest:
-            diff = A[b] - A[a]
-            progs.append(tuple(A[a] + diff*i for i in xrange(longest)))
+    for (i, j) in L:
+        if L[i, j] == longest:
+            diff = A[j] - A[i]
+            progs.append(tuple(A[i] + diff*k for k in xrange(longest)))
 
     progs.sort()
     return progs

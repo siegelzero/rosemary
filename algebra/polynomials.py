@@ -274,7 +274,7 @@ class Polynomial(object):
         cc = gcd(coeffs)
         if coeffs[-1] < 0:
             cc *= -1
-        pp_coeffs = [ e / cc for e in coeffs ]
+        pp_coeffs = [ e // cc for e in coeffs ]
         pp = Polynomial(pp_coeffs, self.variable)
         return pp
 
@@ -364,6 +364,7 @@ class Polynomial(object):
         l = len(b)
         if k < l:
             qq = Polynomial([0], self.variable)
+            g = Polynomial(a, self.variable)
             return (qq, g)
         lc = b[l - 1]
         r = a[0:k]
@@ -395,8 +396,11 @@ class Polynomial(object):
         h = g = 1
         dd = u.degree - v.degree
 
+        if dd < 0:
+            return other.gcd(self)
+
         while True:
-            (q, r, e) = u.pseudo_quo_rem(v)
+            (q, r) = u.pseudo_quo_rem(v)
             if r == 0:
                 return d * v.primitive_part()
             elif r.degree == 0:

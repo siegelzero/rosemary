@@ -1580,9 +1580,9 @@ def sieve_interval(a, b):
         * X - An iterator over all primes in [a, b].
 
     Details:
-        This algorithm is from Section 3.2.2 of "Prime Numbers - A Computational
-        Perspective" by Crandall and Pomerance. They call it the "Practical
-        Eratosthenes sieve".
+        This algorithm is from Section 3.2.2 of "Prime Numbers - A
+        Computational Perspective" by Crandall and Pomerance. They call it the
+        "Practical Eratosthenes sieve".
 
     Examples:
         >>> list(sieve_interval(100, 200))
@@ -1598,6 +1598,7 @@ def sieve_interval(a, b):
 
     bd = integer_sqrt(b)
     assert a > bd
+
     p_list = primes(bd)
     num_primes = len(p_list)
     max_size = min((b - a) // 2, 8*bd)
@@ -1633,9 +1634,9 @@ def number_of_primes_in_interval(a, b):
         * c - The number of primes in the interval [a, b].
 
     Details:
-        This algorithm is from Section 3.2.2 of "Prime Numbers - A Computational
-        Perspective" by Crandall and Pomerance. They call it the "Practical
-        Eratosthenes sieve".
+        This algorithm is from Section 3.2.2 of "Prime Numbers - A
+        Computational Perspective" by Crandall and Pomerance. They call it the
+        "Practical Eratosthenes sieve".
 
     Examples:
         >>> number_of_primes_in_interval(10**8, 2*10**8)

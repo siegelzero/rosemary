@@ -2,7 +2,7 @@
 # Functions related to counting integer partitions
 ################################################################################
 
-from rosemary.number_theory import power_series
+from rosemary.algebra import power_series
 from rosemary.utilities import cached_function
 import math
 
