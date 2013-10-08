@@ -63,7 +63,7 @@ def shortest_path_dag(G, s, t):
     def d(u):
         if u == t:
             return 0
-        return min(W[u][v] + d(v) for v in W[u])
+        return min(G[u][v] + d(v) for v in G[u])
     return d(s)
 
 ################################################################################

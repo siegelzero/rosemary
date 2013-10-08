@@ -18,38 +18,38 @@ def kruskal(G):
     the edges we've already inserted. If, on the other hand, inserting e
     would result in a cycle, then we simply discard e and continue.
     """
-    def find(parent, u):
+    def find(parents, u):
         """
         This subroutine returns a representative element from C that contains
         u. Using this, we can determine whether two vertices u and v belong to
         the same tree by testing whether find(C, u) = find(C, v).
         """
-        if C[u] != u:
-            C[u] = find(C, C[u])
-        return C[u]
+        if parents[u] != u:
+            parents[u] = find(parents, parents[u])
+        return parents[u]
 
-    def union(C, R, u, v):
+    def union(parents, weights, u, v):
         """
         This subroutine
         """
-        u = find(C, u)
-        v = find(C, v)
-        if R[u] > R[v]:
-            C[v] = u
+        u = find(parents, u)
+        v = find(parents, v)
+        if weights[u] > weights[v]:
+            parents[v] = u
         else:
-            C[u] = v
-        if R[u] == R[v]:
-            R[v] += 1
+            parents[u] = v
+        if weights[u] == weights[v]:
+            weights[v] += 1
 
     E = [(G[u][v], u, v) for u in G for v in G[u]]
     T = set()
-    C = {u:u for u in G}
-    R = {u:0 for u in G}
+    parents = {u:u for u in G}
+    weights = {u:0 for u in G}
     
     for (_, u, v) in sorted(E):
-        if find(C, u) != find(C, v):
+        if find(parents, u) != find(parents, v):
             T.add((u, v))
-            union(C, R, u, v)
+            union(parents, weights, u, v)
 
     return T
 
