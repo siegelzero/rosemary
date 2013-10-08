@@ -1,7 +1,12 @@
+import collections
+import itertools
+from random import randint
+
 from rosemary.number_theory.prime_list import PRIME_LIST
-from rosemary.number_theory.elementary import (gcd, integer_sqrt,
-        integer_nth_root, integer_log, trial_division, power_mod, randint,
-        primes, jacobi_symbol, is_square)
+from rosemary.number_theory import core
+
+import rosemary.number_theory.sieves
+import rosemary.number_theory.primality
 
 def fermat(n):
     """
@@ -31,10 +36,10 @@ def fermat(n):
     """
     if n % 2 == 0:
         return 2
-    a = integer_sqrt(n) + 1
+    a = core.integer_sqrt(n) + 1
     while a <= (n + 9) // 6:
         t = a**2 - n
-        b = integer_sqrt(t)
+        b = core.integer_sqrt(t)
         if b*b == t:
             return a - b
         a += 1
@@ -69,7 +74,7 @@ def lehman(n):
         1056689261L
     """
     # first, we trial divide up to floor(n^(1/3))
-    bound = integer_nth_root(3, n)
+    bound = core.integer_nth_root(3, n)
     d = trial_division(n, bound)
     # if a non-trivlal divisor is found, return it
     if d < n:
@@ -86,7 +91,7 @@ def lehman(n):
         # we want to iterate over a, where 4*k*n <= a^2 <= 4*k*n + bound^2
         # and a = r (mod m)
         fkn = 4*k*n
-        a = integer_sqrt(fkn)
+        a = core.integer_sqrt(fkn)
         # now, increase a until a = r (mod m)
         rm = r % m
         while a % m != rm:
@@ -94,9 +99,9 @@ def lehman(n):
         ub = fkn + bound**2
         while fkn <= a*a <= ub:
             c = a*a - fkn
-            b = integer_sqrt(c)
+            b = core.integer_sqrt(c)
             if b*b == c:
-                return gcd(a + b, n)
+                return core.gcd(a + b, n)
             a += m
     return n
 
@@ -129,12 +134,12 @@ def pollard_p_1(n, B=20000):
         1056689261L
     """
     c = randint(2, 20)
-    p_list = primes(B)
+    p_list = rosemary.number_theory.sieves.primes(B)
     for p in p_list:
-        a = integer_log(B, p)
-        for i in xrange(a):
-            c = power_mod(c, p, n)
-    g = gcd(c - 1, n)
+        a = core.integer_log(B, p)
+        for _ in xrange(a):
+            c = core.power_mod(c, p, n)
+    g = core.gcd(c - 1, n)
     return g
 
 def pollard_rho(n):
@@ -175,7 +180,7 @@ def pollard_rho(n):
         u = (u*u + a) % n
         v = (v*v + a) % n
         v = (v*v + a) % n
-        g = gcd(u - v, n)
+        g = core.gcd(u - v, n)
         if 1 < g < n:
             # We've found a nontrivial factor.
             return g
@@ -185,7 +190,7 @@ def pollard_rho(n):
 
 def one_line_factor(k, M):
     # first, we trial divide up to floor(n^(1/3))
-    bound = integer_nth_root(3, k)
+    bound = core.integer_nth_root(3, k)
     print "trial_division to {0}".format(bound)
     d = trial_division(k, bound)
     # if a non-trivlal divisor is found, return it
@@ -197,9 +202,267 @@ def one_line_factor(k, M):
     for i in xrange(1, M + 1):
         s = int((n*i)**(0.5)) + 1
         m = s*s % n
-        if is_square(m):
-            t = integer_sqrt(m)
-            g = gcd(k, s - t)
+        if core.is_square(m):
+            t = core.integer_sqrt(m)
+            g = core.gcd(k, s - t)
             return g
     return k
+
+def trial_division(n, b=None):
+    """
+    trial_division(n, b):
+    This algoritm performs trial division on n with divisors <= b. The smallest
+    prime dividing n is returned if found, otherwise n is returned. We have a
+    list of primes to check through first.
+    """
+    if b is None:
+        b = core.integer_sqrt(n) + 1
+
+    for d in PRIME_LIST:
+        if d > b:
+            # no prime divisors found <= b, so return n
+            return n
+        if n % d == 0:
+            # return any prime divisors found
+            return d
+
+    # Next we use a segmented sieve for the rest
+    for p in rosemary.number_theory.sieves.sieve_interval(PRIME_LIST[-1], b):
+        if n % p == 0:
+            return p
+    return n
+
+
+def factor_pollard_rho_brent(n):
+    """
+    Attempts to find a nontrivial factor of n.
+
+    Given a composite number n, this algorithm attempts to find a nontrivial
+    factor of n. The method used is Brent's improvement to the Pollard-Rho
+    algorithm.
+    """
+    x0 = randint(0, n - 1)
+    (r, q, y, g, m, c) = (1, 1, x0, 1, 3, 1)
+
+    while True:
+        x = y
+        for _ in xrange(r):
+            y = (y*y + c) % n
+        k = 0
+        while True:
+            ys = y
+            for _ in xrange(min(m, r - k)):
+                y = (y*y + c) % n
+                q = q * abs(x - y) % n
+            g = core.gcd(q, n)
+            k += m
+            if k >= r or g > 1:
+                break
+        
+        r *= 2
+        if g > 1:
+            break
+
+    if g == n:
+        while True:
+            ys = (ys*ys + c) % n
+            g = core.gcd(abs(x - ys), n)
+            if g > 1:
+                break
+    return g
+
+def factor(n):
+    """
+    factorization(n):
+    Returns the factorization of n. Currently, this routine calls a number of
+    different algorithms.
+
+    Examples:
+    >>> factor(100)
+    [(2, 2), (5, 2)]
+    >>> factor(537869)
+    [(37, 1), (14537, 1)]
+    """
+    D = collections.defaultdict(int)
+
+    if n == 0:
+        raise ValueError("Prime factorization of 0 not defined")
+
+    # Take care of the sign
+    if n < 0:
+        D[-1] = 1
+        n = -1 * n
+
+    # First, strip off all small factors on n
+    for p in PRIME_LIST:
+        if n == 1:
+            break
+        elif p*p > n:
+            D[n] += 1
+            n = 1
+            break
+
+        while n % p == 0:
+            D[p] += 1
+            n = n // p
+
+    # Next, use pollard rho
+    while n > 1:
+        if rosemary.number_theory.primality.is_probable_prime(n):
+            D[n] += 1
+            n = 1
+        else:
+            d = factor_pollard_rho_brent(n)
+            while not rosemary.number_theory.primality.is_probable_prime(d):
+                d = factor_pollard_rho_brent(d)
+
+            while n % d == 0:
+                D[d] += 1
+                n = n // d
+
+    p_list = sorted([ (p, D[p]) for p in D ])
+    return p_list
+
+def factor_back(F):
+    """
+    factor_back(F):
+    Given a factorization F, this return the factored integer.
+
+    Examples:
+    >>> factor_back([(2, 2), (5, 2)])
+    100
+    """
+    if not isinstance(F, list):
+        raise ValueError("Not a factorization in factor_back")
+
+    pp = 1
+    for (p, e) in F:
+        pp *= p**e
+
+    return pp
+
+def divisors(n):
+    """
+    divisors(n):
+    Returns a sorted list of the positive integer divisors of n. The argument
+    n can be an integer, or the factorization of an integer.
+
+    Examples:
+    >>> divisors(100)
+    [1, 2, 4, 5, 10, 20, 25, 50, 100]
+    >>> divisors([(2, 2), (5, 2)])
+    [1, 2, 4, 5, 10, 20, 25, 50, 100]
+    >>> divisors(426497)
+    [1, 71, 6007, 426497]
+    """
+    if isinstance(n, (int, long)):
+        n_fac = factor(abs(n))
+    elif isinstance(n, list):
+        if n[0][0] == -1:
+            n_fac = n[1:]
+        else:
+            n_fac = n
+    else:
+        raise ValueError("Input must be an integer or a factorization")
+
+    p_divs = [ p for (p, e) in n_fac ]
+    div_list = []
+    iter_list = ( xrange(e + 1) for (p, e) in n_fac )
+
+    for tup in itertools.product(*iter_list):
+        pp = 1
+        for i in xrange(len(tup)):
+            pp *= p_divs[i]**tup[i]
+        div_list += [ pp ]
+
+    div_list.sort()
+    return div_list
+
+def prime_divisors(n):
+    """
+    prime_divisors(n):
+    Returns a list of the primes dividing n
+
+    Examples:
+    >>> prime_divisors(120)
+    [2, 3, 5]
+    >>> prime_divisors(5272)
+    [2, 659]
+    """
+    if isinstance(n, (int, long)):
+        n_fac = factor(abs(n))
+    elif isinstance(n, list):
+        if n[0][0] == -1:
+            n_fac = n[1:]
+        else:
+            n_fac = n
+    else:
+        raise ValueError("Input must be an integer or a factorization")
+
+    p_divs = [ p for (p, e) in n_fac ]
+    return p_divs
+
+def xdivisors(n):
+    """
+    xdivisors(n):
+    Returns an iterator over the positive integer divisors of n.
+    The divisors are not yielded in increasing order.
+    """
+    if isinstance(n, (int, long)):
+        n_fac = factor(n)
+    elif isinstance(n, list):
+        n_fac = n
+    else:
+        raise ValueError("Input must be an integer or a factorization")
+
+    p_divs = [p for (p, e) in n_fac]
+    iter_list = (xrange(e + 1) for (p, e) in n_fac)
+    for tup in itertools.product(*iter_list):
+        pp = 1
+        for i in xrange(len(tup)):
+            pp *= p_divs[i]**tup[i]
+        yield pp
+    return
+
+
+def is_squarefree(n):
+    """
+    Determines if n is squarefree.
+
+    Given a nonnegative integer n, this return True iff n is not divisible by
+    the square of an integer > 1.
+
+    Input:
+        * n - A nonnegative integer.
+
+    Output:
+        * b - A Boolean value.
+
+    Details:
+        If n is a nonnegative integer, this factors n and checks if n is
+        divisible by the square of a prime.  If n is in factored form, this
+        directly checks the prime factorization.
+
+    Examples:
+        >>> is_squarefree(35)
+        True
+        >>> is_squarefree(100)
+        False
+    """
+    if isinstance(n, (int, long)):
+        n_fac = factor(abs(n))
+
+    elif isinstance(n, list):
+        if n[0][0] == -1:
+            n_fac = n[1:]
+        else:
+            n_fac = n
+    else:
+        raise ValueError("Input must be an integer or a factorization")
+
+    for (p, e) in n_fac:
+        if e > 1:
+            return False
+
+    return True
 

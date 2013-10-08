@@ -1,7 +1,6 @@
 # Class of Integral Binary Quadratic Forms
 
-from rosemary.number_theory.elementary import gcd, integer_sqrt
-import math
+from rosemary.number_theory import core
 
 class BinaryQuadraticForm:
     """
@@ -29,32 +28,32 @@ class BinaryQuadraticForm:
 
     def __repr__(self):
         s = ''
-        if self._a != 0:
-            if self._a < 0:
+        if self.a != 0:
+            if self.a < 0:
                 s += '-'
-            aa = abs(self._a)
+            aa = abs(self.a)
             if aa > 1:
                 s += str(aa)
                 s += '*'
             s += 'x^2'
 
-        if self._b != 0:
-            if self._b > 0:
+        if self.b != 0:
+            if self.b > 0:
                 s += ' + '
             else:
                 s += ' - '
-            ab = abs(self._b)
+            ab = abs(self.b)
             if ab > 1:
                 s += str(ab)
                 s += '*'
             s += 'x*y'
 
-        if self._c != 0:
-            if self._c > 0:
+        if self.c != 0:
+            if self.c > 0:
                 s += ' + '
             else:
                 s += ' - '
-            ac = abs(self._c)
+            ac = abs(self.c)
             if ac > 1:
                 s += str(ac)
                 s += '*'
@@ -69,7 +68,7 @@ class BinaryQuadraticForm:
         if y is None and isinstance(x, (list, tuple)):
             x, y = x[0], x[1]
 
-        return self._a * x * x + self._b * x * y + self._c * y * y
+        return self.a * x * x + self.b * x * y + self.c * y * y
 
     def __getitem__(self, i):
         """
@@ -99,7 +98,7 @@ class BinaryQuadraticForm:
         binary quadratic form a*x^2 + b*x*y + c*y^2 is primitive
         if gcd(a, b, c) = 1.
         """
-        return number_theory.gcd(list(self)) == 1
+        return core.gcd(list(self)) == 1
 
     def is_reduced(self):
         """
@@ -152,7 +151,7 @@ def class_number(d):
         while a*a <= A:
             if A % a == 0:
                 c = A // a
-                if number_theory.gcd([a, b, c]) == 1:
+                if core.gcd([a, b, c]) == 1:
                     if b == 0 or a in (b, c):
                         h += 1
                     else:
@@ -171,18 +170,18 @@ def cornacchia(d, p):
     either outputs an integer solution (x, y) to the Diophantine equation
     x^2 + d*y^2 = p, or says that such a solution does not exist.
     """
-    k = number_theory.jacobi_symbol(-d, p)
+    k = core.jacobi_symbol(-d, p)
     if k == -1:
         raise ValueError("The equation has no solutions")
 
-    x0 = number_theory.sqrt_mod_p(-d, p)
+    x0 = core.sqrt_mod_p(-d, p)
 
     if x0 <= p // 2:
         x0 = p - x0
 
     a = p
     b = x0
-    l = number_theory.integer_sqrt(p)
+    l = core.integer_sqrt(p)
 
     while b > l:
         r = a % b
@@ -195,7 +194,7 @@ def cornacchia(d, p):
         raise ValueError("The equation has no solutions")
 
     c = t // d
-    s = number_theory.integer_sqrt(c)
+    s = core.integer_sqrt(c)
     if s*s != c:
         raise ValueError("The equation has no solutions")
 
