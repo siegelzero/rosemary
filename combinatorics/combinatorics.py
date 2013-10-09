@@ -1,9 +1,7 @@
 # Miscellaneous combinatorial functions
 # Kenneth Brown, 3/06/11
 
-from rosemary.number_theory.elementary import xdivisors, euler_phi, factorial, gcd
-from rosemary.utilities import cached_function
-import math
+from rosemary.number_theory.arithmetic_functions import factorial
 from fractions import Fraction
 
 def bell_number(n):
@@ -126,7 +124,7 @@ def combinations(A, t):
 
 def permutations(A):
     """
-    lex_permutations(A):
+    permutations(A):
     Given a sequence A of n elements a_1, a_2, ..., a_n, initially sorted so
     a_1 <= a_2 <= ... <= a_n, this algorithm generates all permutations of
     {a_1, a_2, ..., a_n} in lexicographic order.
@@ -135,7 +133,7 @@ def permutations(A):
 
     Examples:
     >>> L = [1, 2, 2, 3]
-    >>> P = list(lex_permutations(L))
+    >>> P = list(permutations(L))
     >>> P
     [[1, 2, 2, 3],
      [1, 2, 3, 2],

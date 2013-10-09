@@ -1,5 +1,7 @@
 from rosemary.combinatorics.combinatorics import multinomial
-from rosemary.number_theory.elementary import euler_phi, gcd, xdivisors
+from rosemary.number_theory.core import gcd
+from rosemary.number_theory.factorization import xdivisors
+from rosemary.number_theory.arithmetic_functions import euler_phi
 from math import cos, pi
 
 def count_domino_tilings(m, n):

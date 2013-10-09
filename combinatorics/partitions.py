@@ -45,9 +45,7 @@ def partition_number(n):
     Examples:
     >>> partition_number(4)
     5
-    >>> integer_partitions(5)
-    [[1, 1, 1, 1, 1], [2, 1, 1, 1], [2, 2, 1], [3, 1, 1], [3, 2], [4, 1], [5]]
-    >>> len(_)
+    >>> len(integer_partitions(5))
     5
     """
     if n in (0, 1):

@@ -43,8 +43,8 @@ def kruskal(G):
 
     E = [(G[u][v], u, v) for u in G for v in G[u]]
     T = set()
-    parents = {u:u for u in G}
-    weights = {u:0 for u in G}
+    parents = {u: u for u in G}
+    weights = {u: 0 for u in G}
     
     for (_, u, v) in sorted(E):
         if find(parents, u) != find(parents, v):

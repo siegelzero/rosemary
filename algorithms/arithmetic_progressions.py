@@ -26,7 +26,6 @@ def has_three_term_ap(A, **kwargs):
     return_indices = kwargs.get('indices', False)
 
     n = len(A)
-    L = []
     for j in range(1, n):
         i = j - 1
         k = j + 1
@@ -65,6 +64,7 @@ def longest_ap(A):
         [(3, 5, 7), (5, 7, 11)]
         >>> longest_ap([2, 3, 5, 7, 11, 17, 23])
         [(5, 11, 17, 23])
+        >>> from rosemary.number_theory.sieves import primes
         >>> p_list = primes(3000)
         >>> longest_ap(p_list)
         [(199, 409, 619, 829, 1039, 1249, 1459, 1669, 1879, 2089)]
