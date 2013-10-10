@@ -138,7 +138,7 @@ def pollard_p_1(n, B=20000):
     for p in p_list:
         a = core.integer_log(B, p)
         for _ in xrange(a):
-            c = core.power_mod(c, p, n)
+            c = pow(c, p, n)
     g = core.gcd(c - 1, n)
     return g
 

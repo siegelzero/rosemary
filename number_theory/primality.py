@@ -1,6 +1,5 @@
 # Primality tests
 
-from rosemary.number_theory.core import power_mod
 from rosemary.number_theory.prime_list import PRIME_LIST
 
 import rosemary.number_theory.factorization
@@ -30,7 +29,6 @@ def is_probable_prime(n, a=None):
     Examples:
         >>> is_probable_prime(17)
         True
-        >>> is
     """
     if a is None:
         a = randint(2, n - 2)
@@ -46,7 +44,7 @@ def is_probable_prime(n, a=None):
     if t == 3:
         return True
 
-    b = power_mod(a, t, n)
+    b = pow(a, t, n)
     if b == 1 or b == n - 1:
         return True
 

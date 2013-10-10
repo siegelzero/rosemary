@@ -3,8 +3,8 @@
 from rosemary.number_theory.core import (
     gcd,
     integer_sqrt,
+    inverse_mod,
     jacobi_symbol,
-    power_mod,
     valuation,
 )
 
@@ -43,7 +43,7 @@ def is_primitive_root(a, p, p_divs=None):
         p_divs = prime_divisors(p_minus_one)
 
     for pk in p_divs:
-        if power_mod(a, p_minus_one // pk, p) == 1:
+        if pow(a, p_minus_one // pk, p) == 1:
             return False
     return True
 
@@ -67,6 +67,41 @@ def primitive_root_mod_p(p):
     for a in xrange(2, p):
         if is_primitive_root(a, p, p_divs):
             return a
+
+
+def fibonacci_primitive_roots(p):
+    """
+    Returns a list of the Fibonacci primitive roots mod p.
+
+    A Fibonacci primitive root mod p is a primitive root satisfying g^2 = g + 1. These can only exist for primes p = 1,
+    9 (mod 10).
+
+    Input:
+        * p: int
+            A prime number.
+    
+    Output:
+        * roots: list
+            This is a list of the fibonacci primitive roots mod p. This list will contain no more than 2 elements.
+    """
+    if p == 5:
+        return [3]
+    if p < 5 or jacobi_symbol(5, p) != 1:
+        return []
+
+    sqrt5 = sqrt_mod_p(5, p)
+    inv = inverse_mod(2, p)
+    r1 = (1 + sqrt5) * inv % p
+    r2 = (1 - sqrt5) * inv % p
+    roots = []
+    
+    p_divs = prime_divisors(p - 1)
+
+    for r in (r1, r2):
+        if is_primitive_root(r, p, p_divs):
+            roots.append(r)
+
+    return roots
 
 ########################################################################################################################
 # mod p root extraction
@@ -93,18 +128,18 @@ def sqrt_mod_p(a, p):
     Examples:
         >>> sqrt_mod_p(10, 13)
         7
-        >>> power_mod(7, 2, 13)
+        >>> pow(7, 2, 13)
         10
     """
     assert jacobi_symbol(a, p) == 1, "a must be a square modulo p"
 
     a = a % p
     if p % 8 in (3, 7):
-        x = power_mod(a, (p + 1)//4, p)
+        x = pow(a, (p + 1)//4, p)
     elif p % 8 == 5:
-        x = power_mod(a, (p + 3)// 8, p)
+        x = pow(a, (p + 3)// 8, p)
         if x*x % p != a:
-            x = x*power_mod(2, (p - 1)//4, p) % p
+            x = x*pow(2, (p - 1)//4, p) % p
     else:
         # Find a quadratic nonresidue
         d = randint(2, p - 1)
@@ -115,13 +150,13 @@ def sqrt_mod_p(a, p):
         s = valuation(p - 1, 2)
         t = (p - 1) >> s
 
-        A = power_mod(a, t, p)
-        D = power_mod(d, t, p)
+        A = pow(a, t, p)
+        D = pow(d, t, p)
         m = 0
         for i in xrange(s):
-            if power_mod(A*D**m, 2**(s - 1 - i), p) == p - 1:
+            if pow(A*D**m, 2**(s - 1 - i), p) == p - 1:
                 m += 2**i
-        x = power_mod(a, (t + 1)//2, p) * power_mod(D, m//2, p) % p
+        x = pow(a, (t + 1)//2, p) * pow(D, m//2, p) % p
     return x
 
 
@@ -149,15 +184,15 @@ def discrete_log(a, b, p):
     Examples:
         >>> discrete_log(2, 6, 19)
         14
-        >>> power_mod(2, 14, 19)
+        >>> pow(2, 14, 19)
         6
         >>> discrete_log(59, 67, 113)
         11
-        >>> power_mod(59, 11, 113)
+        >>> pow(59, 11, 113)
         67
     """
     m = integer_sqrt(p) + 1
-    am = power_mod(a, m, p)
+    am = pow(a, m, p)
 
     cache = {}
     val = am
@@ -200,7 +235,7 @@ def nth_roots_of_unity_mod_p(n, p, g=None):
 
     d = gcd(n, p - 1)
     # This is one solution. We find all others by looking at powers of this one.
-    h = power_mod(g, (p - 1)//d, p)
+    h = pow(g, (p - 1)//d, p)
 
     roots = []
     val = 1
@@ -245,7 +280,7 @@ def nth_roots_of_minus1_mod_p(n, p, g=None):
         g = primitive_root_mod_p(p)
 
     # This is one solution to x^n = -1 (mod p).
-    root = power_mod(g, (p - 1)//(2*d), p)
+    root = pow(g, (p - 1)//(2*d), p)
     roots_of_unity = nth_roots_of_unity_mod_p(n, p, g)
 
     return sorted([root*h % p for h in roots_of_unity])

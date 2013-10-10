@@ -117,7 +117,9 @@ def power_mod(a, k, m):
             r is the integer [0, m) with r = a^k (mod m)
 
     Details:
-        This computes a^k using a binary exponentiation method, reducing modulo m at each step along the way.
+        This computes a^k using a binary exponentiation method, reducing modulo m at each step along the way. Note that
+        the builtin python function pow behaves exactly the same as this, and is typically faster, so its usage is
+        preferred.
 
     Examples:
         >>> power_mod(2, 45, 17)
