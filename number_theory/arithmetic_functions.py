@@ -2,7 +2,12 @@
 
 from rosemary.number_theory.prime_list import PRIME_LIST
 
-import rosemary.number_theory.core
+from rosemary.number_theory.core import (
+    bit_count,
+    integer_sqrt,
+    lcm
+)
+
 import rosemary.number_theory.factorization
 import rosemary.number_theory.primality
 import rosemary.number_theory.sieves
@@ -13,15 +18,23 @@ import rosemary.number_theory.sieves
 
 def euler_phi(n):
     """
-    euler_phi(n):
-    Returns euler's totient function of n; i.e., returns the number of positive
-    integers <= n that are coprime to n.
+    Returns the number of positive integers <= n that are coprime to n.
+
+    Input:
+        * n: int
+
+    Output:
+        * r: int
+            r is the number of positive integers 1 <= r <= n with gcd(n, r) == 1.
+
+    Details:
+        This routine works by factoring n, and using the standard product definition of phi(n).
 
     Examples:
-    >>> euler_phi(100)
-    40
-    >>> euler_phi(11213)
-    11212
+        >>> euler_phi(100)
+        40
+        >>> euler_phi(11213)
+        11212
     """
     if isinstance(n, (int, long)):
         if n == 1:
@@ -38,6 +51,7 @@ def euler_phi(n):
     for (p, e) in n_fac:
         pp *= p**(e - 1)*(p - 1)
     return pp
+
 
 def factorial(n):
     """
@@ -76,9 +90,9 @@ def factorial(n):
 
         pp *= (t_pp**k)
 
-    bc = rosemary.number_theory.core.bit_count(n)
-
+    bc = bit_count(n)
     return 2**(n - bc) * pp
+
 
 def moebius(n):
     """
@@ -119,6 +133,7 @@ def moebius(n):
     else:
         return 0
 
+
 def primorial(n):
     """
     primorial(n):
@@ -132,17 +147,29 @@ def primorial(n):
         pp *= PRIME_LIST[i]
     return pp
 
-def sigma(n, k = 1):
+
+def sigma(n, k=1):
     """
-    sigma(n, k = 1):
-    Given integers n and k, this returns the sum of th k-th powers of the
-    divisors of n.
+    Returns the sum of th k-th powers of the divisors of n.
+
+    Input:
+        * n: int
+            Number whose divisors are of interest.
+
+        * k: int
+            The power to which each divisor is raised in the sum.
+
+    Output:
+        * s: int
+            The sum of the kth powers of the divisors of n.
 
     Examples:
-    >>> sigma(9)
-    13
-    >>> sigma(10, 2)
-    130
+        >>> sigma(9)
+        13
+        >>> 1 + 3 + 9
+        13
+        >>> sigma(10, 2)
+        130
     """
     if isinstance(n, (int, long)):
         if n == 1:
@@ -163,8 +190,8 @@ def sigma(n, k = 1):
     for (p, e) in n_fac:
         pk = p**k
         pp *= (pk**(e + 1) - 1) // (pk - 1)
-
     return pp
+
 
 def tau(n):
     """
@@ -191,6 +218,7 @@ def tau(n):
         pp *= (e + 1)
 
     return pp
+
 
 def carmichael_lambda(n):
     """
@@ -226,7 +254,7 @@ def carmichael_lambda(n):
             elif e >= 3:
                 L += [ 2**(e - 2) ]
 
-    return rosemary.number_theory.core.lcm(L)
+    return lcm(L)
 
 ########################################################################################################################
 # lists of values of arithmetic functions
@@ -256,17 +284,68 @@ def euler_phi_list(n):
             for mul in xrange(pk, n + 1, pk):
                 block[mul] *= p
             pk *= p
+
     return block
+
 
 totient_list = euler_phi_list
 
+def moebius_list(n):
+    """
+    Return an iterator over values of moebius(k) for 1 <= k <= n.
+    """
+    sr = integer_sqrt(n)
+    p_list = rosemary.number_theory.sieves.primes(sr)
+    block = [1]*(n + 1)
+    vals = [1]*(n + 1)
+    block[0] = 0
+
+    for p in p_list:
+        for i in xrange(p, n + 1, p):
+            if i % (p*p) == 0:
+                block[i] = 0
+            else:
+                block[i] *= -1
+                vals[i] *= p
+
+    for i in xrange(n + 1):
+        if block[i] and vals[i] < i:
+            block[i] *= -1
+
+    return block
+
+
+def sigma_list(n, k=1):
+    """
+    Returns a list of the values of sigma(i, k), for 1 <= i <= n.
+    """
+    block = [1]*(n + 1)
+    block[0] = 0
+    p_list = rosemary.number_theory.sieves.primes(n)
+
+    for p in p_list:
+        pk = p
+        mul = p**k
+        term = mul**2
+        last = mul
+        while pk <= n:
+            for idx in xrange(pk, n + 1, pk):
+                block[idx] *= (term - 1)
+                block[idx] /= (last - 1)
+            pk *= p
+            last = term
+            term *= mul
+
+    return block
+
+
 ########################################################################################################################
-# sums of values of arithmetic functions
+# Summatory functions
 ########################################################################################################################
 
 def euler_phi_sum(n):
     """
-    Returns the value of the sum of euler_phi(k) for k = 1..n.
+    Returns the value of the sum of euler_phi(k) for k = 1, 2, ..., n.
 
     Input:
         * n: int
@@ -276,10 +355,10 @@ def euler_phi_sum(n):
             This is the sum of euler_phi(k) for k = 1..n.
 
     Details:
-        Let S(n) = sum_{k = 1}^{n} \phi(k). We use the identity S(n) = n*(n + 1)/2 - \sum_{d = 2}^{n} S(n/d) to compute
+        Let S(n) = \sum_{k = 1}^{n} \phi(k). We use the identity S(n) = n*(n + 1)/2 - \sum_{d = 2}^{n} S(n/d) to compute
         the value in sublinear time by caching the recursion.
     """
-    k = int(n**(0.5))
+    k = integer_sqrt(n)
     totients = euler_phi_list(k)
 
     # for i <= sqrt(n), compute the sum directly
@@ -301,6 +380,48 @@ def euler_phi_sum(n):
     return S(n)
 
 totient_sum = euler_phi_sum
+
+def moebius_sum(n):
+    block_size = integer_sqrt(n)
+    mu = moebius_list(block_size)
+
+    def M(n, cache={1:1}):
+        if n in cache:
+            return cache[n]
+
+        sr = integer_sqrt(n) + 1
+        s1 = sum(M(n//k) - M(k - 1) for k in xrange(2, sr))
+        s2 = sum(mu[l]*(n//l - l + 1) for l in xrange(1, sr))
+        s3 = sum(mu[k] for k in xrange(1, sr))
+
+        cache[n] = 1 - (s1 + s2 - s3)
+        return cache[n]
+
+    return M(n)
+
+mertens = moebius_sum
+
+def sigma_sum(n):
+    """
+    Returns the value of the sum of sigma(k) for k = 1, 2, ..., n.
+
+    Input:
+        * n: int
+
+    Output:
+        * sum: int
+            This is the sum of sigma(k) for k = 1, 2, ..., n.
+    """
+    m = integer_sqrt(n)
+    ss = -m*(m + 1)
+
+    for k in xrange(1, m + 1):
+        nk = n//k
+        tt = nk - k + 1
+        ss += 2*k*tt
+        ss += tt*(nk + k)
+
+    return ss // 2
 
 ########################################################################################################################
 # Miscellaneous
