@@ -30,18 +30,18 @@ def primes(n):
     offset = (n%6 > 1)
     n = {0:n, 1:n - 1, 2:n + 4, 3:n + 3, 4:n + 2, 5:n + 1}[n % 6]
 
-    sieve = [True] * (n // 3)
+    sieve = [True] * (n//3)
     sieve[0] = False
     sr = integer_sqrt(n)
 
-    for i in xrange(sr // 3 + 1):
+    for i in xrange(sr//3 + 1):
         if sieve[i]:
             k = (3*i + 1)|1
             kk = k*k
-            sieve[kk // 3::2*k] = [False]*((n // 6 - kk // 6 - 1) // k + 1)
-            sieve[(kk + 4*k - 2*k*(i&1)) // 3::2*k] = [False]*((n // 6 - (kk + 4*k - 2*k*(i&1)) // 6 - 1) // k + 1)
+            sieve[kk//3::2*k] = [False]*((n//6 - kk//6 - 1)//k + 1)
+            sieve[(kk + 4*k - 2*k*(i&1))//3::2*k] = [False]*((n//6 - (kk + 4*k - 2*k*(i&1))//6 - 1)//k + 1)
 
-    return [2, 3] + [(3*i + 1)|1 for i in xrange(1, n // 3 - offset) if sieve[i]]
+    return [2, 3] + [(3*i + 1)|1 for i in xrange(1, n//3 - offset) if sieve[i]]
 
 
 def eratosthenes(n):
@@ -160,4 +160,35 @@ def prime_xrange(a, b=None):
         for i in xrange(block_size):
             if block[i] and a <= start + i <= b:
                 yield start + i
+
+################################################################################
+# Sieves for generating values of arithmetical functions
+################################################################################
+
+def moebius(n):
+    """
+    Return an iterator over values of moebius(k) for 1 <= k <= n.
+    """
+    mult = 1
+    block_size = mult*integer_sqrt(n)
+    p_list = primes(block_size)
+
+    for start in xrange(1, n, block_size):
+        block = [1]*block_size
+        vals = [1]*block_size
+
+        for p in p_list:
+            offset = ((p*(start//p + 1) - 1) % block_size) % p
+            for i in xrange(offset, block_size, p):
+                if (start + i) % (p*p) == 0:
+                    block[i] = 0
+                else:
+                    block[i] *= -1
+                    vals[i] *= p
+
+        for i in xrange(block_size):
+            if block[i] and vals[i] < start + i:
+                block[i] *= -1
+            if start + i <= n:
+                yield (start + i, block[i])
 
