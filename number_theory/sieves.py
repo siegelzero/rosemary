@@ -165,30 +165,67 @@ def prime_xrange(a, b=None):
 # Sieves for generating values of arithmetical functions
 ################################################################################
 
-def moebius(n):
+def moebius_xrange(a, b=None):
     """
     Return an iterator over values of moebius(k) for 1 <= k <= n.
     """
-    mult = 1
-    block_size = mult*integer_sqrt(n)
-    p_list = primes(block_size)
+    if b is None:
+        b, a = a, 1
 
-    for start in xrange(1, n, block_size):
-        block = [1]*block_size
-        vals = [1]*block_size
+    blockSize = integer_sqrt(b)
+    primeList = primes(blockSize)
 
-        for p in p_list:
-            offset = ((p*(start//p + 1) - 1) % block_size) % p
-            for i in xrange(offset, block_size, p):
+    for start in xrange(a, b, blockSize):
+        block = [1]*blockSize
+        values = [1]*blockSize
+
+        for p in primeList:
+            offset = ((p*(start//p + 1) - a) % blockSize) % p
+            for i in xrange(offset, blockSize, p):
                 if (start + i) % (p*p) == 0:
                     block[i] = 0
                 else:
                     block[i] *= -1
-                    vals[i] *= p
+                    values[i] *= p
 
-        for i in xrange(block_size):
-            if block[i] and vals[i] < start + i:
+        for i in xrange(blockSize):
+            if block[i] and values[i] < start + i:
                 block[i] *= -1
-            if start + i <= n:
+            if a <= start + i < b:
                 yield (start + i, block[i])
+            elif start + i > b:
+                return
+
+
+def factored_xrange(a, b=None):
+    if b is None:
+        b, a = a, 1
+
+    blockSize = integer_sqrt(b)
+    primeList = primes(blockSize)
+
+    for start in xrange(a, b, blockSize):
+        block = range(start, start + blockSize)
+        factorizations = [[] for _ in xrange(blockSize)]
+
+        for p in primeList:
+            offset = ((p*(start//p + 1) - a) % blockSize) % p
+            for i in xrange(offset, blockSize, p):
+                k = 0
+                while block[i] % p == 0:
+                    block[i] /= p
+                    k += 1
+                factorizations[i].append((p, k))
+
+        for i in xrange(blockSize):
+            if start + i >= b:
+                return
+
+            if block[i] != 1:
+                factorizations[i].append((block[i], 1))
+
+            if start + i == 1:
+                yield (1, [(1, 1)])
+            else:
+                yield (start + i, factorizations[i])
 

@@ -178,7 +178,7 @@ def permutations(A):
             k += 1
             l -= 1
 
-def n_tuples(n, M = None):
+def n_tuples(n, M=None):
     """
     n_tuples(n M):
     This algorithm generates all n-tuples a_0, a_1, ..., a_{n - 1} that satisfy
@@ -207,7 +207,7 @@ def n_tuples(n, M = None):
     >>> list(L)
     [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
     """
-    A = [ 0 for j in range(n + 1) ]
+    A = [0 for j in range(n + 1)]
 
     if isinstance(M, list):
         if len(M) == n:

@@ -14,9 +14,11 @@ def gcd(x, y=None):
             The integer d = gcd(x, y).
 
     Details:
-        This function uses the classical Euclidean algorithm. If x and y are each of order of magnitude N, it can be
-        shown that the overall complexity of the algorithm is O(log(N)^2). This is essentially the square of the number
-        of digits in an operand. See section 4.2 of "Algorithmic Number Theory I - Efficient Algorithms"  by Bach and
+        This function uses the classical Euclidean algorithm. If x and y are
+        each of order of magnitude N, it can be shown that the overall
+        complexity of the algorithm is O(log(N)^2). This is essentially the
+        square of the number of digits in an operand. See section 4.2 of
+        "Algorithmic Number Theory I - Efficient Algorithms"  by Bach and
         Shallit for details.
 
     Examples:
@@ -38,8 +40,9 @@ def ext_gcd(x, y):
     """
     Returns the extended gcd of x and y.
 
-    For integers x, y with x >= y >= 0 and x > 0, this algorithm returns the extended gcd of x and y; i.e. the integer
-    triple (a, b, g) such that a*x + b*y = g = gcd(x, y).
+    For integers x, y with x >= y >= 0 and x > 0, this algorithm returns the
+    extended gcd of x and y; i.e. the integer triple (a, b, g) such that
+    a*x + b*y = g = gcd(x, y).
 
     Input:
         * x: int
@@ -50,8 +53,8 @@ def ext_gcd(x, y):
             A tuple of integers such that a*x + b*y = g = gcd(x, y).
 
     Details:
-        This function uses the classical Extended Euclidean algorithm. The complexity is essentially the same as the
-        classical algorithm.
+        This function uses the classical Extended Euclidean algorithm. The
+        complexity is essentially the same as the classical algorithm.
 
     Examples:
         >>> ext_gcd(5, 7)
@@ -105,7 +108,8 @@ def power_mod(a, k, m):
     """
     Returns a^k (mod m).
 
-    Given a nonnegative integers a, k and a positive integers m, this returns a^k (mod m).
+    Given a nonnegative integers a, k and a positive integers m, this returns
+    a^k (mod m).
 
     Input:
         * a: int (a >= 0)
@@ -117,9 +121,10 @@ def power_mod(a, k, m):
             r is the integer [0, m) with r = a^k (mod m)
 
     Details:
-        This computes a^k using a binary exponentiation method, reducing modulo m at each step along the way. Note that
-        the builtin python function pow behaves exactly the same as this, and is typically faster, so its usage is
-        preferred.
+        This computes a^k using a binary exponentiation method, reducing modulo
+        m at each step along the way. Note that the builtin python function pow
+        behaves exactly the same as this, and is typically faster, so its usage
+        is preferred.
 
     Examples:
         >>> power_mod(2, 45, 17)
@@ -145,8 +150,8 @@ def inverse_mod(a, m):
     """
     Returns the inverse of a modulo m.
 
-    For integers a, m with gcd(a, m) = 1, this algorithm returns the inverse of a modulo m; i.e. returns b such that a*b
-    = 1 (mod m).
+    For integers a, m with gcd(a, m) = 1, this algorithm returns the inverse of
+    a modulo m; i.e. returns b such that a*b = 1 (mod m).
 
     Input:
         * a: int
@@ -157,7 +162,8 @@ def inverse_mod(a, m):
             An integer such that a*b = 1 (mod m).
 
     Details:
-        This function computes the modular inverse using the extended Euclidean algorithm.
+        This function computes the modular inverse using the extended Euclidean
+        algorithm.
 
     Examples:
         >>> inverse_mod(5, 17)
@@ -178,8 +184,8 @@ def bit_count(n):
     """
     Returns the number of set bits
 
-    Given an integer n, this function returns the number of set bits in the binary expansion of n; i.e. the number of 1s
-    appearing in the binary string.
+    Given an integer n, this function returns the number of set bits in the
+    binary expansion of n; i.e. the number of 1s appearing in the binary string.
 
     Input:
         * n: int
@@ -189,8 +195,9 @@ def bit_count(n):
             The number of set bits of n.
 
     Details:
-        This function repeatedly replaces n with n & (n - 1). Each iteration of this zeros out the least significant
-        nonzero bit of n. We simply count the number of iterations required to annihilate n.
+        This function repeatedly replaces n with n & (n - 1). Each iteration of
+        this zeros out the least significant nonzero bit of n. We simply count
+        the number of iterations required to annihilate n.
 
     Examples:
         >>> bit_count(5)
@@ -228,8 +235,9 @@ def integer_log(a, b):
             The integer with b**n <= a < b**(n + 1).
 
     Details:
-        This function computes powers b, b**2, b**4, b**8, b**16, ..., and then performs a binary search. This gives the
-        algorithm a logarithmic runtime instead of the linear runtime of the naive search method.
+        This function computes powers b, b**2, b**4, b**8, b**16, ..., and then
+        performs a binary search. This gives the algorithm a logarithmic runtime
+        instead of the linear runtime of the naive search method.
 
     Examples:
         >>> integer_log(8, 2)
@@ -268,8 +276,8 @@ def integer_nth_root(k, n):
     """
     Returns the integer part of the kth root of n
 
-    Given positive integers k and n, this returns the integer part of the kth root of n. This is the number r such that
-    r**k <= n < r**(k + 1)
+    Given positive integers k and n, this returns the integer part of the kth
+    root of n. This is the number r such that r**k <= n < r**(k + 1)
 
     Input:
         * k: int (k > 0)
@@ -309,8 +317,8 @@ def integer_sqrt(n):
     """
     Returns the integer part of the square root of n.,
 
-    Given a positive integer n, this returns the integer part of the square root of k; i.e. the integer r with r**2 <= n
-    < (r + 1)**2.
+    Given a positive integer n, this returns the integer part of the square root
+    of k; i.e. the integer r with r**2 <= n < (r + 1)**2.
 
     Input:
         * n: int (n >= 0)
@@ -351,8 +359,9 @@ def is_power(x, n=None):
     """
     Determines if x in a perfect power.
 
-    Given a positive integer x, this function returns a tuple (True, n, r) if x = r^n for some positive integers r, n,
-    and returns (False, 1, x) otherwise.  If n is not None, the function returns (True, n, r) if x = r^n for some
+    Given a positive integer x, this function returns a tuple (True, n, r) if x
+    = r^n for some positive integers r, n, and returns (False, 1, x) otherwise.
+    If n is not None, the function returns (True, n, r) if x = r^n for some
     positive integer r, and returns (False, 1, x) otherwise.
 
     Input:
@@ -436,7 +445,6 @@ def is_square(n):
             return True
         return False
 
-
 def chinese(L):
     """
     chinese(L):
@@ -444,20 +452,52 @@ def chinese(L):
     this algorithm finds an integer x such that x = x_i (mod m_i) for all i.
     The input should be of the form L = [ (x_1, m_1), ..., (x_k, m_k) ].
     """
-    k = len(L)
-    x, m = L[0]
-    i = 1
-    while i < k:
-        xi, mi = L[i]
+    (x, m) = L[0]
+    rest = L[1:]
+    for (xi, mi) in rest:
         (u, v, d) = ext_gcd(m, mi)
         if d != 1:
             raise ValueError('moduli must be coprime')
-        x = u * m * xi + v * mi * x
+        x = u*m*xi + v*mi*x
         m *= mi
         x = x % m
-        i += 1
-
     return x
+
+def crt_preconditioning_data(moduli):
+    """
+    returns (r, residues, moduli, partialProducts, inverseList, product)
+    """
+    r = len(moduli)
+    partialProducts = [1]*r
+    inverseList = [1]*r
+
+    for i in xrange(1, r):
+        partialProducts[i] = partialProducts[i - 1]*moduli[i - 1]
+        inverseList[i] = inverse_mod(partialProducts[i], moduli[i])
+
+    product = partialProducts[r - 1]*moduli[r - 1]
+    data = (r, moduli, partialProducts, inverseList, product)
+    return data
+
+def chinese_preconditioned(L, preconditioningData=None):
+    """
+    chinese(L):
+    Given pairwise coprime integers m_1, ..., m_k and integers x_1, ..., x_k,
+    this algorithm finds an integer x such that x = x_i (mod m_i) for all i.
+    The input should be of the form L = [ (x_1, m_1), ..., (x_k, m_k) ].
+    """
+    if preconditioningData is None:
+        preconditioningData = crt_preconditioning_data(L)
+
+    (r, moduli, partialProducts, inverseList, product) = preconditioningData
+    residues = [a for (a, m) in L]
+    x = residues[0]
+
+    for i in xrange(1, r):
+        u = (residues[i] - x)*inverseList[i] % moduli[i]
+        x = x + u*partialProducts[i]
+
+    return x % product
 
 def jacobi_symbol(a, m):
     """
