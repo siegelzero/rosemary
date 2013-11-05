@@ -1,7 +1,7 @@
 # Basic number theoretic routines
 # Kenneth Brown
 
-def gcd(x, y=None):
+def gcd(x, y):
     """
     Returns the greatest common divisor of x and y.
 
@@ -24,8 +24,6 @@ def gcd(x, y=None):
     Examples:
         >>> gcd(39064, 844)
         4
-        >>> gcd([24, 18, 54])
-        6
     """
     x = abs(x)
     y = abs(y)
@@ -34,7 +32,6 @@ def gcd(x, y=None):
     while y:
         x, y = y, x % y
     return x
-
 
 def ext_gcd(x, y):
     """
@@ -59,10 +56,8 @@ def ext_gcd(x, y):
     Examples:
         >>> ext_gcd(5, 7)
         (3, -2, 1)
-        >>> ext_gcd(25, 15)
-        (-1, 2, 5)
-        >>> -1 * 25 + 2 * 15
-        5
+        >>> 3*5 - 2*7
+        1
     """
     switch = False
     if x < y:
@@ -71,7 +66,7 @@ def ext_gcd(x, y):
 
     (a, b, g, u, v, w) = (1, 0, x, 0, 1, y)
     while w > 0:
-        q = g // w
+        q = g//w
         (a, b, g, u, v, w) = (u, v, w, a - q*u, b - q*v, g - q*w)
 
     if switch:
@@ -79,8 +74,7 @@ def ext_gcd(x, y):
     else:
         return (a, b, g)
 
-
-def lcm(x, y=None):
+def lcm(x, y):
     """
     Returns the least common multiple of x and y.
 
@@ -98,11 +92,8 @@ def lcm(x, y=None):
     Examples:
         >>> lcm(2, 5)
         10
-        >>> lcm([2, 3, 4, 5])
-        60
     """
-    return (x * y) // gcd(x, y)
-
+    return (x*y)//gcd(x, y)
 
 def power_mod(a, k, m):
     """
@@ -118,7 +109,7 @@ def power_mod(a, k, m):
 
     Output:
         * r: int
-            r is the integer [0, m) with r = a^k (mod m)
+            r is the integer in [0, m) with r = a^k (mod m)
 
     Details:
         This computes a^k using a binary exponentiation method, reducing modulo
@@ -141,10 +132,9 @@ def power_mod(a, k, m):
     while k:
         if k % 2:
             t = a*t % m
-        k = k // 2
-        a = a * a % m
+        k = k//2
+        a = a*a % m
     return t
-
 
 def inverse_mod(a, m):
     """
@@ -178,7 +168,6 @@ def inverse_mod(a, m):
     if v < 0:
         v += m
     return v
-
 
 def bit_count(n):
     """
@@ -215,10 +204,9 @@ def bit_count(n):
         count += 1
     return count
 
-
 def integer_log(a, b):
     """
-    Returns the base-b integr logarithm of a.
+    Returns the base-b integer logarithm of a.
 
     Given positive integers a and b, this function returns the integer n such
     that b**n <= a < b**(n + 1).
@@ -227,7 +215,7 @@ def integer_log(a, b):
         * a: int (a > 0)
             This is the argument of the logarithm.
 
-        * b: int (b > 0)
+        * b: int (b > 1)
             This is the base of the logarithm.
 
     Output:
@@ -271,7 +259,6 @@ def integer_log(a, b):
             lo = mid
     return lo
 
-
 def integer_nth_root(k, n):
     """
     Returns the integer part of the kth root of n
@@ -311,7 +298,6 @@ def integer_nth_root(k, n):
         if y >= x:
             return x
         x = y
-
 
 def integer_sqrt(n):
     """
@@ -353,7 +339,6 @@ def integer_sqrt(n):
         if y >= x:
             return x
         x = y
-
 
 def is_power(x, n=None):
     """
@@ -405,7 +390,6 @@ def is_power(x, n=None):
         d += 1
     return (False, 1, x)
 
-
 def is_square(n):
     """
     Determines if n is a perfect square.
@@ -447,10 +431,28 @@ def is_square(n):
 
 def chinese(L):
     """
-    chinese(L):
-    Given pairwise coprime integers m_1, ..., m_k and integers x_1, ..., x_k,
-    this algorithm finds an integer x such that x = x_i (mod m_i) for all i.
-    The input should be of the form L = [ (x_1, m_1), ..., (x_k, m_k) ].
+    Returns a solution to the congruences given in L.
+
+    Given a list of congruenes as (residue, modulus) pairs, where all moduli are
+    pairwise coprime, this returns the unique solution n in [0, M) to the
+    congruences, where M is the product of the moduli.
+
+    Input:
+        * L: list
+            L is a list of congruences of the form (residue, modulus).
+    
+    Output:
+        * x: int
+            x is the least positive integer satisfying all of the congruences.
+
+    Examples:
+        >>> chinese([(0, 4), (1, 25)])
+        76
+
+    Details:
+        This algorithm is based on the standard constructive proof of the
+        Chinese Remainder Theorem. For a single CRT application, this is the
+        function to use.
     """
     (x, m) = L[0]
     rest = L[1:]
@@ -465,7 +467,26 @@ def chinese(L):
 
 def crt_preconditioning_data(moduli):
     """
-    returns (r, residues, moduli, partialProducts, inverseList, product)
+    Returns the preconditioning data for the set of moduli.
+
+    Given a set of moduli, this computes the preconditioning data necessary for
+    the chinese_preconditioned function.
+
+    Input:
+        * moduli: list
+            A list of pairwise coprime positive integers.
+
+    Output:
+        * data: tuple
+            This is a tuple contiaining:
+                * r: The number of moduli.
+
+                * partialProducts: A list of partial products of the moduli.
+
+                * inverseList: A list of the inverse of each partial product,
+                    modulo the next modulus in the list.
+
+                * product: The product of the moduli.
     """
     r = len(moduli)
     partialProducts = [1]*r
@@ -476,27 +497,59 @@ def crt_preconditioning_data(moduli):
         inverseList[i] = inverse_mod(partialProducts[i], moduli[i])
 
     product = partialProducts[r - 1]*moduli[r - 1]
-    data = (r, moduli, partialProducts, inverseList, product)
+    data = (r, partialProducts, inverseList, product)
     return data
 
 def chinese_preconditioned(L, preconditioningData=None):
     """
-    chinese(L):
-    Given pairwise coprime integers m_1, ..., m_k and integers x_1, ..., x_k,
-    this algorithm finds an integer x such that x = x_i (mod m_i) for all i.
-    The input should be of the form L = [ (x_1, m_1), ..., (x_k, m_k) ].
+    Returns a solution to the congruences given in L.
+
+    Given a list of congruenes as (residue, modulus) pairs, where all moduli are
+    pairwise coprime, this returns the unique solution n in [0, M) to the
+    congruences, where M is the product of the moduli.
+
+    Input:
+        * L: list
+            L is a list of congruences of the form (residue, modulus).
+
+        * preconditioningData: tuple (default=None)
+            This is a tuple containing the preconditioning data for this set of
+            moduli. This should be the output of the function
+            crt_preconditioning_data.
+    
+    Output:
+        * x: int
+            x is the least positive integer satisfying all of the congruences.
+
+    Examples:
+        >>> chinese([(0, 4), (1, 25)])
+        76
+
+    Details:
+        This algorithm is based on one by Garner (see Algorithm 2.1.7 in
+        Crandall's Prime Numbers - A Computational Perspective).
+
+        If multiple systems of congruences are to be solved, where each system
+        has the same set of moduli as the other, then this method is much faster
+        than the function "chinese", as long as the preconditioning dats is only
+        computed once.
+        
+        A typical use of this function is in combining solutions of some
+        polynomial congruence modulo prime powers to find the solutions modulo
+        the product of these prime-power moduli. In this case, you will have a
+        fixed set of moduli, but multiple residues for each modulus.
     """
     if preconditioningData is None:
-        preconditioningData = crt_preconditioning_data(L)
+        moduli = [m for (a, m) in L]
+        preconditioningData = crt_preconditioning_data(moduli)
 
-    (r, moduli, partialProducts, inverseList, product) = preconditioningData
+    (r, partialProducts, inverseList, product) = preconditioningData
     residues = [a for (a, m) in L]
     x = residues[0]
 
     for i in xrange(1, r):
         u = (residues[i] - x)*inverseList[i] % moduli[i]
         x = x + u*partialProducts[i]
-
     return x % product
 
 def jacobi_symbol(a, m):
@@ -542,8 +595,7 @@ def valuation(n, p):
 
     val = 0
     while n % p == 0:
-        n = n // p
+        n = n//p
         val += 1
     return val
-
 

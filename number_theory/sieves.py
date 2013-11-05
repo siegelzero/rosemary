@@ -43,7 +43,6 @@ def primes(n):
 
     return [2, 3] + [(3*i + 1)|1 for i in xrange(1, n//3 - offset) if sieve[i]]
 
-
 def eratosthenes(n):
     """
     Returns a list of all primes <= n.
@@ -134,7 +133,6 @@ def sieve_interval(a, b):
                 if a <= m <= b:
                     yield m
 
-
 def prime_xrange(a, b=None):
     if b is None:
         b = a
@@ -189,13 +187,11 @@ def moebius_xrange(a, b=None):
                     values[i] *= p
 
         for i in xrange(blockSize):
+            if start + i >= b:
+                return
             if block[i] and values[i] < start + i:
                 block[i] *= -1
-            if a <= start + i < b:
-                yield (start + i, block[i])
-            elif start + i > b:
-                return
-
+            yield (start + i, block[i])
 
 def factored_xrange(a, b=None):
     if b is None:
@@ -203,6 +199,10 @@ def factored_xrange(a, b=None):
 
     blockSize = integer_sqrt(b)
     primeList = primes(blockSize)
+
+    if a == 1:
+        yield (1, [(1, 1)])
+        a += 1
 
     for start in xrange(a, b, blockSize):
         block = range(start, start + blockSize)
@@ -220,12 +220,7 @@ def factored_xrange(a, b=None):
         for i in xrange(blockSize):
             if start + i >= b:
                 return
-
             if block[i] != 1:
                 factorizations[i].append((block[i], 1))
-
-            if start + i == 1:
-                yield (1, [(1, 1)])
-            else:
-                yield (start + i, factorizations[i])
+            yield (start + i, factorizations[i])
 
