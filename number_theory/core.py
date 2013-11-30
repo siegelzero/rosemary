@@ -290,11 +290,11 @@ def integer_nth_root(k, n):
 
     # Here, bn is the number of bits in the base-n representation of k.
     bn = integer_log(k, n) + 1
-    x = 2**(bn // 2 + 1)
+    x = 2**(bn//2 + 1)
 
     # This is just Newton's method using integer division.
     while True:
-        y = ((n - 1) * x + k // (x**(n - 1))) // n
+        y = ((n - 1)*x + k//(x**(n - 1)))//n
         if y >= x:
             return x
         x = y
@@ -326,11 +326,12 @@ def integer_sqrt(n):
         return n
 
     # if n is small enough, compute the square root and round
-    if n <= 2**100:
+    if n <= 2**60:
         return int(n**(0.5))
 
     # Here, bn is the number of bits in the binary representation of n.
-    bn = integer_log(n, 2) + 1
+    #bn = integer_log(n, 2) + 1
+    bn = n.bit_length()
     x = 2**(bn//2 + 1)
 
     # This is just Newton's method using integer division.
@@ -340,7 +341,7 @@ def integer_sqrt(n):
             return x
         x = y
 
-def is_power(x, n=None):
+def is_power(n):
     """
     Determines if x in a perfect power.
 
@@ -371,24 +372,31 @@ def is_power(x, n=None):
         >>> is_power(20)
         0
     """
-    if n is not None:
-        r = integer_nth_root(n, x)
-        if r**n == x:
-            return (True, n, r)
-        else:
-            return (False, 1, x)
-    
-    d = 2
-    while d*d <= x:
-        m = x
-        k = 0
-        while m % d == 0:
-            m = m // d
-            k += 1
-        if m == 1:
-            return (True, k, d)
-        d += 1
-    return (False, 1, x)
+    k = 2
+    while 2**k <= n:
+        lo = 1
+        hi = n
+        while hi - lo > 1:
+            mid = (lo + hi)//2
+            power = mid**k
+            if power == n:
+                # Here, we've found that n is a perfect power. However, at this
+                # point, b is the smallest exponent. We want the largest.
+                exponent = k
+                base = mid
+                while True:
+                    nextPair = is_power(base)
+                    if nextPair:
+                        base = nextPair[0]
+                        exponent *= nextPair[1]
+                    else:
+                        return (base, exponent)
+            elif power < n:
+                lo = mid
+            else:
+                hi = mid
+        k += 1
+    return False
 
 def is_square(n):
     """
@@ -418,8 +426,8 @@ def is_square(n):
     if isinstance(n, list):
         if n[0][0] == -1:
             return False
-        n_fac = n[1:]
-        for (p, e) in n_fac:
+        nFactorization = n[1:]
+        for (p, e) in nFactorization:
             if e % 2 == 1:
                 return False
         return True
@@ -539,14 +547,14 @@ def chinese_preconditioned(L, preconditioningData=None):
         the product of these prime-power moduli. In this case, you will have a
         fixed set of moduli, but multiple residues for each modulus.
     """
-    if preconditioningData is None:
-        moduli = [m for (a, m) in L]
-        preconditioningData = crt_preconditioning_data(moduli)
-
-    (r, partialProducts, inverseList, product) = preconditioningData
+    moduli = [m for (a, m) in L]
     residues = [a for (a, m) in L]
     x = residues[0]
 
+    if preconditioningData is None:
+        preconditioningData = crt_preconditioning_data(moduli)
+
+    (r, partialProducts, inverseList, product) = preconditioningData
     for i in xrange(1, r):
         u = (residues[i] - x)*inverseList[i] % moduli[i]
         x = x + u*partialProducts[i]
@@ -578,7 +586,6 @@ def jacobi_symbol(a, m):
 
     return 0
 
-
 def valuation(n, p):
     """
     valuation(n, p):
@@ -590,12 +597,41 @@ def valuation(n, p):
     >>> valuation(3628800, 3)
     4
     """
-    if p <= 0:
-        raise ValueError('p must be positive')
-
     val = 0
     while n % p == 0:
         n = n//p
         val += 1
     return val
+
+def valuation2(n, p):
+    """
+    valuation(n, p):
+    Given integers n and p > 0, this returns the highest power of p dividing n
+
+    Examples:
+    >>> valuation(12, 2)
+    2
+    >>> valuation(3628800, 3)
+    4
+    """
+    if n % p != 0:
+        return 0
+
+    pk = p
+    hi = 1
+    # Look at b, b^2, b^4, b^8,... to find in which interval a lives
+    while n % pk == 0:
+        pk = pk**2
+        lo = hi
+        hi *= 2
+
+    # Now we know that b^lo <= a <= b^hi perform a binary search on this
+    # interval to find the exact value n so that b^n <= a < b^(n + 1)
+    while hi - lo > 1:
+        mid = (lo + hi)//2
+        if n % (p**mid) == 0:
+            lo = mid
+        else:
+            hi = mid
+    return lo
 

@@ -4,8 +4,7 @@ from rosemary.number_theory.prime_list import PRIME_LIST
 
 from rosemary.number_theory.core import (
     bit_count,
-    integer_sqrt,
-    lcm
+    lcm,
 )
 
 import rosemary.number_theory.factorization
@@ -21,14 +20,14 @@ def euler_phi(n):
     Returns the number of positive integers <= n that are coprime to n.
 
     Input:
-        * n: int
+        * n: int (n > 0)
 
     Output:
         * r: int
-            r is the number of positive integers 1 <= r <= n with gcd(n, r) == 1.
 
     Details:
-        This routine works by factoring n, and using the standard product definition of phi(n).
+        This routine works by factoring n, and using the standard product
+        definition of phi(n).
 
     Examples:
         >>> euler_phi(100)
@@ -39,100 +38,91 @@ def euler_phi(n):
     if isinstance(n, (int, long)):
         if n == 1:
             return 1
-        elif n == 0:
-            raise ValueError("Zero argument in an arithmetic function")
-        n_fac = rosemary.number_theory.factorization.factor(n)
-    elif isinstance(n, list):
-        n_fac = n
+        elif n <= 0:
+            raise ValueError("euler_phi: Input must be positive.")
+        nFactors = rosemary.number_theory.factorization.factor(n)
+    elif isinstance(n, list) and n[0][0] > 0:
+        nFactors = n
     else:
-        raise ValueError("Input must be an integer or a factorization")
+        raise ValueError("euler_phi: Input must be a positive integer or a factorization.")
 
-    pp = 1
-    for (p, e) in n_fac:
-        pp *= p**(e - 1)*(p - 1)
-    return pp
-
+    prod = 1
+    for (p, e) in nFactors:
+        prod *= p**(e - 1)*(p - 1)
+    return prod
 
 def factorial(n):
     """
-    factorial(n):
-    Given a non-negative integer n, this returns n! = n*(n - 1)*(n - 2)...2*1
-    The algorithm used is a binary splitting method.
+    Returns the factorial of n.
+
+    Input:
+        * n: int (n >= 0)
+
+    Output:
+        * prod: int
+
+    Details:
+        The algorithm used is a binary splitting method.
 
     Examples:
-    >>> factorial(10)
-    3628800
-    >>> factorial(40)
-    815915283247897734345611269596115894272000000000
-    """
-    D = {0:1, 1:1, 2:2, 3:6, 4:24}
+        >>> factorial(10)
+        3628800
+        >>> factorial(40)
+        815915283247897734345611269596115894272000000000
+        """
     if n < 0:
-        raise ValueError
-    elif n <= 4:
-        return D[n]
+        raise ValueError("factorial: Input must be nonnegative.")
+    elif n <= 1:
+        return 1
 
-    # bn is the number of binary digits of n
-    pp = 1
-    k = 1
-
+    prod = 1
     for k in xrange(1, n.bit_length()):
-        lower = n >> k
-        upper = n >> (k - 1)
+        lower = (n >> k) + 1
+        upper = (n >> (k - 1)) + 1
 
-        j = lower + 1
-        if j % 2 == 0:
-            j += 1
+        if lower % 2 == 0:
+            lower += 1
 
-        t_pp = 1
-        while j <= upper:
-            t_pp *= j
-            j += 2
-
-        pp *= (t_pp**k)
-
-    bc = bit_count(n)
-    return 2**(n - bc) * pp
-
+        partial = 1
+        for j in xrange(lower, upper, 2):
+            partial *= j
+        prod *= (partial**k)
+    return prod << (n - bit_count(n))
 
 def moebius(n):
     """
-    moebius(n):
-    Given a positive integer n, this returns the value of the Moebius function
-    mu of n, the multiplicative function satisfying:
-        mu(1) = 1
-        mu(p) = -1
-        mu(p**e) = 0 for e > 1
-        mu(p1*p2*...*pk) = (-1)**k
+    Returns the value of the Moebius function mu(n).
+
+    Input:
+        * n: int (n > 0)
+
+    Output:
+        * mu: int
 
     Examples:
-    >>> moebius(35)
-    1
-    >>> moebius(100)
-    0
-    >>> moebius(2)
-    -1
+        >>> moebius(35)
+        1
+        >>> moebius(100)
+        0
+        >>> moebius(2)
+        -1
     """
     if isinstance(n, (int, long)):
         if n == 1:
             return 1
-        elif n == 0:
-            raise ValueError("Zero argument in an arithmetic function")
-        n_fac = rosemary.number_theory.factorization.factor(abs(n))
-
-    elif isinstance(n, list):
-        if n[0][0] == -1:
-            n_fac = n[1:]
-        else:
-            n_fac = n
+        elif n <= 0:
+            raise ValueError("moebius: Input must be positive.")
+        nFactors = rosemary.number_theory.factorization.factor(n)
+    elif isinstance(n, list) and n[0][0] > 0:
+        nFactors = n
     else:
-        raise ValueError("Input must be an integer or a factorization")
+        raise ValueError("moebius: Input must be a positive integer or a factorization.")
 
-    if rosemary.number_theory.factorization.is_squarefree(n_fac):
-        v = len(n_fac)
-        return (-1)**v
+    if rosemary.number_theory.factorization.is_squarefree(nFactors):
+        k = len(nFactors)
+        return (-1)**k
     else:
         return 0
-
 
 def primorial(n):
     """
@@ -147,21 +137,16 @@ def primorial(n):
         pp *= PRIME_LIST[i]
     return pp
 
-
 def sigma(n, k=1):
     """
     Returns the sum of th k-th powers of the divisors of n.
 
     Input:
-        * n: int
-            Number whose divisors are of interest.
-
-        * k: int
-            The power to which each divisor is raised in the sum.
+        * n: int (n > 0)
+        * k: int (k > 0)
 
     Output:
         * s: int
-            The sum of the kth powers of the divisors of n.
 
     Examples:
         >>> sigma(9)
@@ -174,51 +159,45 @@ def sigma(n, k=1):
     if isinstance(n, (int, long)):
         if n == 1:
             return 1
-        elif n == 0:
-            raise ValueError("Zero argument in an arithmetic function")
-        n_fac = rosemary.number_theory.factorization.factor(abs(n))
-
-    elif isinstance(n, list):
-        if n[0][0] == -1:
-            n_fac = n[1:]
-        else:
-            n_fac = n
+        elif n <= 0:
+            raise ValueError("sigma: Input must be positive.")
+        nFactors = rosemary.number_theory.factorization.factor(n)
+    elif isinstance(n, list) and n[0][0] > 0:
+        nFactors = n
     else:
-        raise ValueError("Input must be an integer or a factorization")
+        raise ValueError("sigma: Input must be a positive integer or a factorization")
 
-    pp = 1
-    for (p, e) in n_fac:
+    prod = 1
+    for (p, e) in nFactors:
         pk = p**k
-        pp *= (pk**(e + 1) - 1) // (pk - 1)
-    return pp
-
+        prod *= (pk**(e + 1) - 1)//(pk - 1)
+    return prod
 
 def tau(n):
     """
-    tau(n):
     Given an integer n, this returns the number of divisors of n.
+
+    Input:
+        * n: int (n > 0)
+
+    Output:
+        * num: int
     """
     if isinstance(n, (int, long)):
         if n == 1:
             return 1
-        elif n == 0:
-            raise ValueError("Zero argument in an arithmetic function")
-        n_fac = rosemary.number_theory.factorization.factor(abs(n))
-
-    elif isinstance(n, list):
-        if n[0][0] == -1:
-            n_fac = n[1:]
-        else:
-            n_fac = n
+        elif n <= 0:
+            raise ValueError("tau: Input must be positive.")
+        nFactors = rosemary.number_theory.factorization.factor(n)
+    elif isinstance(n, list) and n[0][0] > 0:
+        nFactors = n
     else:
-        raise ValueError("Input must be an integer or a factorization")
+        raise ValueError("tau: Input must be a positive integer or a factorization")
 
-    pp = 1
-    for (p, e) in n_fac:
-        pp *= (e + 1)
-
-    return pp
-
+    prod = 1
+    for (p, e) in nFactors:
+        prod *= (e + 1)
+    return prod
 
 def carmichael_lambda(n):
     """
@@ -234,7 +213,7 @@ def carmichael_lambda(n):
     112
     """
     if isinstance(n, (int, long)):
-        n_fac = rosemary.number_theory.factorization.factor(abs(n))
+        n_fac = rosemary.number_theory.factorization.factor(n)
 
     elif isinstance(n, list):
         if n[0][0] == -1:
@@ -294,7 +273,7 @@ def moebius_list(n):
     """
     Return an iterator over values of moebius(k) for 1 <= k <= n.
     """
-    sr = integer_sqrt(n)
+    sr = int(n**(0.5))
     p_list = rosemary.number_theory.sieves.primes(sr)
     block = [1]*(n + 1)
     vals = [1]*(n + 1)
@@ -319,6 +298,8 @@ def sigma_list(n, k=1):
     """
     Returns a list of the values of sigma(i, k), for 1 <= i <= n.
     """
+    assert k >= 1
+
     block = [1]*(n + 1)
     block[0] = 0
     p_list = rosemary.number_theory.sieves.primes(n)
@@ -336,6 +317,19 @@ def sigma_list(n, k=1):
             last = term
             term *= mul
 
+    return block
+
+def tau_list(n, k=1):
+    """
+    Returns a list of the values of tau(i), for 1 <= i <= n.
+    """
+    block = [0]*(n + 1)
+    bound = int(n**(0.5)) + 1
+
+    for j in xrange(1, bound):
+        block[j*j] += 1
+        for k in xrange(j + 1, n//j + 1):
+            block[k*j] += 2
     return block
 
 
@@ -358,7 +352,7 @@ def euler_phi_sum(n):
         Let S(n) = \sum_{k = 1}^{n} \phi(k). We use the identity S(n) = n*(n + 1)/2 - \sum_{d = 2}^{n} S(n/d) to compute
         the value in sublinear time by caching the recursion.
     """
-    k = integer_sqrt(n)
+    k = int(n**(0.5))
     totients = euler_phi_list(k)
 
     # for i <= sqrt(n), compute the sum directly
@@ -370,26 +364,62 @@ def euler_phi_sum(n):
         if n in cache:
             return cache[n]
         srn = int(n**(0.5))
-        S1 = sum([S(n//j) for j in xrange(srn, 1, -1)])
-        S2 = sum([totients[j]*(n//j) for j in xrange(1, srn + 1)])
-        S3 = srn*S(srn)
+        s1 = sum([S(n//j) for j in xrange(srn, 1, -1)])
+        s2 = sum([totients[j]*(n//j) for j in xrange(1, srn + 1)])
+        s3 = srn*S(srn)
 
-        cache[n] = n*(n + 1)//2 - S1 - S2 + S3
+        cache[n] = n*(n + 1)//2 - (s1 + s2 - s3)
         return cache[n]
 
     return S(n)
 
 totient_sum = euler_phi_sum
 
-def moebius_sum(n):
-    block_size = integer_sqrt(n)
-    mu = moebius_list(block_size)
+def euler_phi_weighted_sum(n):
+    sr = int(n**(0.5))
+    totients = euler_phi_list(sr)
 
-    def M(n, cache={1:1}):
+    # for i <= sqrt(n), compute the sum directly
+    cache = {1:1}
+    for i in xrange(2, sr + 1):
+        cache[i] = cache[i - 1] + i*totients[i]
+
+    def T(n):
         if n in cache:
             return cache[n]
 
-        sr = integer_sqrt(n) + 1
+        sn = int(n**(0.5)) + 1
+        s1 = sum(d*totients[d]*(n//d - d + 1)*(n//d + d)//2 for d in xrange(1, sn))
+        s2 = sum(d*(T(n//d) - T(d - 1)) for d in xrange(2, sn))
+        s3 = sum(d*d*totients[d] for d in xrange(1, sn))
+
+        cache[n] = n*(n + 1)*(2*n + 1)//6 - (s1 + s2 - s3)
+        return cache[n]
+
+    return T(n)
+
+def moebius_sum(n):
+    """
+    Returns the value of the sum of moebius(k) for k = 1, 2, ..., n.
+
+    Input:
+        * n: int
+
+    Output:
+        * sum: int
+    """
+    sn = int(n**(0.5))
+    mu = moebius_list(sn)
+
+    cache = {1:1}
+    for i in xrange(2, sn + 1):
+        cache[i] = cache[i - 1] + mu[i]
+
+    def M(n):
+        if n in cache:
+            return cache[n]
+
+        sr = int(n**(0.5)) + 1
         s1 = sum(M(n//k) - M(k - 1) for k in xrange(2, sr))
         s2 = sum(mu[l]*(n//l - l + 1) for l in xrange(1, sr))
         s3 = sum(mu[k] for k in xrange(1, sr))
@@ -410,9 +440,8 @@ def sigma_sum(n):
 
     Output:
         * sum: int
-            This is the sum of sigma(k) for k = 1, 2, ..., n.
     """
-    m = integer_sqrt(n)
+    m = int(n**(0.5))
     ss = -m*(m + 1)
 
     for k in xrange(1, m + 1):
@@ -421,7 +450,7 @@ def sigma_sum(n):
         ss += 2*k*tt
         ss += tt*(nk + k)
 
-    return ss // 2
+    return ss//2
 
 ########################################################################################################################
 # Miscellaneous
@@ -429,52 +458,70 @@ def sigma_sum(n):
 
 def euler_phi_inverse(m):
     """
-    Returns a sorted list of all integers n such that euler_phi(n) = m.
+    Returns a list of all positive integers n such that euler_phi(n) = m.
+
+    Input:
+        * m: int
+
+    Output:
+        * values: list
+            A sorted list of all positive integers n with euler_phi(n) = m.
+
+    Details:
+        This uses the algorithm outlined in Discovering Mathematics with Magma
+        by Bosma and Cannon.
+
+    Examples:
+        >>> euler_phi_inverse(40)
+        [41, 55, 75, 82, 88, 100, 110, 132, 150]
+        >>> euler_phi_inverse(103)
+        []
     """
     # We know euler_phi(n) is even for m >= 3
     if m % 2 == 1 and m > 1:
         return []
 
-    mfact = rosemary.number_theory.factorization.factor(m)
+    mFactors = rosemary.number_theory.factorization.factor(m)
     
+    powersOfTwo = set([1])
     if m % 2 == 0:
-        twopows = [ 2**i for i in range(mfact[0][1] + 1) ]
-    else:
-        twopows = [ 1 ]
+        for i in xrange(1, mFactors[0][1] + 1):
+            powersOfTwo.add(2**i)
 
-    D = rosemary.number_theory.factorization.divisors(mfact)
-    P = []
-
-    for d in D:
-        if d == 1:
-            continue
+    # Odd primes p that divide n must have the property that p - 1 divides m.
+    primeList = []
+    for d in rosemary.number_theory.factorization.divisors(mFactors)[1:]:
         if rosemary.number_theory.primality.is_prime(d + 1):
-            P.append(d + 1)
+            primeList.append(d + 1)
 
-    S = [(1, m)]
-    for p in reversed(P):
-        T = []
-        for (s0, s1) in S:
-            if s1 == 1:
+    # Here, we store pairs (a, b) such that a is odd and phi(a) = m/b, with b
+    # even or 1. Every pair contributes at least one solution. When b = 1, the
+    # pair contributes two solutions.
+    pairs = [(1, m)]
+    for p in reversed(primeList):
+        newPairs = []
+        for (a, b) in pairs:
+            if b == 1:
                 continue
             pk = p
-            d = s1 // (p - 1)
-            mmod = s1 % (p - 1)
+            d = b//(p - 1)
+            mmod = b % (p - 1)
             while mmod == 0:
                 if d % 2 == 0 or d == 1:
-                    T.append((pk * s0, d))
+                    newPairs.append((pk*a, d))
                 pk *= p
                 mmod = d % p
-                d = d // p
-        S.extend(T)
+                d = d//p
+        pairs.extend(newPairs)
 
-    R = set([])
-    for s in S:
-        if s[1] in twopows:
-            j = twopows.index(s[1])
-            R.add(2**(j + 1) * s[0])
-            if j == 0:
-                R.add(s[0])
+    # When b = 2^k, we have the solution 2*b*a.
+    values = []
+    for (a, b) in pairs:
+        if b in powersOfTwo:
+            values.append(2*b*a)
+            if b == 1:
+                values.append(a)
 
-    return sorted(R)
+    values.sort()
+    return values
 

@@ -191,7 +191,6 @@ def pollard_rho(n):
 def one_line_factor(k, M):
     # first, we trial divide up to floor(n^(1/3))
     bound = core.integer_nth_root(3, k)
-    print "trial_division to {0}".format(bound)
     d = trial_division(k, bound)
     # if a non-trivlal divisor is found, return it
     if d < k:
