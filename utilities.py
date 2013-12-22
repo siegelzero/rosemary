@@ -17,15 +17,3 @@ def cached_function(func):
     return wrap
 
 ################################################################################
-
-def prod(L):
-    """
-    prod(L):
-    This returns the product of the elements of L.
-    """
-    p = 1
-    for e in L:
-        p *= e
-    return p
-
-################################################################################

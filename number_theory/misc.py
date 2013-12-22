@@ -1,6 +1,11 @@
-from rosemary.number_theory.prime_list import PRIME_LIST
+# Miscellaneous number theoretic functions
 
 import rosemary.number_theory.factorization
+import rosemary.combinatorics.counting
+
+from rosemary.number_theory.prime_list import PRIME_LIST
+from fractions import Fraction
+
 
 def largest_divisor(n, b):
     """
@@ -21,20 +26,6 @@ def largest_divisor(n, b):
         such divisor. This method gives a nice tradeoff between time and space.
 
     Examples:
-        >>> pp = primorial(15) * primorial(10)
-        >>> pp
-        3978148263608934751190154300L
-        >>> tau(pp)
-        1889568
-        >>> b = 5413374899
-        >>> time max([d for d in xdivisors(pp) if d <= b ])
-        CPU times: user 7.82 s, sys: 0.01 s, total: 7.83 s
-        Wall time: 7.83 s
-        5413363329L
-        >>> time largest_divisor(pp, b)
-        CPU times: user 0.01 s, sys: 0.00 s, total: 0.01 s
-        Wall time: 0.01 s
-        5413363329
     """
     # If b divides n, we're done.
     target = b
@@ -81,6 +72,7 @@ def largest_divisor(n, b):
                 best = current
     return best
 
+
 def maximize_divisors(B):
     """
     maximize_divisors(B):
@@ -122,5 +114,62 @@ def maximize_divisors(B):
         k += 1
     return max_tau
 
+
+def bernoulli_number(n):
+    """
+    This returns the nth bernoulli number, using the algorithm due to
+    akiyama-tanigawa.
+    """
+    if n == 0:
+        return Fraction(1, 1)
+    elif n == 1:
+        return Fraction(-1, 2)
+    elif n == 2:
+        return Fraction(1,6)
+    elif n % 2 == 1:
+        return Fraction(0, 1)
+
+    A = [0] * (n + 1)
+    for m in xrange(0, n + 1):
+        A[m] = Fraction(1, m + 1)
+        for j in xrange(m, 0, -1):
+            A[j - 1] = j * (A[j - 1] - A[j])
+    return A[0]
+
+
+def bernoulli_list(n):
+    """
+    Returns a list of of Bernoulli numbers B_0, B_1, B_2, ..., B_n, with the
+    usual convention B_1 = -1/2.
+
+    Input:
+        * n: int (n >= 0)
+
+    Output:
+        * L: list
+
+    Examples:
+        >>> bernoulli_list(10)
+        [Fraction(1, 1), Fraction(-1, 2), Fraction(1, 6), 0, Fraction(-1, 30),
+         0, Fraction(1, 42), 0, Fraction(-1, 30), 0, Fraction(5, 66)]
+
+    Details:
+        The Bernoulli numbers are defined by the recursion.
+    """
+    values = [0]*(n + 1)
+    values[0] = 1
+    values[1] = Fraction(-1, 2)
+
+    for m in xrange(2, n + 1, 2):
+        total = 1
+        # binom holds the value binomial(m + 1, k) below
+        binom = 1
+        for k in xrange(1, m):
+            binom *= (m + 2 - k)
+            binom /= k
+            if values[k]:
+                total += binom*values[k]
+        values[m] = -total/(m + 1)
+    return values
 
 

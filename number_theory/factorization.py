@@ -2,25 +2,35 @@ import collections
 import itertools
 from random import randint
 
-from rosemary.number_theory.prime_list import PRIME_LIST
-from rosemary.number_theory import core
-
 import rosemary.number_theory.sieves
 import rosemary.number_theory.primality
 
+from rosemary.number_theory.prime_list import PRIME_LIST
+from rosemary.number_theory.core import (
+    gcd,
+    integer_log,
+    integer_nth_root,
+    integer_sqrt,
+)
+
+################################################################################
+# Factorization algorithms
+################################################################################
+
 def fermat(n):
     """
-    Returns a nontrivial factor, or proves primality.
+    Returns a nontrivial divisor of n, or proves primality.
 
     Given an odd integer n > 1, this algorithm attempts to find a factor of n
     using Fermat's method.
 
     Input:
-        * "n" - An odd integer > 1
+        * n: int (n > 1)
 
     Output:
-        * "d" - If n == d, then n is proven prime. Otherwise, d is a nontrivial
-          factor of n.
+        * d: int
+            If n == d, then n is proven prime. Otherwise, d is a nontrivial
+            divisor of n.
 
     Details:
         The algorithm used here is Fermat's method. This algorithm runs in time
@@ -31,33 +41,35 @@ def fermat(n):
 
     Examples:
         >>> m = 1112470797641561909
-        >>> factor_fermat(m)
+        >>> fermat(m)
         1052788969
     """
     if n % 2 == 0:
         return 2
-    a = core.integer_sqrt(n) + 1
+    a = integer_sqrt(n) + 1
     while a <= (n + 9) // 6:
         t = a**2 - n
-        b = core.integer_sqrt(t)
+        b = integer_sqrt(t)
         if b*b == t:
             return a - b
         a += 1
     return n
 
+
 def lehman(n):
     """
-    Returns a nontrivial factor, or proves primality.
+    Returns a nontrivial divisor of n, or proves primality.
 
     Given an integer n >= 3, this algorithm finds a nontrivial factor of n if n
     is not prime, or returns n if n is prime.
 
     Input:
-        * "n" - An integer >= 3
+        * n: int (n >= 3)
 
     Output:
-        * "d" - If d == n, then n is proven prime. Otherwise, d is a nontrivial
-          factor of n.
+        * d: int
+            If d == n, then n is proven prime. Otherwise, d is a nontrivial
+            divisor of n.
 
     Details:
         The algorithm used is Lehman's Method. This algorithm runs in time
@@ -70,17 +82,15 @@ def lehman(n):
 
     Examples:
         >>> l = 1112470797641561909
-        >>> lehman_factor(l)
+        >>> lehman(l)
         1056689261L
     """
     # first, we trial divide up to floor(n^(1/3))
-    bound = core.integer_nth_root(3, n)
+    bound = integer_nth_root(3, n)
     d = trial_division(n, bound)
-    # if a non-trivlal divisor is found, return it
     if d < n:
         return d
 
-    # loop until k > floor(n^(1/3))
     for k in xrange(1, bound + 1):
         if k % 2 == 0:
             r = 1
@@ -91,7 +101,7 @@ def lehman(n):
         # we want to iterate over a, where 4*k*n <= a^2 <= 4*k*n + bound^2
         # and a = r (mod m)
         fkn = 4*k*n
-        a = core.integer_sqrt(fkn)
+        a = integer_sqrt(fkn)
         # now, increase a until a = r (mod m)
         rm = r % m
         while a % m != rm:
@@ -99,11 +109,12 @@ def lehman(n):
         ub = fkn + bound**2
         while fkn <= a*a <= ub:
             c = a*a - fkn
-            b = core.integer_sqrt(c)
+            b = integer_sqrt(c)
             if b*b == c:
-                return core.gcd(a + b, n)
+                return gcd(a + b, n)
             a += m
     return n
+
 
 def pollard_p_1(n, B=20000):
     """
@@ -113,11 +124,15 @@ def pollard_p_1(n, B=20000):
     find a nontrivial factor of n.
 
     Input:
-        * "n" - A composite integer.
-        * "B" - A positive integer (default = 20000).
+        * n: int (n > 1)
+            A composite integer.
+
+        * B: int (B > 0) (default=20000)
+            Search bound.
 
     Output:
-        * "d" - A (hopefully) nontrivial factor of n.
+        * d: int
+            Nontrivial divisor of n.
 
     Details:
         The algorithm used is Pollard's p - 1 method. We know that if p is an
@@ -130,17 +145,18 @@ def pollard_p_1(n, B=20000):
 
     Examples:
         >>> m = 1112470797641561909
-        >>> factor_pollard_p_1(m)
+        >>> pollard_p_1(m)
         1056689261L
     """
     c = randint(2, 20)
     p_list = rosemary.number_theory.sieves.primes(B)
     for p in p_list:
-        a = core.integer_log(B, p)
+        a = integer_log(B, p)
         for _ in xrange(a):
             c = pow(c, p, n)
-    g = core.gcd(c - 1, n)
+    g = gcd(c - 1, n)
     return g
+
 
 def pollard_rho(n):
     """
@@ -150,10 +166,11 @@ def pollard_rho(n):
     factor of n.
 
     Input:
-        * "n" - A composite integer.
+        * n: int (n > 1)
 
     Outout:
-        * "d" - A (hopefully) nontrivial factor of n.
+        * d: int
+            Nontrivial divisor of n.
 
     Details:
         The algorithm used is Pollard's rho factorization method. This method
@@ -165,13 +182,12 @@ def pollard_rho(n):
 
     Examples:
         >>> m = 1112470797641561909
-        >>> factor_pollard_rho(m)
+        >>> pollard_rho(m)
         1052788969L
         >>> m = 2175282241519502424792841
-        >>> factor_pollard_rho(m)
+        >>> pollard_rho(m)
         513741730823L
     """
-    # Choose seeds.
     a = randint(1, n - 3)
     s = randint(0, n - 1)
     u = s
@@ -180,32 +196,29 @@ def pollard_rho(n):
         u = (u*u + a) % n
         v = (v*v + a) % n
         v = (v*v + a) % n
-        g = core.gcd(u - v, n)
+        g = gcd(u - v, n)
         if 1 < g < n:
-            # We've found a nontrivial factor.
             return g
         elif g == n:
-            # In this case, we choose new seeds.
             return n
 
-def one_line_factor(k, M):
-    # first, we trial divide up to floor(n^(1/3))
-    bound = core.integer_nth_root(3, k)
-    d = trial_division(k, bound)
-    # if a non-trivlal divisor is found, return it
-    if d < k:
-        print "found"
-        return d
+
+def one_line_factor(k, M=10000000):
+    #bound = integer_nth_root(3, k)
+    #d = trial_division(k, bound)
+    #if d < k:
+    #    return d
 
     n = 480*k
     for i in xrange(1, M + 1):
         s = int((n*i)**(0.5)) + 1
         m = s*s % n
-        if core.is_square(m):
-            t = core.integer_sqrt(m)
-            g = core.gcd(k, s - t)
+        t = int(m**(0.5))
+        if t*t == m:
+            g = gcd(k, s - t)
             return g
     return k
+
 
 def trial_division(n, b=None):
     """
@@ -215,7 +228,7 @@ def trial_division(n, b=None):
     list of primes to check through first.
     """
     if b is None:
-        b = core.integer_sqrt(n) + 1
+        b = integer_sqrt(n) + 1
 
     for d in PRIME_LIST:
         if d > b:
@@ -253,7 +266,7 @@ def factor_pollard_rho_brent(n):
             for _ in xrange(min(m, r - k)):
                 y = (y*y + c) % n
                 q = q * abs(x - y) % n
-            g = core.gcd(q, n)
+            g = gcd(q, n)
             k += m
             if k >= r or g > 1:
                 break
@@ -265,7 +278,7 @@ def factor_pollard_rho_brent(n):
     if g == n:
         while True:
             ys = (ys*ys + c) % n
-            g = core.gcd(abs(x - ys), n)
+            g = gcd(abs(x - ys), n)
             if g > 1:
                 break
     return g
@@ -432,10 +445,10 @@ def is_squarefree(n):
     the square of an integer > 1.
 
     Input:
-        * n - A nonnegative integer.
+        * n: int (n >= 0)
 
     Output:
-        * b - A Boolean value.
+        * b: bool
 
     Details:
         If n is a nonnegative integer, this factors n and checks if n is

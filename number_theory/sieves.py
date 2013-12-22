@@ -7,24 +7,22 @@ def primes(n):
     """
     Returns a list of all primes <= n.
 
-    This program uses the sieve of Eratosthenes to generate a list of all primes <= n.
-
     Input:
         * n: int (n > 0)
 
     Output:
-        * p_list: list
-            A list of the primes <= n.
-
-    Details:
-        This highly optimized sieve only looks at the numbers <= n that are coprime to 6. The code is based on some
-        found on stackoverflow.
+        * P: list
 
     Examples:
-        >>> primes(100)
-        [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+        >>> primes(20)
+        [2, 3, 5, 7, 11, 13, 17, 19]
         >>> len(primes(10**7))
         664579
+
+    Details:
+        This program uses an optimized sieve of Eratosthenes to generate a list
+        of all primes <= n. The sieve only looks at numbers <= n that are
+        coprime to 6. The code is based on some found on stackoverflow.
     """
     n += 1
     offset = (n%6 > 1)

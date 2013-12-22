@@ -1,6 +1,7 @@
-# Fp arithmetic
+# Modular arithmetic
 
 import itertools
+
 from random import randint
 from rosemary.number_theory.core import (
     chinese,
@@ -12,7 +13,10 @@ from rosemary.number_theory.core import (
     jacobi_symbol,
     valuation,
 )
-from rosemary.number_theory.factorization import factor, prime_divisors
+from rosemary.number_theory.factorization import (
+    factor,
+    prime_divisors,
+)
 
 ########################################################################################################################
 # primitive roots
@@ -29,7 +33,7 @@ def is_primitive_root(a, p, primeDivisors=None):
         * p: int
             A prime.
 
-        * primeDivisors: list (default=None)
+        * prime_divisors: list (default=None)
             List of prime divisors of p - 1.
 
     Output:
