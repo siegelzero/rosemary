@@ -319,6 +319,9 @@ def primorial(n):
         than the number of precomputed primes. This shouldn't be a problem in
         most cases, since this number is quite large.
     """
+    if n <= 0:
+        raise ValueError("primorial: Must have n >= 1.")
+
     num_primes = len(PRIME_LIST)
     if n >= num_primes:
         raise ValueError("primorial: Must have n < {}.".format(num_primes))
@@ -335,7 +338,7 @@ def primorial(n):
 
 def euler_phi_list(n):
     """
-    Returns a list of values of euler_phi(k), for 1 <= k <= n.
+    Returns a list of values of euler_phi(k) for 1 <= k <= n.
 
     Input:
         * n: int (n > 0)
@@ -346,6 +349,8 @@ def euler_phi_list(n):
             begins with 0, so that L[k] holds the value of euler_phi(k).
     Examples:
         >>> euler_phi_list(10)
+        [0, 1, 1, 2, 2, 4, 2, 6, 4, 6, 4]
+        >>> [0] + [euler_phi(k) for k in xrange(1, 11)]
         [0, 1, 1, 2, 2, 4, 2, 6, 4, 6, 4]
 
     Details:
@@ -376,24 +381,45 @@ totient_list = euler_phi_list
 
 def moebius_list(n):
     """
-    Return an iterator over values of moebius(k) for 1 <= k <= n.
+    Return a list of the values of moebius(k) for 1 <= k <= n.
+
+    Input:
+        * n: int (n > 0)
+
+    Output:
+        * L: list
+            This is a list of values of moebius(k) for 1 <= k <= n. The list
+            begins with 0, so that L[k] holds the value of moebius(k).
+    Examples:
+        >>> moebius_list(10)
+        [0, 1, -1, -1, 0, -1, 1, -1, 0, 0, 1]
+        >>> [0] + [moebius(k) for k in xrange(1, 11)]
+        [0, 1, -1, -1, 0, -1, 1, -1, 0, 0, 1]
+
+    Details:
+        This function creates a list of (n + 1) elements, and fills the list by
+        sieving and using the product definition of moebius(n).
     """
-    sr = int(n**(0.5))
-    p_list = rosemary.number_theory.sieves.primes(sr)
+    if n <= 0:
+        raise ValueError("moebius_list: Must have n > 0.")
+
+    sqrt = int(n**(0.5))
+    prime_list = rosemary.number_theory.sieves.primes(sqrt)
+
+    values = [1]*(n + 1)
     block = [1]*(n + 1)
-    vals = [1]*(n + 1)
     block[0] = 0
 
-    for p in p_list:
+    for p in prime_list:
         for i in xrange(p, n + 1, p):
             if i % (p*p) == 0:
                 block[i] = 0
             else:
                 block[i] *= -1
-                vals[i] *= p
+                values[i] *= p
 
     for i in xrange(n + 1):
-        if block[i] and vals[i] < i:
+        if block[i] and values[i] < i:
             block[i] *= -1
 
     return block
@@ -401,15 +427,43 @@ def moebius_list(n):
 
 def sigma_list(n, k=1):
     """
-    Returns a list of the values of sigma(i, k), for 1 <= i <= n.
+    Return a list of the values of sigma(i, k) for 1 <= i <= n.
+
+    Input:
+        * n: int (n > 0)
+        * k: int (k > 0) (default=1)
+
+    Output:
+        * L: list
+            This is a list of values of sigma(i, k) for 1 <= i <= n. The list
+            begins with 0, so that L[i] holds the value of sigma(i, k).
+    Examples:
+        >>> sigma_list(10)
+        [0, 1, 3, 4, 7, 6, 12, 8, 15, 13, 18]
+        >>> [0] + [sigma(k) for k in xrange(1, 11)]
+        [0, 1, 3, 4, 7, 6, 12, 8, 15, 13, 18]
+        >>> sigma_list(10, 2)
+        [0, 1, 5, 10, 21, 26, 50, 50, 85, 91, 130]
+        >>> [0] + [sigma(k, 2) for k in xrange(1, 11)]
+        [0, 1, 5, 10, 21, 26, 50, 50, 85, 91, 130]
+
+    Details:
+        This function creates a list of (n + 1) elements, and fills the list by
+        sieving and using the product definition of sigma(n, k).
     """
-    assert k >= 1
+    if n <= 0:
+        raise ValueError("sigma_list: Must have n > 0.")
+
+    if k == 0:
+        return tau_list(n)
+    elif k < 0:
+        raise ValueError("sigma_list: Must have k >= 0.")
 
     block = [1]*(n + 1)
     block[0] = 0
-    p_list = rosemary.number_theory.sieves.primes(n)
+    prime_list = rosemary.number_theory.sieves.primes(n)
 
-    for p in p_list:
+    for p in prime_list:
         pk = p
         mul = p**k
         term = mul**2
@@ -424,14 +478,36 @@ def sigma_list(n, k=1):
 
     return block
 
-def tau_list(n, k=1):
+
+def tau_list(n):
     """
     Returns a list of the values of tau(i), for 1 <= i <= n.
-    """
-    block = [0]*(n + 1)
-    bound = int(n**(0.5)) + 1
 
-    for j in xrange(1, bound):
+    Input:
+        * n: int (n > 0)
+
+    Output:
+        * L: list
+            This is a list of values of tau(k) for 1 <= k <= n. The list begins
+            with 0, so that L[k] holds the value of tau(k).
+
+    Examples:
+        >>> tau_list(10)
+        [0, 1, 2, 2, 3, 2, 4, 2, 4, 3, 4]
+        >>> [0] + [tau(k) for k in xrange(1, 11)]
+        [0, 1, 2, 2, 3, 2, 4, 2, 4, 3, 4]
+
+    Details:
+        The algorithm used here comes from Section 9.8 in "Algorithmic Number
+        Theory - Efficient Algorithms" by Bach and Shallit.
+    """
+    if n <= 0:
+        raise ValueError("tau_list: Must have n > 0.")
+
+    block = [0]*(n + 1)
+    sqrt = int(n**(0.5))
+
+    for j in xrange(1, sqrt + 1):
         block[j*j] += 1
         for k in xrange(j + 1, n//j + 1):
             block[k*j] += 2
@@ -463,6 +539,9 @@ def euler_phi_sum(n):
         S(n) = n*(n + 1)/2 - \sum_{d = 2}^{n} S(n/d) to compute the value in
         sublinear time by memoizing the recursion.
     """
+    if n <= 0:
+        raise ValueError("euler_phi_sum: Must have n > 0.")
+
     sqrt = int(n**(0.5))
     phi_list = euler_phi_list(sqrt)
 
@@ -490,7 +569,28 @@ totient_sum = euler_phi_sum
 def euler_phi_weighted_sum(n):
     """
     Returns the value of the sum of k*euler_phi(k) for k = 1, 2, ..., n.
+
+    Input:
+        * n: int (n > 0)
+
+    Output:
+        * s: int
+
+    Examples:
+        >>> euler_phi_weighted_sum(100)
+        203085
+        >>> sum(k*euler_phi(k) for k in xrange(1, 101))
+        203085
+
+    Details:
+        Let T(n) = \sum_{k = 1}^{n} k*euler_phi(k). We use the relationship
+        \sum_{d = 1}^{n} d*T(n/d) = n*(n + 1)*(2*n + 1) / 6 to form a recurrence
+        for T(n). Using a form of Dirichlet's hyperbola method and memoizing the
+        recursion gives us a sublinear runtime.
     """
+    if n <= 0:
+        raise ValueError("euler_phi_weighted_sum: Must have n > 0.")
+
     sqrt = int(n**(0.5))
     totients = euler_phi_list(sqrt)
 
@@ -527,7 +627,19 @@ def moebius_sum(n):
     Examples:
         >>> moebius_sum(10)
         -1
+        >>> sum(moebius_list(10))
+        -1
+
+    Details:
+        The formula used here is based on the relationship
+        \sum_{d = 1}^{n} M(n/d) = 1, where M(n) = \sum_{k = 1}^{n} moebius(k).
+        We convert this to a recursive formula, whereby using some form of
+        Dirichlet's hyperbola method and memoizing the recursion gives us a
+        sublinear runtime.
     """
+    if n <= 0:
+        raise ValueError("moebius_sum: Must have n > 0.")
+
     sqrt = int(n**(0.5))
     mu_list = moebius_list(sqrt)
 
@@ -558,21 +670,35 @@ def sigma_sum(n):
     Returns the value of the sum of sigma(k) for k = 1, 2, ..., n.
 
     Input:
-        * n: int
+        * n: int (n > 0)
 
     Output:
         * sum: int
-    """
-    m = int(n**(0.5))
-    ss = -m*(m + 1)
 
-    for k in xrange(1, m + 1):
+    Examples:
+        >>> sigma_sum(100)
+        8299
+        >>> sum(sigma_list(100))
+        8299
+
+    Details:
+        The formula used is obtained by interchanging the order of summation and
+        using some form of Dirichlet's hyperbola method to achieve a sublinear
+        runtime.
+    """
+    if n <= 0:
+        raise ValueError("sigma_sum: Must have n > 0.")
+
+    sqrt = int(n**(0.5))
+    value = -sqrt*(sqrt + 1)
+
+    for k in xrange(1, sqrt + 1):
         nk = n//k
         tt = nk - k + 1
-        ss += 2*k*tt
-        ss += tt*(nk + k)
+        value += 2*k*tt
+        value += tt*(nk + k)
 
-    return ss//2
+    return value//2
 
 ########################################################################################################################
 # Miscellaneous
@@ -584,7 +710,7 @@ def euler_phi_inverse(n):
 
     Input:
         * n: int or list (n > 0)
-            The value of m can be an int or a factorization.
+            The value of n can be an int or a factorization.
 
     Output:
         * L: list

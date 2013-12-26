@@ -3,6 +3,10 @@
 from rosemary.number_theory.core import integer_sqrt
 from bisect import bisect_left
 
+################################################################################
+# Sieves for generating primes
+################################################################################
+
 def primes(n):
     """
     Returns a list of all primes <= n.
@@ -28,18 +32,19 @@ def primes(n):
     offset = (n%6 > 1)
     n = {0:n, 1:n - 1, 2:n + 4, 3:n + 3, 4:n + 2, 5:n + 1}[n % 6]
 
-    sieve = [True] * (n//3)
-    sieve[0] = False
-    sr = integer_sqrt(n)
+    block = [True]*(n//3)
+    block[0] = False
+    sqrt = integer_sqrt(n)
 
-    for i in xrange(sr//3 + 1):
-        if sieve[i]:
+    for i in xrange(sqrt//3 + 1):
+        if block[i]:
             k = (3*i + 1)|1
             kk = k*k
-            sieve[kk//3::2*k] = [False]*((n//6 - kk//6 - 1)//k + 1)
-            sieve[(kk + 4*k - 2*k*(i&1))//3::2*k] = [False]*((n//6 - (kk + 4*k - 2*k*(i&1))//6 - 1)//k + 1)
+            block[kk//3::2*k] = [False]*((n//6 - kk//6 - 1)//k + 1)
+            block[(kk + 4*k - 2*k*(i&1))//3::2*k] = [False]*((n//6 - (kk + 4*k - 2*k*(i&1))//6 - 1)//k + 1)
 
-    return [2, 3] + [(3*i + 1)|1 for i in xrange(1, n//3 - offset) if sieve[i]]
+    return [2, 3] + [(3*i + 1)|1 for i in xrange(1, n//3 - offset) if block[i]]
+
 
 def eratosthenes(n):
     """
@@ -58,24 +63,23 @@ def eratosthenes(n):
         implementation is included mainly for reference.
 
     Examples:
-        >>> eratosthenes(100)
-        [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61,
-            67, 71, 73, 79, 83, 89, 97]
+        >>> eratosthenes(20)
+        [2, 3, 5, 7, 11, 13, 17, 19]
         >>> len(eratosthenes(10**7))
         664579
     """
     m = n//2 + 1
-    b_list = [True]*m
-    N = integer_sqrt(m) + 1
+    block = [True]*m
+    sqrt = int(m**(0.5))
 
-    for i in xrange(1, N):
-        if b_list[i]:
+    for i in xrange(1, sqrt + 1):
+        if block[i]:
             k = 2*i + 1
             start = (k*k - 1)/ 2
-            how_many = (m - start)//k + ((m - start) % k > 0)
-            b_list[start::k] = [False] * how_many
+            count = (m - start)//k + ((m - start) % k > 0)
+            block[start::k] = [False]*count
 
-    return [2] + [2*i + 1 for i in xrange(1, n // 2 + n%2) if b_list[i]]
+    return [2] + [2*i + 1 for i in xrange(1, n//2 + n % 2) if block[i]]
 
 
 def sieve_interval(a, b):

@@ -671,14 +671,11 @@ def crt_preconditioning_data(moduli):
     Output:
         * data: tuple
             This is a tuple containing:
-                * r: The number of moduli.
-
-                * partial_products: A list of partial products of the moduli.
-
-                * inverse_list: A list of the inverse of each partial product,
-                    modulo the next modulus in the list.
-
-                * product: The product of the moduli.
+                * r: int
+                * moduli: list
+                * partial_products: list
+                * inverse_list: list
+                * product: int
     """
     r = len(moduli)
     partial_products = [1]*r
@@ -689,11 +686,11 @@ def crt_preconditioning_data(moduli):
         inverse_list[i] = inverse_mod(partial_products[i], moduli[i])
 
     product = partial_products[r - 1]*moduli[r - 1]
-    data = (r, partial_products, inverse_list, product)
+    data = (r, moduli, partial_products, inverse_list, product)
     return data
 
 
-def chinese_preconditioned(L, preconditioning_data=None):
+def chinese_preconditioned(L, preconditioning_data):
     """
     Returns a solution to the congruences given in L.
 
@@ -705,7 +702,7 @@ def chinese_preconditioned(L, preconditioning_data=None):
         * L: list
             L is a list of congruences of the form (residue, modulus).
 
-        * preconditioning_data: tuple (default=None)
+        * preconditioning_data: tuple
             This is a tuple containing the preconditioning data for this set of
             moduli. This should be the output of the function
             crt_preconditioning_data.
@@ -732,14 +729,13 @@ def chinese_preconditioned(L, preconditioning_data=None):
         the product of these prime-power moduli. In this case, you will have a
         fixed set of moduli, but multiple residues for each modulus.
     """
-    moduli = [m for (a, m) in L]
-    residues = [a for (a, m) in L]
+    (r, moduli, partial_products, inverse_list, product) = preconditioning_data
+    residues = [a for (a, _) in L]
     x = residues[0]
 
-    (r, partial_products, inverse_list, product) = preconditioning_data
     for i in xrange(1, r):
         u = (residues[i] - x)*inverse_list[i] % moduli[i]
-        x = x + u*partial_products[i]
+        x += u*partial_products[i]
     return x % product
 
 
@@ -782,7 +778,7 @@ def jacobi_symbol(a, m):
         Number Theory and Algebra" by Shoup for details. 
     """
     if m % 2 == 0:
-        raise ValueError('m must be odd')
+        raise ValueError('jacobi_symbol: Must have m odd.')
     
     a = a % m
     t = 1
@@ -810,7 +806,7 @@ def valuation(p, n):
 
     Output:
         * k: int
-            The largest integer such that p**k divides n.
+            The largest integer k >= 0 such that p^k divides n.
 
     Examples:
         >>> valuation(2, 12)

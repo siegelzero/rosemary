@@ -1,6 +1,7 @@
 # Modular arithmetic
 
 import itertools
+import rosemary.number_theory.factorization
 
 from random import randint
 from rosemary.number_theory.core import (
@@ -13,16 +14,12 @@ from rosemary.number_theory.core import (
     jacobi_symbol,
     valuation,
 )
-from rosemary.number_theory.factorization import (
-    factor,
-    prime_divisors,
-)
 
 ########################################################################################################################
 # primitive roots
 ########################################################################################################################
 
-def is_primitive_root(a, p, primeDivisors=None):
+def is_primitive_root(a, p, prime_divisors=None):
     """
     Returns True if a is a primitive root mod p and False otherwise.
 
@@ -42,19 +39,20 @@ def is_primitive_root(a, p, primeDivisors=None):
 
     Details:
         The algorithm is based on the observation that a is a primitive root
-        modulo p if and only if a^((p - 1) / q) != 1 (mod p) for all primes q
+        modulo p if and only if a^((p - 1)/q) != 1 (mod p) for all primes q
         dividing p - 1. The primality of p is not verified.
     """
-    pMinusOne = p - 1
-    if primeDivisors is None:
-        primeDivisors = prime_divisors(pMinusOne)
+    p_minus_one = p - 1
+    if prime_divisors is None:
+        prime_divisors = rosemary.number_theory.factorization.prime_divisors(p_minus_one)
 
-    for pk in primeDivisors:
-        if pow(a, pMinusOne//pk, p) == 1:
+    for pk in prime_divisors:
+        if pow(a, p_minus_one//pk, p) == 1:
             return False
     return True
 
-def primitive_root_mod_p(p, primeDivisors=None):
+
+def primitive_root_mod_p(p, prime_divisors=None):
     """
     Returns a primitive root modulo p.
 
@@ -62,7 +60,7 @@ def primitive_root_mod_p(p, primeDivisors=None):
         * p: int
             A prime number. The primality of p is not verified.
 
-        * primeDivisors: list (default=None)
+        * prime_divisors: list (default=None)
             List of prime divisors of p - 1.
 
     Output:
@@ -70,13 +68,14 @@ def primitive_root_mod_p(p, primeDivisors=None):
             This is a primitive root modulo p; i.e. a is a generator for the
             multiplicative group of nonzero residues modulo p.
     """
-    pMinusOne = p - 1
-    if primeDivisors is None:
-        primeDivisors = prime_divisors(pMinusOne)
+    p_minus_one = p - 1
+    if prime_divisors is None:
+        prime_divisors = rosemary.number_theory.factorization.prime_divisors(p_minus_one)
 
     for a in xrange(2, p):
-        if is_primitive_root(a, p, primeDivisors):
+        if is_primitive_root(a, p, prime_divisors):
             return a
+
 
 def fibonacci_primitive_roots(p):
     """
@@ -101,13 +100,13 @@ def fibonacci_primitive_roots(p):
 
     sqrt5 = sqrt_mod_p(5, p)
     inverse = inverse_mod(2, p)
-    r1 = (1 + sqrt5) * inverse % p
-    r2 = (1 - sqrt5) * inverse % p
-    primeDivisors = prime_divisors(p - 1)
+    r1 = (1 + sqrt5)*inverse % p
+    r2 = (1 - sqrt5)*inverse % p
+    prime_divisors = rosemary.number_theory.factorization.prime_divisors(p - 1)
     roots = []
 
     for r in (r1, r2):
-        if is_primitive_root(r, p, primeDivisors):
+        if is_primitive_root(r, p, prime_divisors):
             roots.append(r)
     return roots
 
@@ -167,6 +166,7 @@ def sqrt_mod_p(a, p):
                 m += 2**i
         x = pow(a, (t + 1)//2, p)*pow(D, m//2, p) % p
     return x
+
 
 def sqrt_mod_pk(a, p, k):
     """
@@ -242,19 +242,18 @@ def sqrt_mod_pk(a, p, k):
             solutions = [1, 3]
             if k > 3:
                 for e in xrange(3, k + 1):
-                    liftedSolutions = solutions[:]
-                    for (i, xi) in enumerate(solutions):
-                        h = (xi**2 - a) % 2**k
-                        diff = h//(2**e)
+                    for i in xrange(2):
+                        h = (solutions[i]**2 - a) % 2**k
+                        diff = h >> e
                         if diff % 2 == 1:
-                            liftedSolutions[i] += 2**(e - 1)
-                    solutions = liftedSolutions[:]
+                            solutions[i] += 2**(e - 1)
 
-    allSolutions = solutions + [p**k - e for e in solutions]
-    allSolutions.sort()
-    return allSolutions
+    all_solutions = solutions + [p**k - e for e in solutions]
+    all_solutions.sort()
+    return all_solutions
 
-def sqrt_mod_n(a, n, nFactorization=None):
+
+def sqrt_mod_n(a, n, n_factorization=None):
     """
     Returns all solutions x, 1 <= x <= n, to the congruence x^2 = a (mod n).
 
@@ -265,33 +264,38 @@ def sqrt_mod_n(a, n, nFactorization=None):
         * n: int
             The modulus.
 
-        * nFactorization: list (default=None)
+        * n_factorization: list (default=None)
             The factorization of n.
 
     Output:
         * roots: list
             A list of all square roots of a modulo n.
     """
-    if nFactorization is None:
-        nFactorization = factor(n)
+    if n_factorization is None:
+        n_factorization = rosemary.number_theory.factorization.factor(n)
 
     congruences = []
-    for (p, k) in nFactorization:
+    moduli = []
+    for (p, k) in n_factorization:
         roots = sqrt_mod_pk(a, p, k)
-        pairs = [(r, p**k) for r in roots]
+        pk = p**k
+        pairs = [(r, pk) for r in roots]
         congruences.append(pairs)
+        moduli.append(pk)
 
-    numCongruences = len(congruences)
-
-    if numCongruences == 1:
+    if len(congruences) == 1:
         values = [r for (r, pk) in congruences[0]]
     else:
+        preconditioning_data = crt_preconditioning_data(moduli)
         values = []
+
         for system in itertools.product(*congruences):
-            values.append(chinese(system))
+            values.append(chinese_preconditioned(system, preconditioning_data))
+            #values.append(chinese(system))
 
     values.sort()
     return values
+
 
 def discrete_log(a, b, p):
     """
@@ -341,6 +345,7 @@ def discrete_log(a, b, p):
             return cache[val]*m - k
         val = (val*a) % p
 
+
 def nth_roots_of_unity_mod_p(n, p, g=None):
     """
     Returns the nth roots of unity modulo p.
@@ -379,6 +384,7 @@ def nth_roots_of_unity_mod_p(n, p, g=None):
     roots.sort()
     return roots
 
+
 def nth_roots_of_minus1_mod_p(n, p, g=None):
     """
     Returns the nth roots of -1 modulo p.
@@ -413,23 +419,24 @@ def nth_roots_of_minus1_mod_p(n, p, g=None):
 
     # This is one solution to x^n = -1 (mod p).
     root = pow(g, (p - 1)//(2*d), p)
-    rootsOfUnity = nth_roots_of_unity_mod_p(n, p, g)
-    allRoots = [root*h % p for h in rootsOfUnity]
-    allRoots.sort()
-    return allRoots
+    roots_of_unity = nth_roots_of_unity_mod_p(n, p, g)
+    all_roots = [root*h % p for h in roots_of_unity]
+    all_roots.sort()
+    return all_roots
 
-def quadratic_roots_mod_n(coeffList, n, nFactorization=None):
+
+def quadratic_roots_mod_n(coeff_list, n, n_factorization=None):
     """
     Returns the roots of the quadratic equation modulo n.
 
     Input:
-        * coeffList: list
+        * coeff_list: list
             A list of the coefficients of the quadratic.
 
         * n: int
             The modulus.
 
-        * nFactorization: list (default=None)
+        * n_factorization: list (default=None)
             The factorization of the modulus n.
 
     Output:
@@ -450,60 +457,61 @@ def quadratic_roots_mod_n(coeffList, n, nFactorization=None):
         >>> quadratic_roots_mod_n([1, 3, -18], 1000)
         [3, 378, 619, 994]
     """
-    if nFactorization is None:
-        nFactorization = factor(n)
+    if n_factorization is None:
+        n_factorization = rosemary.number_theory.factorization.factor(n)
 
-    (a, b, c) = coeffList
+    (a, b, c) = coeff_list
     discriminant = b*b - 4*a*c
-    allRoots = []
+    all_roots = []
 
-    for (p, k) in nFactorization:
+    for (p, k) in n_factorization:
         pk = p**k
         # Use dumb search for powers of 2
-        modpRoots = []
+        modp_roots = []
         if p == 2:
             for x in xrange(pk):
                 if (a*x*x + b*x + c) % pk == 0:
-                    modpRoots.append((x, pk))
+                    modp_roots.append((x, pk))
         else:
-            squareRoots = sqrt_mod_pk(discriminant, p, k)
+            square_roots = sqrt_mod_pk(discriminant, p, k)
             inverse = inverse_mod(2*a, pk)
 
-            for root in squareRoots:
+            for root in square_roots:
                 r1 = (-b + root)*inverse % n
-                modpRoots.append((r1, pk))
-        allRoots.append(modpRoots)
+                modp_roots.append((r1, pk))
+        all_roots.append(modp_roots)
 
-    combinedRoots = []
-    for system in itertools.product(*allRoots):
-        combinedRoots.append(chinese(system))
+    combined_roots = []
+    for system in itertools.product(*all_roots):
+        combined_roots.append(chinese(system))
 
-    combinedRoots.sort()
-    return combinedRoots
+    combined_roots.sort()
+    return combined_roots
 
-def idempotents_mod_n(n, nFactorization=None):
+
+def idempotents_mod_n(n, n_factorization=None):
     """
     Returns a list of idempotents modulo n; i.e. elements such that a^2 = a.
     """
     if n == 1:
         return [0]
 
-    if nFactorization is None:
-        nFactorization = factor(n)
+    if n_factorization is None:
+        n_factorization = rosemary.number_theory.factorization.factor(n)
 
-    allRoots = []
+    all_roots = []
     moduli = []
-    for (p, k) in nFactorization:
+    for (p, k) in n_factorization:
         pk = p**k
         moduli.append(pk)
-        modpRoots = [(0, pk), (1, pk)]
-        allRoots.append(modpRoots)
+        modp_roots = [(0, pk), (1, pk)]
+        all_roots.append(modp_roots)
 
-    preconditioningData = crt_preconditioning_data(moduli)
-    combinedRoots = []
-    for combination in itertools.product(*allRoots):
-        combinedRoots.append(chinese_preconditioned(combination, preconditioningData))
+    preconditioning_data = crt_preconditioning_data(moduli)
+    combined_roots = []
+    for combination in itertools.product(*all_roots):
+        combined_roots.append(chinese_preconditioned(combination, preconditioning_data))
 
-    combinedRoots.sort()
-    return combinedRoots
+    combined_roots.sort()
+    return combined_roots
 
