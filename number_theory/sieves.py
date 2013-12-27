@@ -9,7 +9,7 @@ from bisect import bisect_left
 
 def primes(n):
     """
-    Returns a list of all primes <= n.
+    Returns a list of all primes p <= n.
 
     Input:
         * n: int (n > 0)
@@ -34,7 +34,7 @@ def primes(n):
 
     block = [True]*(n//3)
     block[0] = False
-    sqrt = integer_sqrt(n)
+    sqrt = int(n**(0.5))
 
     for i in xrange(sqrt//3 + 1):
         if block[i]:
@@ -48,25 +48,23 @@ def primes(n):
 
 def eratosthenes(n):
     """
-    Returns a list of all primes <= n.
-
-    This program uses the sieve of Eratosthenes to generate a list of all primes <= n.
+    Returns a list of all primes p <= n.
 
     Input:
-        * n - A positive integer.
+        * n: int (n > 0)
 
     Output:
-        * L - a list of primes.
-
-    Details:
-        This slightly optimized sieve only looks at the odd numbers <= n. The
-        implementation is included mainly for reference.
+        * P: list
 
     Examples:
         >>> eratosthenes(20)
         [2, 3, 5, 7, 11, 13, 17, 19]
         >>> len(eratosthenes(10**7))
         664579
+
+    Details:
+        This slightly optimized sieve only looks at the odd numbers <= n. The
+        implementation is included mainly for reference.
     """
     m = n//2 + 1
     block = [True]*m
@@ -82,84 +80,67 @@ def eratosthenes(n):
     return [2] + [2*i + 1 for i in xrange(1, n//2 + n % 2) if block[i]]
 
 
-def sieve_interval(a, b):
-    """
-    Returns an iterator over all primes in the interval [a, b].
-
-    Given positive integers a and b with a*a > b, this returns an interator
-    over all primes in the interval [a, b].
-
-    Input:
-        * a - A positive integer.
-        * b - A positive integer.
-
-    Output:
-        * X - An iterator over all primes in [a, b].
-
-    Details:
-        This algorithm is from Section 3.2.2 of "Prime Numbers - A
-        Computational Perspective" by Crandall and Pomerance. They call it the
-        "Practical Eratosthenes sieve".
-
-    Examples:
-        >>> list(sieve_interval(100, 200))
-        [101, 103, 107, 109, 113, 127, 131, 137, 139, 149]
-        >>> len(list(sieve_interval(10**8, 2*10**8)))
-        5317482
-    """
-    # We need both endpoints to be even
-    if a % 2 == 1:
-        a -= 1
-    if b % 2 == 1:
-        b += 1
-
-    bd = integer_sqrt(b)
-    assert a > bd
-
-    p_list = primes(bd)[1:]
-    block_size= min((b - a) // 2, 8*bd)
-
-    offsets = {p: -(a + 1 + p)//2 % p for p in p_list}
-
-    for start in xrange(a, b, 2*block_size):
-        block = [1]*block_size
-        for p in p_list:
-            offset = offsets[p]
-            diff = block_size - offset
-            how_many = diff//p + (diff % p > 0)
-            block[offset::p] = [0]*how_many
-            offsets[p] = (-diff) % p
-        for j in xrange(block_size):
-            if block[j]:
-                m = start + 2*j + 1
-                if a <= m <= b:
-                    yield m
-
 def prime_xrange(a, b=None):
+    """
+    Returns iterator over primes in interval [a, b).
+    """
+    def sieve_interval(a, b, sqrt, prime_list):
+        """
+        This algorithm is from Section 3.2.2 of "Prime Numbers - A Computational
+        Perspective" by Crandall and Pomerance. They call it the "Practical
+        Eratosthenes sieve". We assume that a > sqrt(b) here.
+        """
+        # aa is the largest even number <= a.
+        # bb is the smallest even number >= b.
+        aa = a - (a % 2)
+        bb = b + (b % 2)
+        block_size= min((bb - aa)//2, 8*sqrt)
+        offsets = {p: -(aa + 1 + p)//2 % p for p in prime_list}
+
+        for start in xrange(aa, bb, 2*block_size):
+            block = [1]*block_size
+            for p in prime_list:
+                offset = offsets[p]
+                diff = block_size - offset
+                how_many = diff//p + (diff % p > 0)
+                block[offset::p] = [0]*how_many
+                offsets[p] = (-diff) % p
+            for j in xrange(block_size):
+                if block[j]:
+                    m = start + 2*j + 1
+                    if a <= m < b:
+                        yield m
+
+    cutoff = 10**7
     if b is None:
         b = a
         a = 2
 
-    block_size = integer_sqrt(b)
-    p_list = primes(block_size)
-
-    if a <= p_list[-1]:
-        idx = bisect_left(p_list, a)
-        for i in xrange(idx, len(p_list)):
-            p = p_list[i]
-            if a <= p <= block_size:
+    # If the upper bound is less than some appropriate cutoff, we generate all
+    # primes up to this limit yield the ones in the interval.
+    if b <= cutoff:
+        prime_list = primes(b)
+        idx = bisect_left(prime_list, a)
+        for i in xrange(idx, len(prime_list)):
+            yield prime_list[i]
+    else:
+        # Otherwise use a segmented sieve on the interval.
+        sqrt = int(b**(0.5))
+        prime_list = primes(sqrt)
+        # Our segmented sieve code assumes that a > sqrt(b). If this is not the
+        # case, then we yield the primes <= sqrt(b) first.
+        if a <= sqrt:
+            # If a*a <= b, iterate over the primes a <= p <= sqrt(b) first.
+            idx = bisect_left(prime_list, a)
+            for i in xrange(idx, len(prime_list)):
+                yield prime_list[i]
+            # Then iterate over the primes sqrt(b) < p <= b.
+            for p in sieve_interval(sqrt + 1, b, sqrt, prime_list[1:]):
                 yield p
-
-    for start in xrange(block_size + 1, b, block_size):
-        block = [1]*block_size
-        for p in p_list:
-            offset = ((p*(start//p + 1) - 1) % block_size) % p
-            for idx in xrange(offset, block_size, p):
-                block[idx] = 0
-
-        for i in xrange(block_size):
-            if block[i] and a <= start + i <= b:
-                yield start + i
+        else:
+            # Otherwise, we use our segmented sieve function.
+            for p in sieve_interval(a, b, sqrt, prime_list[1:]):
+                yield p
 
 ################################################################################
 # Sieves for generating values of arithmetical functions
@@ -196,30 +177,61 @@ def moebius_xrange(a, b=None):
             yield (start + i, block[i])
 
 def factored_xrange(a, b=None):
+    """
+    Returns an iterator over the factorizations of the numbers in [a, b).
+
+    Given positive integers a and b with a < b, this returns an iterator over
+    all pairs (n, n_factorization) with a <= n < b, and n_factorization is the
+    factorization of n into prime powers. If the optional parameter b is None,
+    then a is taken to be 1, and b = a.
+
+    Input:
+        * a: int (a > 0)
+        * b: int (b > a) (default=None)
+
+    Output:
+        * P: generator
+            The values output by this generator are tuples (n, n_factorization),
+            where n is an integer in [a, b), and n_factorization is the prime
+            factorization of n.
+
+    Examples:
+        >>> list(factored_xrange(10, 20))
+        [(10, [(2, 1), (5, 1)]),
+         (11, [(11, 1)]),
+         (12, [(2, 2), (3, 1)]),
+         (13, [(13, 1)]),
+         (14, [(2, 1), (7, 1)]),
+         (15, [(3, 1), (5, 1)]),
+         (16, [(2, 4)]),
+         (17, [(17, 1)]),
+         (18, [(2, 1), (3, 2)]),
+         (19, [(19, 1)])]
+    """
     if b is None:
         b, a = a, 1
 
-    blockSize = integer_sqrt(b)
-    primeList = primes(blockSize)
+    block_size = int(b**(0.5))
+    prime_list = primes(block_size)
 
     if a == 1:
         yield (1, [(1, 1)])
         a += 1
 
-    for start in xrange(a, b, blockSize):
-        block = range(start, start + blockSize)
-        factorizations = [[] for _ in xrange(blockSize)]
+    for start in xrange(a, b, block_size):
+        block = range(start, start + block_size)
+        factorizations = [[] for _ in xrange(block_size)]
 
-        for p in primeList:
-            offset = ((p*(start//p + 1) - a) % blockSize) % p
-            for i in xrange(offset, blockSize, p):
+        for p in prime_list:
+            offset = ((p*(start//p + 1) - a) % block_size) % p
+            for i in xrange(offset, block_size, p):
                 k = 0
                 while block[i] % p == 0:
                     block[i] /= p
                     k += 1
                 factorizations[i].append((p, k))
 
-        for i in xrange(blockSize):
+        for i in xrange(block_size):
             if start + i >= b:
                 return
             if block[i] != 1:
