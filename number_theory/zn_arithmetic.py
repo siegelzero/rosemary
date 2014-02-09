@@ -5,9 +5,9 @@ import rosemary.number_theory.factorization
 
 from random import randint
 from rosemary.number_theory.core import (
-    chinese,
     chinese_preconditioned,
     crt_preconditioning_data,
+    ext_gcd,
     gcd,
     integer_sqrt,
     inverse_mod,
@@ -25,17 +25,19 @@ def is_primitive_root(a, p, prime_divisors=None):
 
     Input:
         * a: int
-            Potential primitive root.
-
         * p: int
-            A prime.
-
         * prime_divisors: list (default=None)
             List of prime divisors of p - 1.
 
     Output:
         * b: bool
             b is True if a is a primitive root mod p and False otherwise.
+
+    Examples:
+        >>> is_primitive_root(2, 11)
+        True
+        >>> is_primitive_root(3, 11)
+        False
 
     Details:
         The algorithm is based on the observation that a is a primitive root
@@ -67,6 +69,12 @@ def primitive_root_mod_p(p, prime_divisors=None):
         * a: int
             This is a primitive root modulo p; i.e. a is a generator for the
             multiplicative group of nonzero residues modulo p.
+
+    Examples:
+        >>> primitive_root_mod_p(7)
+        3
+        >>> primitive_root_mod_p(11)
+        2
     """
     p_minus_one = p - 1
     if prime_divisors is None:
@@ -92,56 +100,71 @@ def fibonacci_primitive_roots(p):
         * roots: list
             This is a list of the fibonacci primitive roots mod p. This list
             will contain no more than 2 elements.
+
+    Examples:
+        >>> fibonacci_primitive_roots(11)
+        [8]
+        >>> fibonacci_primitive_roots(19)
+        [15]
+        >>> fibonacci_primitive_roots(41)
+        [7, 35]
     """
+    if p % 2 == 0:
+        return []
     if p == 5:
         return [3]
     if p < 5 or jacobi_symbol(5, p) != 1:
         return []
 
-    sqrt5 = sqrt_mod_p(5, p)
+    sqrts = sqrts_mod_p(5, p)
     inverse = inverse_mod(2, p)
-    r1 = (1 + sqrt5)*inverse % p
-    r2 = (1 - sqrt5)*inverse % p
+    roots = [(1 + root)*inverse % p for root in sqrts]
     prime_divisors = rosemary.number_theory.factorization.prime_divisors(p - 1)
-    roots = []
+    primitive_roots = []
 
-    for r in (r1, r2):
+    for r in roots:
         if is_primitive_root(r, p, prime_divisors):
-            roots.append(r)
-    return roots
+            primitive_roots.append(r)
+    return primitive_roots
 
 ########################################################################################################################
-# modular root extraction
+# root extraction
 ########################################################################################################################
 
-def sqrt_mod_p(a, p):
+def sqrts_mod_p(a, p):
     """
     Returns a solution x to x^2 = a (mod p).
 
-    Given an odd prime p and an integer a with (a|p) = 1, this algorithm returns
-    a solution x to x^2 = a (mod p). The algorithm used is due to Tonelli and
-    Shanks.
+    Given a prime p and an integer a, this function returns all solutions to the
+    congruence x^2 = a (mod p).
 
     Input:
         * a: int
-            A square modulo p.
-
         * p: int
-            An odd prime.
 
     Output:
-        * x: int
-            This is an integer in [0, p) such that x^2 = a (mod p).
+        * solutions: list
 
     Examples:
-        >>> sqrt_mod_p(10, 13)
-        7
-        >>> pow(7, 2, 13)
-        10
+        >>> sqrts_mod_p(10, 13)
+        [6, 7]
+
+    Details:
+        For odd primes p, this function uses the algorithm due to Tonelli and
+        Shanks. See Algorithm 2.3.8 in "Prime Numbers - A Computational
+        Perspective" by Crandall and Pomerance for details of the algorithm. For
+        p = 2, simple checking is done to find solutions.
     """
-    assert jacobi_symbol(a, p) == 1, "a must be a square modulo p"
+    if p == 2:
+        return [a % p]
 
     a = a % p
+    if a == 0:
+        return [0]
+
+    if jacobi_symbol(a, p) != 1:
+        return []
+
     if p % 8 in (3, 7):
         x = pow(a, (p + 1)//4, p)
     elif p % 8 == 5:
@@ -155,7 +178,7 @@ def sqrt_mod_p(a, p):
             d = randint(2, p - 1)
 
         # Write p - 1 = 2^s * t with t odd
-        s = valuation(p - 1, 2)
+        s = valuation(2, p - 1)
         t = (p - 1) >> s
 
         A = pow(a, t, p)
@@ -165,95 +188,63 @@ def sqrt_mod_p(a, p):
             if pow(A*D**m, 2**(s - 1 - i), p) == p - 1:
                 m += 2**i
         x = pow(a, (t + 1)//2, p)*pow(D, m//2, p) % p
-    return x
+
+    solutions = [x, p - x]
+    solutions.sort()
+    return solutions
 
 
-def sqrt_mod_pk(a, p, k):
-    """
-    Return all integers b, 1 <= b <= p^k, such that b^2 = a (mod p^k).
-
-    Input:
-        * a: int
-            A square modulo p.
-
-        * p: int
-            The prime modulus.
-
-        * k: int
-            Exponent on the prime modulus.
-
-    Output:
-        * solutions: list
-            A list of all solutions to b^2 = a (mod p^k).
-
-    Details:
-        For odd primes p, the procedure finds a square root, and then uses
-        Hensel lifting to find a root modulo p^k. For p = 2, the method proceeds
-        by cases for lifts past modulus 16.
-
-    """
-    def hensel_lift(a, b, p, e):
+def sqrts_mod_pk(a, p, k):
+    def hensel(a, r, p, k):
         """
-        Lifts a solutions b^2 = a (mod p) to a solution modulo p^e.
-
-        Input:
-            * a: int
-                A square modulo p.
-
-            * b: int
-                An integer satisfying b^2 = a (mod p^e).
-            
-            * p: int
-                The odd prime modulus.
-
-            * e: int
-                The exponent of the prime power modulus.
-
-        Output:
-            * c: int
-                An integer satifsying c^2 = a (mod p^e).
+        Lifts solution r^2 = a (mod p^k) to solutions modulo p^{k + 1}.
         """
-        pk = p
-        for k in xrange(1, e):
-            tt = (a - b*b)//pk
-            h = tt*inverse_mod(2*b, p)
-            b = (b + h*pk) % (pk*p)
-            pk *= p
-        return b
-
-    if p % 2 == 1:
-        b = sqrt_mod_p(a, p)
-        c = hensel_lift(a, b, p, k)
-        solutions = [c]
-    else:
-        if a % 2 == 0:
-            raise ValueError("a cannot be even")
-
-        if k == 1:
-            solutions = [1]
-            c = 1
-        elif k == 2:
-            if a % 4 != 1:
-                raise ValueError("Must have a = 1 (mod 4)")
-            solutions = [1]
+        solutions = []
+        if 2*r % p != 0:
+            # In this case, r lifts to a unique solution.
+            inverse = inverse_mod(2*r, p)
+            # Note that r^2 = a (mod p^k) so the division below is exact.
+            t = (-inverse*((r*r - a)//p**k)) % p
+            root = r + t*p**k
+            solutions.append(root)
         else:
-            if a % 8 != 1:
-                raise ValueError("Must have a = 1 (mod 8)")
-            solutions = [1, 3]
+            # Here, r lifts to p incongruent solutions modulo p^k.
+            if (r*r - a) % (p**(k + 1)) == 0:
+                for t in xrange(p):
+                    root = r + t*p**k
+                    solutions.append(root)
+        solutions.sort()
+        return solutions
+
+    if k == 1:
+        return sqrts_mod_p(a, p)
+
+    if p == 2:
+        if k == 2:
+            solutions = [e for e in xrange(4) if e*e % 4 == a % 4]
+        else:
+            solutions = [e for e in xrange(8) if e*e % 8 == a % 8]
             if k > 3:
-                for e in xrange(3, k + 1):
-                    for i in xrange(2):
-                        h = (solutions[i]**2 - a) % 2**k
-                        diff = h >> e
-                        if diff % 2 == 1:
-                            solutions[i] += 2**(e - 1)
+                for e in xrange(3, k):
+                    lifted_solutions = []
+                    for root in solutions:
+                        lifts = hensel(a, root, p, e)
+                        lifted_solutions.extend(lifts)
+                    solutions = list(lifted_solutions)
+    else:
+        solutions = sqrts_mod_p(a, p)
+        for e in xrange(1, k):
+            lifted_solutions = []
+            for root in solutions:
+                lifts = hensel(a, root, p, e)
+                lifted_solutions.extend(lifts)
+            solutions = list(lifted_solutions)
 
-    all_solutions = solutions + [p**k - e for e in solutions]
-    all_solutions.sort()
-    return all_solutions
+    solutions.sort()
+    return solutions
 
 
-def sqrt_mod_n(a, n, n_factorization=None):
+def sqrts_mod_n(a, n, n_factorization=None):
     """
     Returns all solutions x, 1 <= x <= n, to the congruence x^2 = a (mod n).
 
@@ -277,7 +268,7 @@ def sqrt_mod_n(a, n, n_factorization=None):
     congruences = []
     moduli = []
     for (p, k) in n_factorization:
-        roots = sqrt_mod_pk(a, p, k)
+        roots = sqrts_mod_pk(a, p, k)
         pk = p**k
         pairs = [(r, pk) for r in roots]
         congruences.append(pairs)
@@ -291,59 +282,9 @@ def sqrt_mod_n(a, n, n_factorization=None):
 
         for system in itertools.product(*congruences):
             values.append(chinese_preconditioned(system, preconditioning_data))
-            #values.append(chinese(system))
 
     values.sort()
     return values
-
-
-def discrete_log(a, b, p):
-    """
-    Finds a positiveinteger k such that a^k = b (mod p).
-
-    Input:
-        * a: int
-            Base of the exponential. Typically, this will be a primitive root
-            modulo p.
-
-        * b: int
-            The target. Must be
-        * p: int
-
-    Output:
-        * k: int
-            We have 0 <= k < p is an integer satisfying a^k = b (mod p).
-
-    Details:
-        The algorithm is based on the Baby-Step Giant-Step method due to Shanks.
-        Using a dictionary data type, this algoritm runs in O(sqrt(n)) time and
-        space. We are following the method as described in Algorithm 2.4.1 in
-        Number Theory for Computing by Yan.
-
-    Examples:
-        >>> discrete_log(2, 6, 19)
-        14
-        >>> pow(2, 14, 19)
-        6
-        >>> discrete_log(59, 67, 113)
-        11
-        >>> pow(59, 11, 113)
-        67
-    """
-    m = integer_sqrt(p) + 1
-    am = pow(a, m, p)
-
-    cache = {}
-    val = am
-    for k in xrange(1, m + 1):
-        cache[val] = k
-        val = (val*am) % p
-
-    val = b
-    for k in xrange(m + 1):
-        if val in cache:
-            return cache[val]*m - k
-        val = (val*a) % p
 
 
 def nth_roots_of_unity_mod_p(n, p, g=None):
@@ -425,7 +366,102 @@ def nth_roots_of_minus1_mod_p(n, p, g=None):
     return all_roots
 
 
-def quadratic_roots_mod_n(coeff_list, n, n_factorization=None):
+def discrete_log(a, b, p):
+    """
+    Finds a positiveinteger k such that a^k = b (mod p).
+
+    Input:
+        * a: int
+            Base of the exponential. Typically, this will be a primitive root
+            modulo p.
+
+        * b: int
+            The target. Must be
+        * p: int
+
+    Output:
+        * k: int
+            We have 0 <= k < p is an integer satisfying a^k = b (mod p).
+
+    Details:
+        The algorithm is based on the Baby-Step Giant-Step method due to Shanks.
+        Using a dictionary data type, this algoritm runs in O(sqrt(n)) time and
+        space. We are following the method as described in Algorithm 2.4.1 in
+        Number Theory for Computing by Yan.
+
+    Examples:
+        >>> discrete_log(2, 6, 19)
+        14
+        >>> pow(2, 14, 19)
+        6
+        >>> discrete_log(59, 67, 113)
+        11
+        >>> pow(59, 11, 113)
+        67
+    """
+    m = integer_sqrt(p) + 1
+    am = pow(a, m, p)
+
+    cache = {}
+    val = am
+    for k in xrange(1, m + 1):
+        cache[val] = k
+        val = (val*am) % p
+
+    val = b
+    for k in xrange(m + 1):
+        if val in cache:
+            return cache[val]*m - k
+        val = (val*a) % p
+
+################################################################################
+# solutions to congruences
+################################################################################
+
+def linear_congruence(a, b, n):
+    """
+    Returns a list of the solutions x to the congruence a*x = b (mod n).
+
+    Input:
+        * a: int
+        * b: int
+        * n: int (n > 1)
+
+    Output:
+        * solutions: list
+
+    Examples:
+        >>> linear_congruence(10, 6, 12)
+        [3, 9]
+        >>> linear_congruence(12, 9, 15)
+        [2, 7, 12]
+        >>> linear_congruence(10, 3, 12)
+        []
+
+    Details:
+        The linear congruence a*x = b (mod n) has a solution if and only if d =
+        gcd(a, n) divides b. This function uses a straightforward application of
+        this theorem. See Theorem 3.7 from "Elementary Number Theory" By Jones
+        and Jones for details.
+    """
+    if n < 2:
+        raise ValueError("linear_congruence: Must have n >= 2.")
+
+    (u, v, d) = ext_gcd(a, n)
+    # The congruence has a solution if and only if gcd(a, n) | b.
+    if b % d != 0:
+        return []
+
+    # x0 is our particular solution.
+    # There will be exactly d incongruent solutions modulo n.
+    x0 = b*u//d
+    solutions = [(x0 + k*n//d) % n for k in xrange(d)]
+
+    solutions.sort()
+    return solutions
+
+
+def quadratic_congruence(coeff_list, n, n_factorization=None):
     """
     Returns the roots of the quadratic equation modulo n.
 
@@ -454,9 +490,10 @@ def quadratic_roots_mod_n(coeff_list, n, n_factorization=None):
         performed.
 
     Examples:
-        >>> quadratic_roots_mod_n([1, 3, -18], 1000)
+        >>> quadratic_congruence([1, 3, -18], 1000)
         [3, 378, 619, 994]
     """
+
     if n_factorization is None:
         n_factorization = rosemary.number_theory.factorization.factor(n)
 
@@ -464,54 +501,41 @@ def quadratic_roots_mod_n(coeff_list, n, n_factorization=None):
     discriminant = b*b - 4*a*c
     all_roots = []
 
-    for (p, k) in n_factorization:
-        pk = p**k
-        # Use dumb search for powers of 2
-        modp_roots = []
-        if p == 2:
-            for x in xrange(pk):
-                if (a*x*x + b*x + c) % pk == 0:
-                    modp_roots.append((x, pk))
-        else:
-            square_roots = sqrt_mod_pk(discriminant, p, k)
-            inverse = inverse_mod(2*a, pk)
+    if gcd(2*a, n) == 1:
+        # This is the easy case where we can complete the square.
+        # First, we solve the congruence y^2 = b^2 - 4*a*c (mod n) for y.
+        discriminant_roots = sqrts_mod_n(discriminant, n, n_factorization)
 
-            for root in square_roots:
-                r1 = (-b + root)*inverse % n
-                modp_roots.append((r1, pk))
-        all_roots.append(modp_roots)
+        # Next, we solve the congruence 2*a*x = y - b (mod n) for x to obtain
+        # the solutions to the quadratic. Since gcd(2*a, n) == 1, this is
+        # simple, and each each value of y leads to one value of x.
+        inverse = inverse_mod(2*a, n)
+        for y in discriminant_roots:
+            x = (y - b)*inverse % n
+            all_roots.append(x)
+    else:
+        # Here, gcd(4*a, n) != 1, so we can't complete the square as usual.
+        # Write 4*a = a1*a2, with a2 coprime to n.
+        a1 = 1
+        a2 = 4*a
+        d = gcd(n, a2)
+        while d > 1:
+            a1 *= d
+            a2 /= d
+            d = gcd(n, a2)
 
-    combined_roots = []
-    for system in itertools.product(*all_roots):
-        combined_roots.append(chinese(system))
+        # We solve the congruence y^2 = b^2 - 4*a*c (mod a1*n) for y.
+        discriminant_roots = sqrts_mod_n(discriminant, a1*n)
 
-    combined_roots.sort()
-    return combined_roots
+        # For each solution y, we solve 2*a*x = y - b (mod a1*n) for x. Since
+        # gcd(2*a, n) > 1, each solution y leads to multiple values of x.
+        for y in discriminant_roots:
+            roots = linear_congruence(2*a, y - b, a1*n)
+            all_roots.extend(roots)
 
+        # Eliminate repeated solutions, and reduce modulo the original modulus.
+        distinct_roots = {x % n for x in all_roots}
+        all_roots = list(distinct_roots)
 
-def idempotents_mod_n(n, n_factorization=None):
-    """
-    Returns a list of idempotents modulo n; i.e. elements such that a^2 = a.
-    """
-    if n == 1:
-        return [0]
-
-    if n_factorization is None:
-        n_factorization = rosemary.number_theory.factorization.factor(n)
-
-    all_roots = []
-    moduli = []
-    for (p, k) in n_factorization:
-        pk = p**k
-        moduli.append(pk)
-        modp_roots = [(0, pk), (1, pk)]
-        all_roots.append(modp_roots)
-
-    preconditioning_data = crt_preconditioning_data(moduli)
-    combined_roots = []
-    for combination in itertools.product(*all_roots):
-        combined_roots.append(chinese_preconditioned(combination, preconditioning_data))
-
-    combined_roots.sort()
-    return combined_roots
-
+    all_roots.sort()
+    return all_roots

@@ -13,7 +13,6 @@
 ./algorithms/min_spanning_tree.py
 ./numerical/special_functions.py
 ./number_theory/sieves.py
-./number_theory/binary_quadratic_forms.py
 ./number_theory/zn_arithmetic.py
 ./number_theory/primality.py
 ./number_theory/factorization.py
