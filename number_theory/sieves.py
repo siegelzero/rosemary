@@ -83,6 +83,19 @@ def eratosthenes(n):
 def prime_xrange(a, b=None):
     """
     Returns iterator over primes in interval [a, b).
+
+    Input:
+        a: int (a > 0)
+        b: int (b > a) (default=None)
+
+    Output:
+        * P: generator
+            The values output by this generator are the primes in the interval
+            [a, b).
+
+    Examples:
+        >>> list(prime_xrange(10, 20))
+        [11, 13, 17, 19]
     """
     def sieve_interval(a, b, sqrt, prime_list):
         """
@@ -149,32 +162,56 @@ def prime_xrange(a, b=None):
 def moebius_xrange(a, b=None):
     """
     Return an iterator over values of moebius(k) for 1 <= k <= n.
+
+    Input:
+        * a: int (a > 0)
+        * b: int (b > a) (default=None)
+
+    Output:
+        * P: generator
+            The values output by this generator are tuples (n, moebius(n)) where
+            n is an integer in [a, b), and moebius(n) is the value of the
+            moebius function.
+
+    Examples:
+        >>> list(moebius_xrange(10, 20))
+        [(10, 1),
+         (11, -1),
+         (12, 0),
+         (13, -1),
+         (14, 1),
+         (15, 1),
+         (16, 0),
+         (17, -1),
+         (18, 0),
+         (19, -1)]
     """
     if b is None:
         b, a = a, 1
 
-    blockSize = integer_sqrt(b)
-    primeList = primes(blockSize)
+    block_size = integer_sqrt(b)
+    prime_list = primes(block_size)
 
-    for start in xrange(a, b, blockSize):
-        block = [1]*blockSize
-        values = [1]*blockSize
+    for start in xrange(a, b, block_size):
+        block = [1]*block_size
+        values = [1]*block_size
 
-        for p in primeList:
-            offset = ((p*(start//p + 1) - a) % blockSize) % p
-            for i in xrange(offset, blockSize, p):
+        for p in prime_list:
+            offset = ((p*(start//p + 1) - a) % block_size) % p
+            for i in xrange(offset, block_size, p):
                 if (start + i) % (p*p) == 0:
                     block[i] = 0
                 else:
                     block[i] *= -1
                     values[i] *= p
 
-        for i in xrange(blockSize):
+        for i in xrange(block_size):
             if start + i >= b:
                 return
             if block[i] and values[i] < start + i:
                 block[i] *= -1
             yield (start + i, block[i])
+
 
 def factored_xrange(a, b=None):
     """
