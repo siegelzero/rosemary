@@ -1,6 +1,17 @@
 from collections import defaultdict
 import rosemary.algebra.matrices.matrices
 
+class DiGraph(object):
+    def __init__(self, graph_dict=None):
+        """
+        Initializes a new DiGraph object.
+        """
+        if graph_dict is None:
+            self.graph_dict = {}
+        elif isinstance(graph_dict, dict):
+            self.graph_dict = graph_dict.copy()
+
+
 class Graph(object):
     def __init__(self):
         """
