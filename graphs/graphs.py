@@ -210,3 +210,19 @@ class Graph(object):
         degree_mat = self.degree_matrix()
         adjacency_mat = self.adjacency_matrix()
         return degree_mat - adjacency_mat
+
+    def induced_subgraph(self, vertices):
+        """
+        Returns the subgraph of self induced by vertices.
+        """
+        induced = Graph()
+
+        for v in vertices:
+            induced.graph_dict[v] = {}
+
+        for u in vertices:
+            for v in vertices:
+                if v in self.graph_dict[u]:
+                    induced.add_edge(u, v)
+
+        return induced
