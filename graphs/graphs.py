@@ -1,15 +1,4 @@
-from collections import defaultdict
 import rosemary.algebra.matrices.matrices
-
-class DiGraph(object):
-    def __init__(self, graph_dict=None):
-        """
-        Initializes a new DiGraph object.
-        """
-        if graph_dict is None:
-            self.graph_dict = {}
-        elif isinstance(graph_dict, dict):
-            self.graph_dict = graph_dict.copy()
 
 
 class Graph(object):
@@ -17,7 +6,7 @@ class Graph(object):
         """
         Initializes a new Graph object.
         """
-        self.graph_dict = defaultdict(dict)
+        self.graph_dict = {}
 
     def __repr__(self):
         """
@@ -62,8 +51,15 @@ class Graph(object):
                 (u, v, weight) = u
             else:
                 (u, v) = u
-        self.graph_dict[u][v] = weight
-        self.graph_dict[v][u] = weight
+
+        pairs = [(u, v), (v, u)]
+
+        for (a, b) in pairs:
+            if a not in self.graph_dict:
+                self.graph_dict[a] = {b: weight}
+            else:
+                self.graph_dict[a][b] = weight
+
 
     def add_edges(self, edge_list):
         """
@@ -86,11 +82,14 @@ class Graph(object):
             self.add_edge(*edge)
 
     def edges(self):
+        """
+        Returns a sorted list of the edges of self.
+        """
         edges_seen = set()
         graph_dict = self.graph_dict
 
-        for u in sorted(graph_dict):
-            for v in sorted(graph_dict[u]):
+        for u in graph_dict:
+            for v in graph_dict[u]:
                 weight = graph_dict[u][v]
                 triple = (min(u, v), max(u, v), weight)
                 edges_seen.add(triple)
@@ -98,13 +97,28 @@ class Graph(object):
         edge_list = sorted(edges_seen)
         return edge_list
 
-    def vertices_iterator(self):
-        for vertex in self.graph_dict.iterkeys():
-            yield vertex
-
     def vertices(self):
+        """
+        Returns a sorted list of the vertices of self.
+        """
         vertex_list = sorted(self.graph_dict.keys())
         return vertex_list
+
+    def degree(self, vertex):
+        """
+        Returns the degree of the vertex; i.e. the number of vertices adjacent
+        to vertex.
+        """
+        degree = len(self.graph_dict[vertex].keys())
+        return degree
+
+    def neighbors(self, vertex):
+        """
+        Returns a sorted list of the neighbors of vertex; i.e. the vertices
+        adjacent to vertex.
+        """
+        neighbor_list = sorted(self.graph_dict[vertex].keys())
+        return neighbor_list
 
     def adjacency_matrix(self):
         """

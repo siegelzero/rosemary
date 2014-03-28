@@ -1,5 +1,3 @@
-#!/usr/bin/python2
-
 import random
 
 ################################################################################
@@ -104,136 +102,52 @@ def greedy_sequential(graph):
 
     return (num_colors, colors)
 
-
-def hcd(graph):
-    def pull_colors():
-        # get the vertex with highest priority
-        (_, v) = max((priority[u], u) for u in vvertices)
-
-        adjacent_colors = set()
-        for u in graph[v]:
-            adjacent_colors.add(color[u])
-
-        # assign to v the lowest admissible color
-        old_color = color[v]
-        for c in xrange(1, ub[0] + 1):
-            if c not in adjacent_colors:
-                color[v] = c
-                priority[v] = c
-                break
-
-        if old_color == c:
-            vvertices.remove(v)
-
-            if len(vvertices) == 0:
-                ub[0] = max(color[u] for u in vertices)
-                push_colors()
-
-    def push_colors():
-        num_pushes[0] += 1
-        modified = False
-        for v in vertices:
-            old_color = color[v]
-            adjacent_colors = set()
-            for u in graph[v]:
-                adjacent_colors.add(color[u])
-
-            for c in xrange(ub[0], old_color - 1, -1):
-                if c not in adjacent_colors:
-                    color[v] = c
-                    priority[v] = 1.0 / c
-                    if c != old_color:
-                        modified = True
-                    break
-
-        if modified is False:
-            ub[0] = max(color[u] for u in vertices)
-            pop_colors()
-        else:
-            vvertices.update(vertices)
-
-    def pop_colors():
-        for v in vertices:
-            priority[v] = color[v]
-
-        for v in vertices:
-            if color[v] == 1:
-                color[v] = ub[0] + 1
-        
-        for v in vertices:
-            #if color[v] == ub[0] + 1:
-            #    priority[v] = 1.0 / color[v]
-            priority[v] = 1.0 / color[v]
-        
-        vvertices.update(vertices)
-
-
-    # Initialize
-    priority = {}
-    color = {}
-    vertices = graph.vertices()
-    vvertices = set(vertices)
-    ub = [len(vertices)]
-    num_pushes = [0]
-
-    for i in xrange(len(vertices)):
-        v = vertices[i]
-        color[v] = i + 1
-        priority[v] = i + 1
-
-
-    while True:
-        pull_colors()
-        if num_pushes[0] > 1000:
-            return len(set(color[v] for v in color)), color
-
-
 def xrlf(graph):
     vertices = graph.vertices()
     R = set(vertices)
     k = 0
-    exact_limit = 50
-    trial_num = [30]
+    exact_limit = 60
+    trial_num = [40]
     cand_num = 50 
-    set_lim = [20]
+    set_lim = [90]
 
-    def find_subset(H, U, W, C, F):
+    def find_subset(subgraph, vertices, W, C, F):
         """
         Returns a subset W' <= W that maximizes the size of the set
         {(u, v) in H : u in W' and v in U - (C u W')}
         """
-        best = [0, []]
-        set_U = set(U)
+        best = [0, set()]
         list_W = list(W)
+        len_W = len(list_W)
+        #print len_W
 
-        def backtrack(used, last_index):
-            diff = set_U.difference(C.union(used))
-            ext = set((u, v) for (u, v, _) in F if (u in used and v in diff) or (v in used and u in diff))
-            if len(ext) > best[0]:
-                best[0] = len(ext)
+        def backtrack(used, neighbors, diff, last_index):
+            ext = sum(1 for (u, v, _) in F if (u in used and v in diff) or (v in used and u in diff))
+
+            if ext > best[0]:
+                best[0] = ext
                 best[1] = used
 
-            for i in xrange(last_index + 1, len(W)):
+            for i in xrange(last_index + 1, len_W):
                 v = list_W[i]
-                skip = False
-                for u in used:
-                    if v in H[u]:
-                        skip = True
-                        break
-                
-                if skip is not True:
-                    backtrack(used + [v], i)
+                if v in neighbors:
+                    continue
 
-        backtrack([], 0)
+                t_used = used.union([v])
+                t_neighbors = neighbors.union([u for u in subgraph[v]])
+                t_diff = diff.difference([v])
+
+                backtrack(t_used, t_neighbors, t_diff, i)
+
+        diff = vertices.difference(C)
+        backtrack(set(), set(), diff, 0)
         return set(best[1])
 
 
     def ind_set(H):
-        U = H.vertices()
+        U_list = H.vertices()
+        U = set(U_list)
         F = H.edges()
-
-        if not F:
-            return U
 
         best = -1
         CC = set()
@@ -254,14 +168,14 @@ def xrlf(graph):
                 C = set(C0)
                 X = set(u for u in U if u in H[vmax])
             elif len(U) > set_lim[0]:
-                v = random.choice(U)
+                v = random.choice(U_list)
                 C = set([v])
                 X = set(u for u in U if v in H[u])
             else:
                 C = set()
                 X = set()
 
-            W = set(U).difference(C.union(X))
+            W = U.difference(C.union(X))
             kill = False
 
             while len(W) > 0:
@@ -270,30 +184,23 @@ def xrlf(graph):
 
                 if len(W) <= set_lim[0]:
                     WW = find_subset(H, U, W, C, F)
-
                     C.update(WW)
 
-                    for u in C:
-                        for v in C:
-                            if u in H[v]:
-                                print u, v
-
-                    diff = set(U).difference(C)
-                    new = set((u, v) for (u, v, _) in F if (u in WW and v in diff) or (v in WW and u in diff))
-
-                    if len(new) > best:
-                        CC = set(C)
-                        best = len(new)
+                    diff = U.difference(C)
+                    new = sum(1 for (u, v, _) in F if (u in WW and v in diff) or (v in WW and u in diff))
+                    if new > best:
+                        CC = C
+                        best = new
 
                     kill = True
                     continue
 
                 bestdegree = -1
-                for i in xrange(cand_num):
-                    u = random.choice(list(W))
-                    s = set((w, v) for (w, v, _) in F if w == u and v in X)
-                    if len(s) > bestdegree:
-                        bestdegree = len(s)
+                candidates = random.sample(W, min(len(W), cand_num))
+                for u in candidates:
+                    num = sum(1 for (w, v, _) in F if w == u and v in X)
+                    if num > bestdegree:
+                        bestdegree = num
                         cand = u
 
                 C.add(cand)
@@ -307,11 +214,6 @@ def xrlf(graph):
     while len(R) > exact_limit:
         induced = graph.induced_subgraph(R)
         i_set = ind_set(induced)
-
-        for u in i_set:
-            for v in i_set:
-                if u in graph[v]:
-                    print "Error: ({}, {}) adjacent".format(u, v)
 
         for v in i_set:
             color_map[v] = k
@@ -387,6 +289,8 @@ def branch_and_bound(graph):
             u = uncolored.pop()
             adjacent_colors = set(color_map[v] for v in graph[u] if v in color_map)
 
+            # If there is any color j, 1 <= j <= num_colors, such that no vertex
+            # adjacent to u has color j, then return num_colors.
             for j in xrange(1, num_colors + 1):
                 if j not in adjacent_colors:
                     new_color_map[u] = j
@@ -409,36 +313,41 @@ def branch_and_bound(graph):
             return best_number
 
         else:
-            L = []
+            # Compute the saturation degree of each vertex.
+            # We want the vertex u adjacent to colored vertices with the maximum
+            # number of different colors. We break ties in favor of vertices
+            # that are adjacent to the most as yet uncolored vertices.
+            triples = []
             for u in uncolored:
-                u_color = set([])
-                u_uncolored = 0
+                adjacent_colors = set()
+                adjacent_colors_add = adjacent_colors.add
+                num_uncolored_neighbors = 0
                 for v in graph[u]:
                     if v in color_map:
-                        u_color.add(color_map[v])
+                        adjacent_colors_add(color_map[v])
                     else:
-                        u_uncolored += 1
-                L.append((len(u_color), u_uncolored, u))
+                        num_uncolored_neighbors += 1
+                num_adjacent_colors = len(adjacent_colors)
+                triples.append((num_adjacent_colors, num_uncolored_neighbors, u))
 
-            #L.sort(reverse=True)
-            #u = L[0][2]
-            u = max(L)[2]
+            u = max(triples)[2]
+            neighbor_colors = set(color_map[v] for v in graph[u] if v in color_map)
+            num_adjacent_colors = len(neighbor_colors)
 
-            adjacent_colors = set(color_map[v] for v in graph[u] if v in color_map)
-            missing_color = set(range(1, best_number + 1)) - adjacent_colors
-            if len(adjacent_colors) == best_number - 1:
-                new_color_map[u] = list(missing_color)[0]
+            # if u is adjacent to best_number - 1 colors, return best_number
+            if num_adjacent_colors == best_number - 1:
                 return best_number
 
+            uncolored_difference = uncolored.difference
             for j in xrange(1, num_colors + 1):
-                if j not in adjacent_colors:
+                if j not in neighbor_colors:
                     new_color_map[u] = j
-                    best_number = color(uncolored - set([u]), new_color_map,
-                            best_number, num_colors)
+                    best_number = color(uncolored_difference([u]),
+                            new_color_map, best_number, num_colors)
 
             if num_colors < best_number - 1:
                 new_color_map[u] = num_colors + 1
-                best_number = color(uncolored - set([u]), new_color_map,
+                best_number = color(uncolored_difference([u]), new_color_map,
                         best_number, num_colors + 1)
 
             return best_number
@@ -447,9 +356,68 @@ def branch_and_bound(graph):
     best = [len(vertices), []]
     color(set(vertices), {}, len(vertices), 0)
 
+    # The vertices are assigned colors >= 1, so we normalize to colors >= 0.
     color_map = best[1]
     for v in color_map:
         color_map[v] -= 1
 
     return best
+
+
+def k_color(graph, k):
+    vertices = graph.vertices()
+    color_map = {}
+
+    # assign random colors to the vertices
+    def assign_colors():
+        for v in vertices:
+            color_map[v] = random.randint(0, k - 1)
+
+    assign_colors()
+
+    violations = {}
+    last_total = 0
+    unchanged_iterations = 0
+    #threshold = len(vertices)
+    threshold = 100
+    max_iterations = 10**6
+
+    for i in xrange(max_iterations):
+        total_violations = 0
+
+        # count violations
+        for u in vertices:
+            count = 0
+            for v in graph[u]:
+                if color_map[v] == color_map[u]:
+                    total_violations += 1
+                    count += 1
+            violations[u] = count
+
+        if total_violations == 0:
+            num_colors = len(set(color_map[v] for v in color_map))
+            return (num_colors, color_map)
+
+        if total_violations == last_total:
+            unchanged_iterations += 1
+            if unchanged_iterations > threshold:
+                assign_colors()
+                continue
+        else:
+            unchanged_iterations = 0
+            last_total = total_violations
+
+        print "Violations:", total_violations, i
+
+        # Get the vertex with the most violations
+        (_, _, u) = max((violations[v], random.randint(0, 100), v) for v in violations if violations[v] > 0)
+
+        # Find the color to assign to u which minimizes the number of violations
+        neighbor_colors = [color_map[v] for v in graph[u]]
+        violation_count = [(neighbor_colors.count(c), c) for c in xrange(k)]
+        (_, best_color) = min(violation_count)
+
+        color_map[u] = best_color
+
+    return False
 
