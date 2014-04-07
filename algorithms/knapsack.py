@@ -1,34 +1,66 @@
-# Algorithms for solving the knapsack problem.
+"""
+This module contains algorithms to find exact and approximate solutions to the
+optimization knapsack problem:
 
-def exhaustive(items, capacity):
+Given values v_0, v_1, ..., v_{n - 1}, weights w_0, w_1, ..., w_{n - 1}, and a
+maximum capacity M, find a 0,1 n-tuple [x_0, x_1, ..., x_{n - 1}] such that
+P = \sum_{i = 0}^{n - 1} v_i x_i is maximized, subject to the capacity
+constraint \sum_{i = 0}^{n - 1} w_i x_i <= M.
+"""
+
+import math
+import random
+
+
+def depth_first(items, capacity):
     """
-    Returns optimal solution to the knapsack problem.
+    Returns the optimal solution to the given knapsack problem.
+
+    This function performs a depth-first search on the solution space to find
+    the optimum solution to the given knapsack problem. Only elementary pruning
+    is done to the solution tree, so this algorithm is only effective for small
+    problem instances.
 
     Input:
-        * items: (list)
+        * items: list
             Each item in the list is a pair (v, w) of value and weight.
 
-        * capacity: (int)
+        * capacity: int
             Maximum capacity of the knapsack.
+
+    Output:
+        * (best_value, best_items): tuple
+            * best_value: int
+                The best value found.
+
+            * best_items: list
+                The items giving this value.
+
+    Examples:
+        >>> items = [(135, 70), (139, 73), (149, 77), (150, 80), (156, 82),\
+                (163, 87), (173, 90), (184, 94), (192, 98), (201, 106),\
+                (210, 110), (214, 113), (221, 115), (229, 118), (240, 120)]
+        >>> capacity = 750
+        >>> depth_first(items, capacity)
+        (1458, [1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1])
     """
     num_items = len(items)
     best = [0, []]
 
     def backtrack(idx, current_value, current_weight, used):
         if current_weight <= capacity:
-            if current_value > best[0]:
-                best[0] = current_value
-                best[1] = used
+            if idx == num_items:
+                if current_value > best[0]:
+                    best[0] = current_value
+                    best[1] = used
+            else:
+                (v, w) = items[idx]
+                backtrack(idx + 1, current_value + v, current_weight + w, used + [(v, w)])
+                backtrack(idx + 1, current_value, current_weight, used)
 
-            for i in xrange(idx + 1, num_items):
-                v, w = items[i]
-                new_value = current_value + v
-                new_weight = current_weight + w
-                backtrack(i, new_value, new_weight, used + [(v, w)])
+    backtrack(0, 0, 0, [])
 
-    backtrack(-1, 0, 0, [])
-
-    return best
+    return tuple(best)
 
 
 def dynamic_programming(items, capacity):
@@ -55,11 +87,12 @@ def dynamic_programming(items, capacity):
             used.append(items[i - 1])
             w -= items[i - 1][1]
 
-    best = [M[capacity][n], used]
+    # We sort so that the output agrees with the other functions
+    best = (M[capacity][n], sorted(used))
     return best
 
 
-def branch_and_bound_dfs(items, capacity):
+def branch_and_bound_depth_first(items, capacity):
     unit_cost = [(float(v)/float(w), v, w, i) for (i, (v, w)) in enumerate(items)]
     unit_cost.sort(reverse=True)
     num_items = len(items)
@@ -108,58 +141,84 @@ def branch_and_bound_dfs(items, capacity):
     return best
 
 
-def bfs_middle(items, capacity):
-    num_items = len(items)
-    k = num_items//2
-    p1 = sorted(items[:k])
-    p2 = sorted(items[k:])
+def simulated_annealing(items, capacity):
+    """
+    Returns an approximate solution to the knapsack problem.
 
-    # current value, current weight, last used, all used
-    forwards = [(i, cv, cw, [(cv, cw)]) for (i, (cv, cw)) in enumerate(p1)]
+    This function uses a simulated annealing strategy to approximate the optimal
+    value to the given knapsack problem.
 
-    for (i, (v, w)) in enumerate(p1):
-        ext = []
-        for (j, cv, cw, used) in forwards:
-            if j <= i:
-                continue
-            if cw + w <= capacity:
-                ext.append((j, cv + v, cw + w, used + [(v, w)]))
-        forwards.extend(ext)
+    Input:
+        * items: list
+            Each item in the list is a pair (v, w) of value and weight.
 
-    backwards = [(i, cv, cw, [(cv, cw)]) for (i, (cv, cw)) in enumerate(p2)]
+        * capacity: int
+            Maximum capacity of the knapsack.
 
-    for (i, (v, w)) in enumerate(p2):
-        ext = []
-        for (j, cv, cw, used) in backwards:
-            if j <= i:
-                continue
-            if cw + w <= capacity:
-                ext.append((j, cv + v, cw + w, used + [(v, w)]))
-        backwards.extend(ext)
+    Output:
+        * (best_value, best_items): tuple
+            * best_value: int
+                The best value found.
 
-    forwards.sort(key = lambda (i, v, w, used): w)
-    backwards.sort(key = lambda (i, v, w, used): w, reverse=True)
+            * best_items: list
+                The items giving this value.
 
-    l1 = len(forwards)
-    l2 = len(backwards)
-    i = 0
-    j = 0
-    best = [0, []]
+    Examples:
+        >>> items = [(135, 70), (139, 73), (149, 77), (150, 80), (156, 82),\
+                (163, 87), (173, 90), (184, 94), (192, 98), (201, 106),\
+                (210, 110), (214, 113), (221, 115), (229, 118), (240, 120)]
+        >>> capacity = 750
+        >>> simulated_annealing(items, capacity)
+        (1458, [1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1])
 
-    # this is a meet-in-the-middle approach
-    while i < l1 and j < l2:
-        fi = forwards[i]
-        bj = backwards[j]
-        cv = fi[1] + bj[1]
-        cw = fi[2] + bj[2]
-        if cw > capacity:
-            j += 1
-        elif cw <= capacity:
-            i += 1
-            if cv > best[0]:
-                best[0] = cv
-                best[1] = fi[3] + bj[3]
+    Details:
+        This algorithm is based on Algorithm 5.20 from "Combinatorial
+        Algorithms: Generation, Enumeration, and Search" by Kreher and Stinson.
+    """
+    cmax = 100000
+    temp = 1000
+    alpha = 0.99999
+    n = len(items)
 
-    return best
+    current_items = [0]*n
+    current_weight = 0
+    best_items = list(current_items)
+    best_value = 0
 
+    def P(X):
+        total = 0
+        for i in xrange(n):
+            if X[i]:
+                total += items[i][0]
+        return total
+
+    for i in xrange(cmax):
+        # Let Y be a random neighbor of the current configuration.
+        j = random.randint(0, n - 1)
+        neighbor = list(current_items)
+        neighbor[j] = 1 - neighbor[j]
+
+        # If this new neighbor is not feasible, continue
+        if neighbor[j] and current_weight + items[j][1] > capacity:
+            continue
+
+        if neighbor[j]:
+            # Here, we know that P(neighbor) > P(current_items)
+            current_items = neighbor
+            current_weight += items[j][1]
+            current_value = P(current_items)
+
+            if current_value > best_value:
+                best_items = list(current_items)
+                best_value = current_value
+        else:
+            r = random.random()
+            diff = P(neighbor) - P(current_items)
+            if r < math.exp(diff / temp):
+                current_items = neighbor
+                current_weight -= items[j][1]
+
+        temp *= alpha
+
+    return best_value, best_items
 
