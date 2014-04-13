@@ -1,40 +1,40 @@
-import rosemary.graphs.graphs
-import copy
-import itertools
 import math
 import random
+#import numpy
 
-def euclidean_tsp_graph(points):
-    graph = rosemary.graphs.graphs.Graph()
+def euclidean_distance_matrix(points):
     num_points = len(points)
+    distance_matrix = [[0]*num_points for _ in xrange(num_points)]
+    #distance_matrix = numpy.zeros((num_points, num_points))
+    inf = float('inf')
 
     for i in xrange(num_points):
+        distance_matrix[i][i] = inf
         (x1, y1) = points[i]
         for j in xrange(i):
             (x2, y2) = points[j]
             dist = ((x2 - x1)**2 + (y2 - y1)**2)**(0.5)
-            graph.add_edge(i, j, dist)
+            distance_matrix[i][j] = dist
+            distance_matrix[j][i] = dist
 
-    return graph
+    return distance_matrix
 
-def cost(path, graph, num_vertices):
-    total = 0
-    u = path[0]
-    for i in xrange(1, num_vertices):
-        v = path[i]
-        total += graph[u][v]
-        u = v
-    return total + graph[u][0]
+def cost(path, distance_matrix, num_vertices):
+    total = distance_matrix[path[-1]][path[0]]
+    for i in xrange(num_vertices - 1):
+        total += distance_matrix[path[i]][path[i + 1]]
+    return total
 
-def depth_first(points):
-    graph = euclidean_tsp_graph(points)
-    vertices = graph.vertices()
-    num_vertices = len(vertices)
+def depth_first(points, distance_matrix=None):
+    if distance_matrix is None:
+        distance_matrix = euclidean_distance_matrix(points)
+
+    num_vertices = len(points)
     best = [float('inf'), []]
 
     def backtrack(path, l, last_choices):
         if l == num_vertices:
-            total = cost(path, graph, num_vertices)
+            total = cost(path, distance_matrix, num_vertices)
             if total < best[0]:
                 best[0] = total
                 best[1] = list(path)
@@ -53,82 +53,32 @@ def depth_first(points):
     return best
 
 
-def heldman_karp(points):
-    graph = euclidean_tsp_graph(points)
-    num_points = len(points)
-    vertices = graph.vertices()
-    others = vertices[1:]
-    inf = float('inf')
+def branch_and_bound(points, distance_matrix=None):
+    if distance_matrix is None:
+        distance_matrix = euclidean_distance_matrix(points)
 
-    C = {}
-    C[(0,), 0] = (0, (0,))
-
-    for s in xrange(1, num_points):
-        for S in itertools.combinations(others, s):
-            subset = (0,) + S
-            C[subset, 0] = (inf, [])
-
-            for j in S:
-                without = tuple(e for e in subset if e != j)
-                mm = inf
-                for i in subset:
-                    if i == j:
-                        continue
-                    c, p = C[without, i]
-                    c += graph[i][j]
-                    if c < mm:
-                        mm = c
-                        path = p + (j,)
-                C[subset, j] = (c, path)
-
-    mm = inf
-    for j in others:
-        (c, p) = C[tuple(vertices), j]
-        c += graph[0][j]
-        if c < mm:
-            mm = c
-            path = p
-
-    return (mm, path)
-
-
-def branch_and_bound(points):
-    graph = euclidean_tsp_graph(points)
     num_vertices = len(points)
-
-    vertices = graph.vertices()
+    vertices = range(num_vertices)
     inf = float('inf')
     best = [inf, []]
-    cost_matrix = [[0]*num_vertices for _ in xrange(num_vertices)]
 
-    for u in vertices:
-        for v in vertices:
-            if u == v:
-                cost_matrix[u][v] = inf
-            else:
-                cost_matrix[u][v] = graph[u][v]
-
-    def reduce(matrix):
+    def reduce_matrix(matrix):
         val = 0
-        M = copy.deepcopy(matrix)
         num_vertices = len(matrix)
 
         for i in xrange(num_vertices):
-            m = M[i][0]
-            for j in xrange(1, num_vertices):
-                if M[i][j] < m:
-                    m = M[i][j]
+            m = min(matrix[i])
             for j in xrange(num_vertices):
-                M[i][j] -= m
+                matrix[i][j] -= m
             val += m
 
         for j in xrange(num_vertices):
-            m = M[0][j]
+            m = matrix[0][j]
             for i in xrange(1, num_vertices):
-                if M[i][j] < m:
-                    m = M[i][j]
+                if matrix[i][j] < m:
+                    m = matrix[i][j]
             for i in xrange(num_vertices):
-                M[i][j] -= m
+                matrix[i][j] -= m
             val += m
 
         return val
@@ -136,7 +86,7 @@ def branch_and_bound(points):
     def reduce_bound(X):
         m = len(X)
         if m == num_vertices:
-            return cost(X, graph, num_vertices)
+            return cost(X, distance_matrix, num_vertices)
 
         other_vertices = [e for e in vertices if e not in X]
         d = len(other_vertices) + 1
@@ -147,31 +97,31 @@ def branch_and_bound(points):
 
 
         for y in other_vertices:
-            MM[0][j] = cost_matrix[X[-1]][y]
+            MM[0][j] = distance_matrix[X[-1]][y]
             j += 1
 
         i = 1
         for x in other_vertices:
-            MM[i][0] = cost_matrix[x][X[0]]
+            MM[i][0] = distance_matrix[x][X[0]]
             i += 1
 
         i = 1
         for x in other_vertices:
             j = 1
             for y in other_vertices:
-                MM[i][j] = cost_matrix[x][y]
+                MM[i][j] = distance_matrix[x][y]
                 j += 1
             i += 1
         
-        ans = reduce(MM)
+        ans = reduce_matrix(MM)
         for i in xrange(1, m):
-            ans += cost_matrix[X[i - 1]][X[i]]
+            ans += distance_matrix[X[i - 1]][X[i]]
 
         return ans
 
     def backtrack(path, l, last_choices):
         if l == num_vertices:
-            total = cost(path, graph, num_vertices)
+            total = cost(path, distance_matrix, num_vertices)
             if total < best[0]:
                 best[0] = total
                 best[1] = list(path)
@@ -199,79 +149,33 @@ def branch_and_bound(points):
     backtrack([], 0, [])
     return best
 
-def simulated_annealing(points):
-    graph = euclidean_tsp_graph(points)
-    num_vertices = len(points)
 
-    inf = float('inf')
-    best_value = inf
-    old_value = inf
-    best_value, best_sol = farthest_insertion(points)
-    count = 0
+def farthest_insertion(points, distance_matrix=None, **kwargs):
+    if distance_matrix is None:
+        distance_matrix = euclidean_distance_matrix(points)
 
-
-    while True:
-        if best_value == old_value:
-            count += 1
-            if count == 10000:
-                break
-        else:
-            print best_value
-            old_value = best_value
-            count = 0
-
-        sol = best_sol
-        cmax = 1000
-        temp = 1000
-        alpha = 0.99999
-
-        for i in xrange(cmax):
-            j = random.randint(2, num_vertices - 1)
-            k = random.randint(1, j)
-
-            new_sol = list(sol)
-            new_sol[j], new_sol[k] = new_sol[k], new_sol[j]
-
-            cost_new = cost(new_sol, graph, num_vertices)
-            cost_old = cost(sol, graph, num_vertices)
-
-            if cost_new < cost_old:
-                sol = list(new_sol)
-                if cost_new < best_value:
-                    best_value = cost_new
-                    best_sol = list(sol)
-            else:
-                r = random.random()
-                diff = cost_new - cost_old
-                if r < math.exp(diff / temp):
-                    sol = list(new_sol)
-
-            temp *= alpha
-
-    return best_value, best_sol
-
-
-def farthest_insertion(points, graph=None):
-    if graph is None:
-        graph = euclidean_tsp_graph(points)
+    if 'edges' in kwargs:
+        edges_only = True
+    else:
+        edges_only = False
 
     used = set([0])
-    left = set(graph.vertices()).difference([0])
+    left = set(range(1, len(points)))
 
     edges = set([(0, 0)])
     tweight = 0
     
     dist = {}
     for v in left:
-        dist[v] = graph[0][v]
+        dist[v] = distance_matrix[0][v]
 
     while left:
         max_dist, f = max((dist[v], v) for v in left)
         c = {}
         for (u, v) in edges:
-            c[u, v] = graph[u][f] + graph[f][v]
+            c[u, v] = distance_matrix[u][f] + distance_matrix[f][v]
             if (u, v) != (0, 0):
-                c[u, v] -= graph[u][v]
+                c[u, v] -= distance_matrix[u][v]
 
         min_val, (t, h) = min((c[u, v], (u, v)) for (u, v) in edges)
 
@@ -282,7 +186,10 @@ def farthest_insertion(points, graph=None):
         tweight += c[t, h]
 
         for x in left:
-            dist[x] = min(dist[x], graph[f][x])
+            dist[x] = min(dist[x], distance_matrix[f][x])
+
+    if edges_only:
+        return edges
 
     next_node = dict(edges)
     path = [0]
@@ -292,4 +199,267 @@ def farthest_insertion(points, graph=None):
         next_hop = next_node[next_hop]
 
     return tweight, path
+
+
+def random_two_opt(path):
+    num_points = len(path)
+
+    a = random.randint(0, num_points - 1)
+
+    while True:
+        b = random.randint(0, num_points - 1)
+        if a - b in (-1, 0, 1):
+            continue
+        elif (a, b) in ((0, num_points - 1), (num_points - 1, 0)):
+            continue
+        else:
+            break
+
+    if a > b:
+        a, b = b, a
+
+    perm = list(path)
+    perm[a:b + 1] = perm[a:b + 1][::-1]
+    return perm
+
+
+def simulated_annealing(points, distance_matrix=None):
+    if distance_matrix is None:
+        distance_matrix = euclidean_distance_matrix(points)
+
+    num_vertices = len(points)
+
+    inf = float('inf')
+    best_value = inf
+    old_value = inf
+    #best_value, best_sol = farthest_insertion(points)
+    best_sol = range(num_vertices)
+    random.shuffle(best_sol)
+    best_value = cost(best_sol, distance_matrix, num_vertices)
+    count = 0
+
+
+    while True:
+        if best_value == old_value:
+            count += 1
+            if count == 1000:
+                break
+        else:
+            print best_value
+            old_value = best_value
+            count = 0
+
+        sol = best_sol
+        cmax = 10000
+        temp = 1000
+        alpha = 0.99
+
+        for i in xrange(cmax):
+            if temp < 0.0001:
+                break
+            j = random.randint(2, num_vertices - 1)
+            k = random.randint(1, j)
+
+            new_sol = list(sol)
+            new_sol[j], new_sol[k] = new_sol[k], new_sol[j]
+
+            cost_new = cost(new_sol, distance_matrix, num_vertices)
+            cost_old = cost(sol, distance_matrix, num_vertices)
+
+            if cost_new < cost_old:
+                sol = list(new_sol)
+                if cost_new < best_value:
+                    best_value = cost_new
+                    best_sol = list(sol)
+            else:
+                r = random.random()
+                diff = cost_new - cost_old
+                if math.log(r) < diff/temp:
+                    sol = list(new_sol)
+
+            temp *= alpha
+
+    return best_value, best_sol
+
+
+#def steepest_ascent_two_opt(points):
+def steepest_ascent_two_opt(distance_matrix):
+    #num_points = len(points)
+    #distance_matrix = euclidean_distance_matrix(points)
+    #best_cost, best_sol = farthest_insertion(points)
+    num_points = len(distance_matrix[0])
+    best_sol = range(num_points)
+    best_cost = cost(best_sol, distance_matrix, num_points)
+
+    def G(X, i, j):
+        xi = X[i]
+        xii = X[i + 1] if i + 1 < num_points else X[0]
+        xj = X[j]
+        xjj = X[j + 1] if j + 1 < num_points else X[0]
+
+        total = distance_matrix[xi][xii]
+        total += distance_matrix[xj][xjj]
+        total -= distance_matrix[xii][xjj]
+        total -= distance_matrix[xi][xj]
+        return total
+
+    done = False
+    while not done:
+        done = True
+        g0 = 0
+        for i in xrange(num_points):
+            for j in xrange(i + 2, num_points):
+                g = G(best_sol, i, j)
+                if g > g0:
+                    g0 = g
+                    i0 = i
+                    j0 = j
+        if g0 > 0.0000001:
+            new_best = []
+            for i in xrange(i0 + 1):
+                new_best.append(best_sol[i])
+            for i in xrange(j0, i0, -1):
+                new_best.append(best_sol[i])
+            for i in xrange(j0 + 1, num_points):
+                new_best.append(best_sol[i])
+
+            best_sol = new_best
+            best_cost -= g0
+            done = False
+
+    return best_cost, best_sol
+
+def steepest_ascent_three_opt(points):
+    num_points = len(points)
+    distance_matrix = euclidean_distance_matrix(points)
+    best_cost, best_sol = steepest_ascent_two_opt(points)
+    #best_sol = range(num_points)
+    #random.shuffle(best_sol)
+    best_cost = cost(best_sol, distance_matrix, num_points)
+
+    def three_opt(X, i, j, k):
+        xi = X[i]
+        xii = X[i + 1] if i + 1 < num_points else X[0]
+        xj = X[j]
+        xjj = X[j + 1] if j + 1 < num_points else X[0]
+        xk = X[k]
+        xkk = X[k + 1] if k + 1 < num_points else X[0]
+
+        removed_cost = distance_matrix[xi][xii]
+        removed_cost += distance_matrix[xj][xjj]
+        removed_cost += distance_matrix[xk][xkk]
+
+        gain1 = removed_cost - distance_matrix[xi][xjj]
+        gain1 -= distance_matrix[xk][xii]
+        gain1 -= distance_matrix[xj][xkk]
+
+        gain2 = removed_cost - distance_matrix[xi][xjj]
+        gain2 -= distance_matrix[xk][xj]
+        gain2 -= distance_matrix[xii][xkk]
+
+        if gain1 >= gain2:
+            best_gain = gain1
+            best_sol = []
+            for l in xrange(i + 1):
+                best_sol.append(X[l])
+            for l in xrange(j + 1, k + 1):
+                best_sol.append(X[l])
+            for l in xrange(i + 1, j + 1):
+                best_sol.append(X[l])
+            for l in xrange(k + 1, num_points):
+                best_sol.append(X[l])
+        else:
+            best_gain = gain2
+            best_sol = []
+            for l in xrange(i + 1):
+                best_sol.append(X[l])
+            for l in xrange(j + 1, k + 1):
+                best_sol.append(X[l])
+            for l in xrange(j, i, -1):
+                best_sol.append(X[l])
+            for l in xrange(k + 1, num_points):
+                best_sol.append(X[l])
+
+        return best_gain, best_sol
+
+
+    print best_cost
+    done = False
+    while not done:
+        done = True
+        g0 = 0
+        for i in xrange(num_points):
+            for j in xrange(i + 2, num_points):
+                for k in xrange(j + 2, num_points):
+                    gain, sol = three_opt(best_sol, i, j, k)
+                    if gain > g0:
+                        g0 = gain
+                        best = sol
+
+        if g0 > 0.00000001:
+            best_sol = best
+            best_cost -= g0
+            print best_cost
+            done = False
+
+    return best_cost, best_sol
+
+
+def simulated_annealing_two_opt(points, distance_matrix=None):
+    if distance_matrix is None:
+        distance_matrix = euclidean_distance_matrix(points)
+
+    num_vertices = len(points)
+
+    inf = float('inf')
+    best_value = inf
+    old_value = inf
+    #best_value, best_sol = farthest_insertion(points)
+    best_sol = range(num_vertices)
+    random.shuffle(best_sol)
+    best_value = cost(best_sol, distance_matrix, num_vertices)
+    count = 0
+
+
+    while True:
+        if abs(best_value - old_value) < 0.000001:
+            count += 1
+            if count == 1000:
+                break
+        else:
+            print best_value
+            old_value = best_value
+            count = 0
+
+        sol = best_sol
+        cmax = 10000
+        temp = 1000
+        alpha = 0.99
+
+        for i in xrange(cmax):
+            if temp < 0.0001:
+                break
+            k = random.randint(2, num_vertices - 1)
+            j = random.randint(0, k - 2)
+
+            new_sol = list(sol)
+            new_sol[j:k + 1] = new_sol[j:k + 1][::-1]
+
+            cost_new = cost(new_sol, distance_matrix, num_vertices)
+            cost_old = cost(sol, distance_matrix, num_vertices)
+
+            if cost_new < cost_old:
+                sol = new_sol
+                if cost_new < best_value:
+                    best_value = cost_new
+                    best_sol = sol
+            else:
+                r = random.random()
+                diff = cost_new - cost_old
+                if math.log(r) < diff/temp:
+                    sol = new_sol
+
+            temp *= alpha
+
+    return best_value, best_sol
 
