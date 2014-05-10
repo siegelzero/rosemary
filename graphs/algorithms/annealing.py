@@ -41,9 +41,34 @@ def random_two_opt(current):
     perm[c1:c2] = perm[c1:c2][::-1]
     return perm
 
-def create_neighbor(current, cities):
-    candidate_vector = random_two_opt(current)
-    candidate_cost = cost(candidate_vector, cities)
+def random_three_opt(current):
+    path = current.vector
+    num_points = len(path)
+
+    k = random.randint(2, num_points - 2)
+    j = random.randint(1, k - 1)
+    i = random.randint(0, j - 1)
+
+    S1 = path[0:i + 1]
+    S2 = path[i + 1:j + 1]
+    S3 = path[j + 1:k + 1]
+    S4 = path[k + 1:]
+
+    choice = random.randint(0, 3)
+
+    if choice == 0:
+        return S1 + S3 + S2 + S4
+    elif choice == 1:
+        return S1 + S3[::-1] + S2 + S4
+    elif choice == 2:
+        return S1 + S3 + S2[::-1] + S4
+    elif choice == 3:
+        return S1 + S2[::-1] + S3[::-1] + S4
+
+def create_neighbor(current, points):
+    #candidate_vector = random_two_opt(current)
+    candidate_vector = random_three_opt(current)
+    candidate_cost = cost(candidate_vector, points)
     candidate = namedtuple('Candidate', ('cost', 'vector'))
     candidate.cost = candidate_cost
 
@@ -57,30 +82,36 @@ def should_accept(candidate, current, temp):
     else:
         return math.exp((current.cost - candidate.cost) / temp) > random.random()
 
-def search(cities, max_iter=None, max_temp=None, temp_change=None):
+def search(points, max_iter=None, max_temp=None, temp_change=None):
     if max_iter is None:
         max_iter = 200000
     if max_temp is None:
-        max_temp = 100000.0
+        max_temp = 1000.0
     if temp_change is None:
-        temp_change = 0.9999
+        temp_change = 0.99
 
     current = namedtuple('Candidate', ('cost', 'vector'))
-    current.vector = range(len(cities))
-    random.shuffle(current.vector)
-    current.cost = cost(current.vector, cities)
-    #c, v = rosemary.graphs.algorithms.tsp.steepest_ascent_two_opt(cities)
+
+    c, v = rosemary.graphs.algorithms.tsp.two_opt(points)
+    current.vector = v
+    current.cost = c
+    #current.vector = range(len(points))
+    #random.shuffle(current.vector)
+    #current.cost = cost(current.vector, points)
+    #c, v = rosemary.graphs.algorithms.tsp.steepest_ascent_two_opt(points)
+    #c, v = rosemary.graphs.algorithms.tsp.farthest_insertion(points)
     #current.vector = v
     #current.cost = c
     #print c
 
     temp = max_temp
     best = current
+    print c
 
     for j in xrange(10):
         print j
         for i in xrange(max_iter):
-            candidate = create_neighbor(current, cities)
+            candidate = create_neighbor(current, points)
             temp *= temp_change
 
             if should_accept(candidate, current, temp):

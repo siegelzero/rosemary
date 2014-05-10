@@ -112,7 +112,7 @@ def branch_and_bound(points, distance_matrix=None):
                 MM[i][j] = distance_matrix[x][y]
                 j += 1
             i += 1
-        
+
         ans = reduce_matrix(MM)
         for i in xrange(1, m):
             ans += distance_matrix[X[i - 1]][X[i]]
@@ -164,7 +164,7 @@ def farthest_insertion(points, distance_matrix=None, **kwargs):
 
     edges = set([(0, 0)])
     tweight = 0
-    
+
     dist = {}
     for v in left:
         dist[v] = distance_matrix[0][v]
@@ -223,73 +223,12 @@ def random_two_opt(path):
     return perm
 
 
-def simulated_annealing(points, distance_matrix=None):
+def steepest_ascent_two_opt(points, distance_matrix=None):
     if distance_matrix is None:
         distance_matrix = euclidean_distance_matrix(points)
 
-    num_vertices = len(points)
-
-    inf = float('inf')
-    best_value = inf
-    old_value = inf
-    #best_value, best_sol = farthest_insertion(points)
-    best_sol = range(num_vertices)
-    random.shuffle(best_sol)
-    best_value = cost(best_sol, distance_matrix, num_vertices)
-    count = 0
-
-
-    while True:
-        if best_value == old_value:
-            count += 1
-            if count == 1000:
-                break
-        else:
-            print best_value
-            old_value = best_value
-            count = 0
-
-        sol = best_sol
-        cmax = 10000
-        temp = 1000
-        alpha = 0.99
-
-        for i in xrange(cmax):
-            if temp < 0.0001:
-                break
-            j = random.randint(2, num_vertices - 1)
-            k = random.randint(1, j)
-
-            new_sol = list(sol)
-            new_sol[j], new_sol[k] = new_sol[k], new_sol[j]
-
-            cost_new = cost(new_sol, distance_matrix, num_vertices)
-            cost_old = cost(sol, distance_matrix, num_vertices)
-
-            if cost_new < cost_old:
-                sol = list(new_sol)
-                if cost_new < best_value:
-                    best_value = cost_new
-                    best_sol = list(sol)
-            else:
-                r = random.random()
-                diff = cost_new - cost_old
-                if math.log(r) < diff/temp:
-                    sol = list(new_sol)
-
-            temp *= alpha
-
-    return best_value, best_sol
-
-
-#def steepest_ascent_two_opt(points):
-def steepest_ascent_two_opt(distance_matrix):
-    #num_points = len(points)
-    #distance_matrix = euclidean_distance_matrix(points)
-    #best_cost, best_sol = farthest_insertion(points)
-    num_points = len(distance_matrix[0])
-    best_sol = range(num_points)
-    best_cost = cost(best_sol, distance_matrix, num_points)
+    num_points = len(points)
+    best_cost, best_sol = farthest_insertion(points)
 
     def G(X, i, j):
         xi = X[i]
@@ -329,81 +268,47 @@ def steepest_ascent_two_opt(distance_matrix):
 
     return best_cost, best_sol
 
-def steepest_ascent_three_opt(points):
+
+def two_opt(points, distance_matrix=None):
+    if distance_matrix is None:
+        distance_matrix = euclidean_distance_matrix(points)
+
     num_points = len(points)
-    distance_matrix = euclidean_distance_matrix(points)
-    best_cost, best_sol = steepest_ascent_two_opt(points)
-    #best_sol = range(num_points)
+
+    #best_cost, best_sol = farthest_insertion(points)
+
+    best_sol = range(num_points)
     #random.shuffle(best_sol)
     best_cost = cost(best_sol, distance_matrix, num_points)
 
-    def three_opt(X, i, j, k):
-        xi = X[i]
-        xii = X[i + 1] if i + 1 < num_points else X[0]
-        xj = X[j]
-        xjj = X[j + 1] if j + 1 < num_points else X[0]
-        xk = X[k]
-        xkk = X[k + 1] if k + 1 < num_points else X[0]
-
-        removed_cost = distance_matrix[xi][xii]
-        removed_cost += distance_matrix[xj][xjj]
-        removed_cost += distance_matrix[xk][xkk]
-
-        gain1 = removed_cost - distance_matrix[xi][xjj]
-        gain1 -= distance_matrix[xk][xii]
-        gain1 -= distance_matrix[xj][xkk]
-
-        gain2 = removed_cost - distance_matrix[xi][xjj]
-        gain2 -= distance_matrix[xk][xj]
-        gain2 -= distance_matrix[xii][xkk]
-
-        if gain1 >= gain2:
-            best_gain = gain1
-            best_sol = []
-            for l in xrange(i + 1):
-                best_sol.append(X[l])
-            for l in xrange(j + 1, k + 1):
-                best_sol.append(X[l])
-            for l in xrange(i + 1, j + 1):
-                best_sol.append(X[l])
-            for l in xrange(k + 1, num_points):
-                best_sol.append(X[l])
-        else:
-            best_gain = gain2
-            best_sol = []
-            for l in xrange(i + 1):
-                best_sol.append(X[l])
-            for l in xrange(j + 1, k + 1):
-                best_sol.append(X[l])
-            for l in xrange(j, i, -1):
-                best_sol.append(X[l])
-            for l in xrange(k + 1, num_points):
-                best_sol.append(X[l])
-
-        return best_gain, best_sol
-
-
-    print best_cost
     done = False
     while not done:
         done = True
         g0 = 0
         for i in xrange(num_points):
-            for j in xrange(i + 2, num_points):
-                for k in xrange(j + 2, num_points):
-                    gain, sol = three_opt(best_sol, i, j, k)
-                    if gain > g0:
-                        g0 = gain
-                        best = sol
+            xi = best_sol[i]
+            xii = best_sol[(i + 1) % num_points]
 
-        if g0 > 0.00000001:
-            best_sol = best
+            for j in xrange(i + 2, num_points):
+                xj = best_sol[j]
+                xjj = best_sol[(j + 1) % num_points]
+
+                gain = distance_matrix[xi][xii]
+                gain += distance_matrix[xj][xjj]
+                gain -= distance_matrix[xii][xjj]
+                gain -= distance_matrix[xi][xj]
+
+                if gain > g0:
+                    g0 = gain
+                    i0 = i
+                    j0 = j
+
+        if g0 > 0.0000001:
+            best_sol[i0 + 1:j0 + 1] = best_sol[i0 + 1:j0 + 1][::-1]
             best_cost -= g0
-            print best_cost
             done = False
 
     return best_cost, best_sol
-
 
 def simulated_annealing_two_opt(points, distance_matrix=None):
     if distance_matrix is None:
@@ -462,4 +367,3 @@ def simulated_annealing_two_opt(points, distance_matrix=None):
             temp *= alpha
 
     return best_value, best_sol
-
