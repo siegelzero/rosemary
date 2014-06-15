@@ -14,7 +14,7 @@ class Graph(object):
         """
         num_vertices = len(self.graph_dict)
         return "Graph on {} vertices".format(num_vertices)
-    
+
     def __getitem__(self, key):
         """
         Gets the item from the graph dict corresponding to key.
@@ -70,7 +70,7 @@ class Graph(object):
 
             * edge_list: list
                 The edges in edge_list can either be tuples (u, v) or (u, v,
-                weight). If no weight is give, the default is weight=1.
+                weight). If no weight is given, the default is weight=1.
 
         Examples:
             >>> G = Graph()
@@ -127,10 +127,10 @@ class Graph(object):
         The adjacency matrix of a graph G with vertices v1, v2, ..., vn is the
         n x n matrix A in which entry A[i][j] is the number of edges in G with
         endpoints (v_i, v_j).
-        
+
         Input:
             * self: Graph
-        
+
         Output:
             * mat: MatrixZZ
 
@@ -188,7 +188,7 @@ class Graph(object):
         vertices = self.vertices()
         num_vertices = len(vertices)
         mat = rosemary.algebra.matrices.matrices.MatrixZZ(num_vertices)
-        
+
         for (i, v) in enumerate(vertices):
             mat[i][i] = len(self[v])
         return mat

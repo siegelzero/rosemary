@@ -1,51 +1,6 @@
 import heapq
 import networkx
-from collections import defaultdict, deque
-
-
-class UnionFind(object):
-    def __init__(self, node_list):
-        """
-        Initialize a new UnionFind object containing nodes in node_list.
-        """
-        self.count = {}
-        self.name = {}
-        self.father = {}
-        self.root = {}
-        for u in node_list:
-            self.count[u] = 1
-            self.name[u] = u
-            self.father[u] = None
-            self.root[u] = u
-
-    def __getitem__(self, u):
-        return self.find(u)
-
-    def find(self, u):
-        """
-        Returns the name of the set containing u.
-        """
-        path = []
-        while self.father[u] is not None:
-            path.append(u)
-            u = self.father[u]
-        for v in path:
-            self.father[v] = u
-        return self.name[u]
-
-    def union(self, u, v, w):
-        """
-        Combines the sets named u and v into a new set named w.
-        """
-        if self.count[self.root[u]] > self.count[self.root[v]]:
-            u, v = v, u
-        large = self.root[v]
-        small = self.root[u]
-        self.father[small] = large
-        self.count[large] += self.count[small]
-        self.name[large] = w
-        self.root[w] = large
-
+from rosemary.data_structures.unionfind import NamedUnionFind
 
 def spanning_trees_ordered(G, k=None):
     """
@@ -176,7 +131,7 @@ def spanning_trees_ordered(G, k=None):
                 * f: edge
                     This is the edge to add.
         """
-        X = UnionFind(nodes)
+        X = NamedUnionFind(nodes)
         (r, e, f) = (inf, None, None)
 
         # First, make all edges in the included list ineligible. This is done
@@ -401,70 +356,29 @@ def spanning_trees(G):
         for t in backtrack([(u, v)], i, 1, parents, weights):
             yield t
 
-
-def spanning_trees_nonrecursive(G):
+def kruskal(G):
     """
-    Returns an object that iterates over the spanning trees of a graph.
-
-    Given a networkx graph G, this returns an iterator over the spanning trees
-    of G. The method used is a not-so-smart backtracking routine enhanced by a
-    UnionFind data structure. Since many dict copies are performed, we avoid
-    the overhead of using the UnionFind data structure. We've implemented an
-    iterative version of the algorithm, due to Python's low recursion limit.
-    Note the use of a deque to ensure that this algorithm returns yields
-    solutions in the same order as the recursive version.
-
-    Input:
-        * G: NetworkX graph.
-
-    Output:
-        * trees: iterator
-            Iterator over the spanning trees.
-
-    Examples:
-        >>> G = networkx.Graph()
-        >>> G.add_weighted_edges_from([(1, 2, 3), (2, 3, 4), (3, 4, 5),\
-                (1, 4, 5), (1, 3, 4)])
-        >>> X = spanning_trees(G)
-        >>> list(X)
-        [[(1, 4), (1, 3), (1, 2)]
-         [(2, 3), (1, 4), (1, 2)]
-         [(2, 3), (1, 4), (1, 3)]
-         [(3, 4), (1, 3), (1, 2)]
-         [(3, 4), (1, 4), (1, 2)]
-         [(3, 4), (2, 3), (1, 2)]
-         [(3, 4), (2, 3), (1, 3)]
-         [(3, 4), (2, 3), (1, 4)]]
-        >>> H = networkx.Graph()
-        >>> H.add_weighted_edges_from([(1, 2, 5), (1, 3, 5), (1, 4, 6),\
-                (2, 3, 2), (2, 5, 7), (2, 7, 4), (3, 4, 1), (3, 5, 2),\
-                (4, 5, 3), (4, 6, 2), (5, 6, 1), (5, 7, 2), (6, 7, 3)])
-        >>> Y = spanning_trees(H)
-        >>> len(list(Y))
-        615
-        >>> K8 = networkx.complete_graph(8)
-        >>> len(list(spanning_trees(K8)))
-        262144
+    kruskal(G):
+    Given a weighted graph G, this algorithm returns a minimal spanning tree
+    for G using Kruskal's algorithm. The algorithm builds a spanning tree by
+    successively inserting edges from G in order of increasing cost. We
+    insert each edge e as long as it does not create a cycle when added to
+    the edges we've already inserted. If, on the other hand, inserting e
+    would result in a cycle, then we simply discard e and continue.
     """
-
     def find(parents, u):
         """
-        This returns the name of the set containing u.
+        This subroutine returns a representative element from C that contains
+        u. Using this, we can determine whether two vertices u and v belong to
+        the same tree by testing whether find(C, u) = find(C, v).
         """
-        # Find without path compression. This is faster is some tests.
-        while u != parents[u]:
-            u = parents[u]
-        return u
-
-        #Below is the path compression heuristic. This seems to be slower in
-        #some tests (possibly due to the recursion)
-        #if u != parents[u]:
-        #    parents[u] = find(parents, parents[u])
-        #return parents[u]
+        if parents[u] != u:
+            parents[u] = find(parents, parents[u])
+        return parents[u]
 
     def union(parents, weights, u, v):
         """
-        This subroutine combines the sets containing u and v into a new set.
+        This subroutine
         """
         u = find(parents, u)
         v = find(parents, v)
@@ -472,38 +386,31 @@ def spanning_trees_nonrecursive(G):
             parents[v] = u
         else:
             parents[u] = v
-            if weights[u] == weights[v]:
-                weights[v] += 1
+        if weights[u] == weights[v]:
+            weights[v] += 1
 
-    edges = G.edges()
-    m = len(edges)
-    n = G.number_of_nodes() - 1
+    E = [(G[u][v], u, v) for u in G for v in G[u]]
+    T = set()
+    parents = {u: u for u in G}
+    weights = {u: 0 for u in G}
 
-    # S is our stack, S[1] is the first level
-    k = 1
-    stack = defaultdict(deque)
+    for (_, u, v) in sorted(E):
+        if find(parents, u) != find(parents, v):
+            T.add((u, v))
+            union(parents, weights, u, v)
 
-    for idx in xrange(m - n + 1):
-        u, v = edges[idx]
-        parents = {n: n for n in G}
-        weights = {n: 0 for n in G}
-        union(parents, weights, u, v)
-        stack[k].append(([(u, v)], 1, idx, parents, weights))
+    return T
 
-    while k:
-        while stack[k]:
-            (partial, partial_len, idx, parents, weights) = stack[k].popleft()
+def prim(G, s):
+    P = {}
+    Q = [(0, None, s)]
 
-            k += 1
-            for j in xrange(idx + 1, m):
-                (x, y) = edges[j]
-                if find(parents, x) != find(parents, y):
-                    if partial_len + 1 == n:
-                        yield partial + [(x, y)]
-                    else:
-                        new_parents = parents.copy()
-                        new_weights = weights.copy()
-                        union(new_parents, new_weights, x, y)
-                        stack[k].append((partial + [(x, y)], partial_len + 1,
-                                        j, new_parents, new_weights))
-        k -= 1
+    while Q:
+        (_, p, u) = heapq.heappop(Q)
+        if u in P:
+            continue
+        P[u] = p
+        for (v, w) in G[u].items():
+            heapq.heappush(Q, (w, u, v))
+    return P
+

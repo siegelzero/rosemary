@@ -1,13 +1,5 @@
 from rosemary.utilities import cached_function
 
-"""
-Store a weighted graph as a dict G, where 'for v in G' runs through the
-vertices of G, and G[v] is a dict W, where the keys of W are the neighbors of
-v, and W[v] is the weight of the edge between them.
-"""
-
-################################################################################
-
 def bellman_ford(G, s):
     """
     bellman_ford(G, s):
