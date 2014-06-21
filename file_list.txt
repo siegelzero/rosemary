@@ -6,14 +6,9 @@
 ./algebra/power_series/power_series.py
 ./algebra/matrices/matrices.py
 ./algorithms/subset_sum.py
-./algorithms/spanning_trees.py
-./algorithms/shortest_path.py
 ./algorithms/arithmetic_progressions.py
-./algorithms/prob345.py
-./algorithms/min_spanning_tree.py
 ./numerical/special_functions.py
 ./number_theory/sieves.py
 ./number_theory/zn_arithmetic.py
 ./number_theory/primality.py
 ./number_theory/factorization.py
-./number_theory/misc.py

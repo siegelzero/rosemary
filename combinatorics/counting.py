@@ -103,7 +103,6 @@ def bipartitions(m, n):
 
     return p[m][n]
 
-
 def partition_list(n):
     """
     partition_list(n):
@@ -251,13 +250,13 @@ def triomino_tilings(nrows, ncols):
     This returns the number of ways to tile an m x n grid with triominos.
     A triomino is a shape consisting of three squares joined via the edges.
     There are six possible layouts:
-        
+
         1       2       3       4       5       6
 
         00      00      0        0      000     0
         0        0      00      00              0
                                                 0
-    """     
+    """
     if nrows < ncols:
         return triomino_tilings(ncols, nrows)
 
@@ -279,7 +278,7 @@ def triomino_tilings(nrows, ncols):
             return D[t_u]
 
         root = min(uncovered)
-        
+
         ss = 0
         for piece in next_pieces(root):
             if uncovered.issuperset(piece):
@@ -305,7 +304,7 @@ def necklaces(n, k, weights=None):
     necklace of n beads with k colors. A necklace of length n colored by k
     colors is an equivalence class of n-character strings over an alphabet of
     size k, taking all rotations as equivalent.
-    
+
     The optional argument weights can be a list or tuple of positive integers
     summing to n. If the colors used are k_0, k_1, ..., k_{n - 1}, then
     weights[i] is the number of times that color k_i is used.
@@ -321,7 +320,7 @@ def necklaces(n, k, weights=None):
         The number of colorings.
 
     Examples:
-        >>> necklaces(3, 2) 
+        >>> necklaces(3, 2)
         4
         >>> necklaces(10, 5)
         976887
@@ -336,12 +335,10 @@ def necklaces(n, k, weights=None):
         ss = 0
         for d in xdivisors(j):
             ll = [ e / d for e in weights ]
-            ss += euler_phi(d) * multinomial(n // d, ll)
-        return ss // n
+            ss += euler_phi(d)*multinomial(n//d, ll)
+        return ss//n
     else:
         ss = 0
         for d in xdivisors(n):
-            ss += euler_phi(d) * k**(n // d)
-        return ss // n
-
-
+            ss += euler_phi(d)*k**(n//d)
+        return ss//n

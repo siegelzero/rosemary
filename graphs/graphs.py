@@ -1,7 +1,9 @@
 import rosemary.algebra.matrices.matrices
 
-
 class Graph(object):
+    """
+    Class of simple graphs.
+    """
     def __init__(self):
         """
         Initializes a new Graph object.
@@ -21,6 +23,26 @@ class Graph(object):
         """
         return self.graph_dict[key]
 
+    def __iter__(self):
+        """
+        Iterator over the keys of the grap dict of self.
+        """
+        return self.graph_dict.iterkeys()
+
+    def add_vertex(self, u):
+        """
+        Adds the vertex u to self.
+        """
+        if u not in self.graph_dict:
+            self.graph_dict[u] = {}
+
+    def add_vertices(self, vertex_list):
+        """
+        Adds the vertices to self.
+        """
+        for u in vertex_list:
+            self.add_vertex(u)
+
     def add_edge(self, u, v=None, weight=1):
         """
         Adds the edge (u, v) to self.
@@ -30,11 +52,8 @@ class Graph(object):
 
         Input:
             * self: Graph
-
             * u: vertex of self
-
             * v: vertex of self
-
             * weight (default=1)
 
         Examples:
@@ -60,7 +79,6 @@ class Graph(object):
             else:
                 self.graph_dict[a][b] = weight
 
-
     def add_edges(self, edge_list):
         """
         Adds the edges in edge_list to self, modifying self.
@@ -85,6 +103,13 @@ class Graph(object):
         """
         Returns a sorted list of the edges of self.
         """
+        edge_list = sorted(self.edge_set())
+        return edge_list
+
+    def edge_set(self):
+        """
+        Returns a set containing the vertices of self.
+        """
         edges_seen = set()
         graph_dict = self.graph_dict
 
@@ -94,8 +119,7 @@ class Graph(object):
                 triple = (min(u, v), max(u, v), weight)
                 edges_seen.add(triple)
 
-        edge_list = sorted(edges_seen)
-        return edge_list
+        return edges_seen
 
     def vertices(self):
         """
@@ -103,6 +127,13 @@ class Graph(object):
         """
         vertex_list = sorted(self.graph_dict.keys())
         return vertex_list
+
+    def vertex_set(self):
+        """
+        Returns a set containing the edges of self.
+        """
+        vertices_seen = set(self.graph_dict.keys())
+        return vertices_seen
 
     def degree(self, vertex):
         """
@@ -240,3 +271,33 @@ class Graph(object):
                     induced.add_edge(u, v)
 
         return induced
+
+    def complement(self):
+        """
+        Returns the complement graph of self.
+
+        The complement G' of a simple graph G is the simple graph with the same
+        vertex set as G, where an edge uv appears in G' if and only if edge uv
+        does not appear in G. Note that this concept isn't well defined for
+        weighted graphs. In the case where self is weighted, we give all
+        complementary edges weight 1.
+
+        Input:
+            * self: Graph
+
+        Output:
+            * complement: Graph
+        """
+        complement_graph = Graph()
+        vertices = self.vertices()
+
+        for u in vertices:
+            complement_graph.add_vertex(u)
+
+        for (i, u) in enumerate(vertices):
+            for j in xrange(i):
+                v = vertices[j]
+                if u not in self[v]:
+                    complement_graph.add_edge(u, v)
+
+        return complement_graph

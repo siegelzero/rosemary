@@ -1,7 +1,6 @@
 # Miscellaneous number theoretic functions
 
 import rosemary.number_theory.factorization
-import rosemary.combinatorics.counting
 
 from rosemary.number_theory.prime_list import PRIME_LIST
 from fractions import Fraction
@@ -32,9 +31,9 @@ def largest_divisor(n, b):
     if n % target == 0:
         return target
 
-    n_fac = rosemary.number_theory.factorization.factor(n)
+    n_factorization = rosemary.number_theory.factorization.factor(n)
     L = []
-    for (p, e) in n_fac:
+    for (p, e) in n_factorization:
         pp = p
         for _ in xrange(e):
             L.append(pp)
@@ -75,8 +74,29 @@ def largest_divisor(n, b):
 
 def maximize_divisors(B):
     """
-    maximize_divisors(B):
-    This returns the integer k, 1 <= k <= B, with the most divisors.
+    Computes a positive integer n <= B with the maximal number of divisors,
+    along with this number of divisors.
+
+    Input:
+        * B: int (B > 0)
+
+    Output:
+        * (num_divs, n): tuple
+            A tuple of positive integers. The value n is the positive integer n
+            with the maximal number of divisors, and the value num_divs is this
+            number of divisors.
+
+    Examples:
+        >>> maximize_divisors(1000)
+        (32, 840)
+        >>> maximize_divisors(10**30)
+        (13271040, 950542574818669103079134726400L)
+
+    Details:
+        The algorithm uses the following fact: If n <= B has the maximal number
+        of divisors and both p_i**e_i | n and p_j**e_j | n with p_i < p_j, then
+        e_i >= e_j. It follows that if p_j | n, then p_i | n for all primes p_i
+        < p_j. We perform an exhaustive search of this solution space.
     """
     p_list = []
     pp = 1
@@ -112,29 +132,7 @@ def maximize_divisors(B):
     while 2**k <= B:
         backtrack(0, k, 2**k, k + 1)
         k += 1
-    return max_tau
-
-
-def bernoulli_number(n):
-    """
-    This returns the nth bernoulli number, using the algorithm due to
-    akiyama-tanigawa.
-    """
-    if n == 0:
-        return Fraction(1, 1)
-    elif n == 1:
-        return Fraction(-1, 2)
-    elif n == 2:
-        return Fraction(1,6)
-    elif n % 2 == 1:
-        return Fraction(0, 1)
-
-    A = [0] * (n + 1)
-    for m in xrange(0, n + 1):
-        A[m] = Fraction(1, m + 1)
-        for j in xrange(m, 0, -1):
-            A[j - 1] = j * (A[j - 1] - A[j])
-    return A[0]
+    return tuple(max_tau)
 
 
 def bernoulli_list(n):
@@ -147,6 +145,7 @@ def bernoulli_list(n):
 
     Output:
         * L: list
+            A list of the Bernoulli numbers.
 
     Examples:
         >>> bernoulli_list(10)
@@ -154,7 +153,9 @@ def bernoulli_list(n):
          0, Fraction(1, 42), 0, Fraction(-1, 30), 0, Fraction(5, 66)]
 
     Details:
-        The Bernoulli numbers are defined by the recursion.
+        The Bernoulli numbers are defined by the recursion
+            (m + 1)*B_m = -\sum_{k = 0}^{m - 1} \binom{m + 1}{k} B_k.
+        We use this recursion directly.
     """
     values = [0]*(n + 1)
     values[0] = 1
@@ -162,7 +163,7 @@ def bernoulli_list(n):
 
     for m in xrange(2, n + 1, 2):
         total = 1
-        # binom holds the value binomial(m + 1, k) below
+        # binom holds the value binomial(m + 1, k) below.
         binom = 1
         for k in xrange(1, m):
             binom *= (m + 2 - k)
@@ -171,5 +172,3 @@ def bernoulli_list(n):
                 total += binom*values[k]
         values[m] = -total/(m + 1)
     return values
-
-
