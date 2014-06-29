@@ -468,7 +468,7 @@ def is_power(n, k=None):
     Output cases:
         * (b, k): tuple of ints
             Values such that n = b^k if such values exist.
-        
+
         * Returns False if no such values exist.
 
     Examples:

@@ -1,4 +1,5 @@
 import rosemary.algebra.matrices.matrices
+import rosemary.graphs.algorithms.traversal
 
 class Graph(object):
     """
@@ -28,6 +29,12 @@ class Graph(object):
         Iterator over the keys of the grap dict of self.
         """
         return self.graph_dict.iterkeys()
+
+    def num_vertices(self):
+        return len(self.graph_dict.keys())
+
+    def num_edges(self):
+        return len(self.edge_set())
 
     def add_vertex(self, u):
         """
@@ -301,3 +308,25 @@ class Graph(object):
                     complement_graph.add_edge(u, v)
 
         return complement_graph
+
+    def is_connected(self):
+        """
+        Returns True if self is connected, and False otherwise.
+        """
+        start = self.graph_dict.keys()[0]
+        vertex_generator = rosemary.graphs.algorithms.traversal.breadth_first_search(self, start)
+        num_vertices = self.num_vertices()
+        num_seen = len(list(vertex_generator))
+        return num_seen == num_vertices
+
+def complete_graph(n):
+    """
+    Returns the complete graph on vertices 0, 1, ..., n - 1.
+    """
+    Kn = Graph()
+
+    for u in xrange(n):
+        for v in xrange(u):
+            Kn.add_edge(u, v)
+
+    return Kn
