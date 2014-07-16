@@ -629,7 +629,7 @@ def chinese(L):
     Input:
         * L: list
             L is a list of congruences of the form (residue, modulus).
-    
+
     Output:
         * x: int
             x is the least positive integer satisfying all of the congruences.
@@ -706,7 +706,7 @@ def chinese_preconditioned(L, preconditioning_data):
             This is a tuple containing the preconditioning data for this set of
             moduli. This should be the output of the function
             crt_preconditioning_data.
-    
+
     Output:
         * x: int
             x is the least positive integer satisfying all of the congruences.
@@ -723,7 +723,7 @@ def chinese_preconditioned(L, preconditioning_data):
         has the same set of moduli as the other, then this method is much faster
         than the function "chinese", as long as the preconditioning data is only
         computed once.
-        
+
         A typical use of this function is in combining solutions of some
         polynomial congruence modulo prime powers to find the solutions modulo
         the product of these prime-power moduli. In this case, you will have a
@@ -775,11 +775,11 @@ def jacobi_symbol(a, m):
         The algorithm we have implemented follows the exposition given in
         Chapter 5 of "Algorithmic Number Theory - Efficient Algorithms" by Bach
         and Shallit. Also, see Chapter 12 of "A Computational Introduction to
-        Number Theory and Algebra" by Shoup for details. 
+        Number Theory and Algebra" by Shoup for details.
     """
     if m % 2 == 0:
         raise ValueError('jacobi_symbol: Must have m odd.')
-    
+
     a = a % m
     t = 1
     while a:

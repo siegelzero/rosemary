@@ -1,16 +1,68 @@
+# Algorithms for enumerative combinatorics: methods to count the number of
+# certain structures and configurations. Every generation algorithm can be made
+# in to an enumeration algorithm, but we prefer algorithms more advanced than
+# simply listing and counting whenever possible.
+
 from rosemary.number_theory.core import gcd
 from rosemary.number_theory.factorization import xdivisors
 from rosemary.number_theory.arithmetic_functions import euler_phi, factorial
 
 def bell_number(n):
     """
-    bell_number(n):
-    Returns the Bell number B_n; i.e. the number of partitions of an n-set.
+    Returns the Bell number B(n).
+
+    The Bell number B(n) is defined to be the number of partitions of an n-set
+    (or equivalently, the number of equivalence relations on an n-set).
+
+    Input:
+        * n: int (n >= 0)
+
+    Output:
+        * B: int
+
+    Examples:
+        >>> bell_number(4)
+        15
+        >>> bell_number(10)
+        115975
+
+    Details:
+        The algorithm uses the recurrence $B(m) = \sum_{i = 0}^{m - 1} \binom{m
+        - 1}{i} B(i)$. See Theorem 3.9 of Combinatorial Algorithms by Kreher and
+          Stinson for a proof of the recurrence.
     """
-    B = [1] + [ 0 for k in range(n) ]
-    for i in range(1, n + 1):
-        B[i] = sum([ binomial(i - 1, k - 1) * B[i - k] for k in range(1, i + 1) ])
-    return B[-1]
+    if n < 0:
+        raise ValueError("bell_number: Must have n >= 0.")
+
+    B = [0]*(n + 1)
+    B[0] = 1
+
+    for i in xrange(1, n + 1):
+        coeff = 1
+        value = 0
+        for k in xrange(1, i + 1):
+            value += coeff*B[i - k]
+            coeff *= (i - k)
+            coeff /= k
+        B[i] = value
+    return B[n]
+
+def stirling_number2(m, n):
+    S = {}
+    S[0, 0] = 1
+
+    for i in xrange(1, m + 1):
+        S[i, 0] = 0
+
+    for i in xrange(m + 1):
+        S[i, i + 1] = 0
+
+    for i in xrange(1, m + 1):
+        for j in xrange(1, min(i, n) + 1):
+            S[i, j] = j*S[i - 1, j] + S[i - j, j - 1]
+
+    return S[m, n]
+
 
 def binomial(n, k):
     """
