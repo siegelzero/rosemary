@@ -1,6 +1,7 @@
 import rosemary.algebra.matrices.matrices
 import rosemary.graphs.algorithms.traversal
 
+
 class Graph(object):
     """
     Class of simple graphs.

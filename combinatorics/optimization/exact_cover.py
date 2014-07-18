@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+
 class ExactCover(object):
     """
     Class representing the Exact Cover problem.
@@ -40,8 +41,6 @@ class ExactCoverBinary(ExactCover):
 
         self.vectors = vectors
         self.num_bits = num_bits
-        self.all_bits = 2**num_bits - 1
-
 
     def number_of_solutions(self):
         """
@@ -49,40 +48,39 @@ class ExactCoverBinary(ExactCover):
         recursive backtracking method.
         """
         vectors = self.vectors
-        cache = {self.all_bits: 1}
+        all_bits = 2**self.num_bits - 1
+        cache = {all_bits: 1}
 
-        def backtrack(bits):
-            if bits in cache:
-                return cache[bits]
+        def backtrack(covered):
+            if covered in cache:
+                return cache[covered]
 
             total = 0
-            least_unset_bit = ~bits & (bits + 1)
+            least_unset_bit = ~covered & (covered + 1)
             for v in vectors[least_unset_bit]:
-                if (bits & v) == 0:
-                    total += backtrack(bits | v)
+                if (covered & v) == 0:
+                    total += backtrack(covered | v)
 
-            cache[bits] = total
+            cache[covered] = total
             return total
 
         total = backtrack(0)
         return total
 
-
     def solutions(self):
-        all_bits = self.all_bits
-        vecs = self.vectors
+        all_bits = 2**self.num_bits - 1
+        vectors = self.vectors
         stack = [(0, [])]
 
         while stack:
-            (bits, used) = stack.pop()
-
-            if bits == all_bits:
+            (covered, used) = stack.pop()
+            if covered == all_bits:
                 yield used
             else:
-                bit = ~bits & (bits + 1)
-                for v in vecs[bit]:
-                    if (bits & v) == 0:
-                        stack.append((bits | v, used + [v]))
+                least_unset_bit = ~covered & (covered + 1)
+                for v in vectors[least_unset_bit]:
+                    if (covered & v) == 0:
+                        stack.append((covered | v, used + [v]))
 
 
 def langford_ints(n):
