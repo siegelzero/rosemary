@@ -97,11 +97,13 @@ def langford_ints(n):
             l -= 1
     return L
 
+
 def langford_pairings(n):
     ints = langford_ints(n)
     E = ExactCoverBinary(ints)
     num_sols = E.number_of_solutions()
     return num_sols // 2
+
 
 def domino_ints(n):
     L = []
@@ -114,11 +116,13 @@ def domino_ints(n):
 
     return L
 
+
 def domino_tilings(n):
     ints = domino_ints(n)
     E = ExactCoverBinary(ints)
     num_sols = E.number_of_solutions()
     return num_sols
+
 
 def latin_square_ints(n):
     ints = []
@@ -140,4 +144,3 @@ def latin_square_ints(n):
                 ints.append((val << (n*n)) | (1 << (n*n - j*n - i - 1)))
 
     return ints
-

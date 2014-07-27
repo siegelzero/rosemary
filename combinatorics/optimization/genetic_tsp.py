@@ -1,6 +1,7 @@
 #!/usr/bin/pypy
 import random
 
+
 class TravelingSalesman(object):
     def __init__(self, points):
         self.points = points

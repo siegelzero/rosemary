@@ -7,6 +7,7 @@ from rosemary.number_theory.core import gcd
 from rosemary.number_theory.factorization import xdivisors
 from rosemary.number_theory.arithmetic_functions import euler_phi, factorial
 
+
 def bell_number(n):
     """
     Returns the Bell number B(n).
@@ -46,6 +47,7 @@ def bell_number(n):
             coeff /= k
         B[i] = value
     return B[n]
+
 
 def stirling_number2(m, n):
     S = {}
@@ -89,6 +91,7 @@ def binomial(n, k):
     for e in xrange(2, k + 1):
         pp = pp / e
     return pp
+
 
 def multinomial(n, k):
     """
@@ -151,9 +154,10 @@ def bipartitions(m, n):
             if i + j > 1:
                 for k in xrange(i, m + 1):
                     for l in xrange(j, n + 1):
-                       p[k][l] += p[k - i][l - j]
+                        p[k][l] += p[k - i][l - j]
 
     return p[m][n]
+
 
 def partition_list(n):
     """
@@ -187,6 +191,7 @@ def partition_number(n):
 
 ################################################################################
 
+
 def rth_power_partition_number(r, n):
     """
     rth_power_partition_number(r, n):
@@ -203,7 +208,7 @@ def rth_power_partition_number(r, n):
     Pr[0] = 1
 
     # it's faster to compute these in descending order
-    P = [ partition_number(k) for k in xrange(0, n + 1) ]
+    P = [partition_number(k) for k in xrange(0, n + 1)]
 
     # this bit uses the j.c.p. pure power recurrence to compute the rth
     # power coefficients of the partition generating function
@@ -216,6 +221,7 @@ def rth_power_partition_number(r, n):
     return Pr[n]
 
 ################################################################################
+
 
 def number_of_domino_tilings(m, n):
     """
@@ -242,6 +248,7 @@ def number_of_domino_tilings(m, n):
     # create the board, and store the largest number appearing
     largest = m*n - 1
     D = {}
+
     def backtrack(covered, uncovered):
         t_c = tuple(covered)
         t_u = tuple(uncovered)
@@ -296,6 +303,7 @@ def number_of_domino_tilings(m, n):
     total = backtrack(set([]), set(range(m * n)))
     return total
 
+
 def triomino_tilings(nrows, ncols):
     """
     triomino_tilings(nrows, ncols):
@@ -315,16 +323,16 @@ def triomino_tilings(nrows, ncols):
     def next_pieces(root):
         i, j = root
         L = []
-        L += [ ((i, j), (i, j + 1), (i + 1, j)) ]
-        L += [ ((i, j), (i, j + 1), (i + 1, j + 1)) ]
-        L += [ ((i, j), (i + 1, j), (i + 1, j + 1)) ]
-        L += [ ((i, j), (i + 1, j), (i + 1, j - 1)) ]
-        L += [ ((i, j), (i, j + 1), (i, j + 2)) ]
-        L += [ ((i, j), (i + 1, j), (i + 2, j)) ]
+        L += [((i, j), (i, j + 1), (i + 1, j))]
+        L += [((i, j), (i, j + 1), (i + 1, j + 1))]
+        L += [((i, j), (i + 1, j), (i + 1, j + 1))]
+        L += [((i, j), (i + 1, j), (i + 1, j - 1))]
+        L += [((i, j), (i, j + 1), (i, j + 2))]
+        L += [((i, j), (i + 1, j), (i + 2, j))]
 
         return L
 
-    def backtrack(uncovered, D = {}):
+    def backtrack(uncovered, D={}):
         t_u = tuple(uncovered)
         if t_u in D:
             return D[t_u]
@@ -344,9 +352,10 @@ def triomino_tilings(nrows, ncols):
         return ss
 
     # create the board, and store the largest number appearing
-    board = set([ (i, j) for i in range(nrows) for j in range(ncols) ])
+    board = set([(i, j) for i in range(nrows) for j in range(ncols)])
     total = backtrack(board)
     return total
+
 
 def necklaces(n, k, weights=None):
     """
@@ -386,7 +395,7 @@ def necklaces(n, k, weights=None):
         j = gcd(weights)
         ss = 0
         for d in xdivisors(j):
-            ll = [ e / d for e in weights ]
+            ll = [e/d for e in weights]
             ss += euler_phi(d)*multinomial(n//d, ll)
         return ss//n
     else:

@@ -71,6 +71,7 @@ def permutations(A):
             k += 1
             l -= 1
 
+
 def n_tuples(n, M=None):
     """
     n_tuples(n M):
@@ -104,13 +105,13 @@ def n_tuples(n, M=None):
 
     if isinstance(M, list):
         if len(M) == n:
-            M = [ 2 ] + M
+            M = [2] + M
     else:
         if isinstance(M, (int, long)):
             bd = M
         else:
             bd = 2
-        M = [ 2 ] + [ bd for j in range(n) ]
+        M = [2] + [bd for j in range(n)]
 
     while True:
         yield A[1:]
@@ -122,8 +123,6 @@ def n_tuples(n, M=None):
             return
         else:
             A[j] = A[j] + 1
-
-
 
 
 def integer_partitions(n, **kwargs):
@@ -288,4 +287,3 @@ def integer_partitions(n, **kwargs):
 
     for partition in partition_gen:
         yield partition
-
