@@ -7,6 +7,7 @@ from bisect import bisect_left
 # Sieves for generating primes
 ################################################################################
 
+
 def primes(n):
     """
     Returns a list of all primes p <= n.
@@ -29,8 +30,8 @@ def primes(n):
         coprime to 6. The code is based on some found on stackoverflow.
     """
     n += 1
-    offset = (n%6 > 1)
-    n = {0:n, 1:n - 1, 2:n + 4, 3:n + 3, 4:n + 2, 5:n + 1}[n % 6]
+    offset = (n % 6 > 1)
+    n = {0: n, 1: n - 1, 2: n + 4, 3: n + 3, 4: n + 2, 5: n + 1}[n % 6]
 
     block = [True]*(n//3)
     block[0] = False
@@ -38,12 +39,12 @@ def primes(n):
 
     for i in xrange(sqrt//3 + 1):
         if block[i]:
-            k = (3*i + 1)|1
+            k = (3*i + 1) | 1
             kk = k*k
             block[kk//3::2*k] = [False]*((n//6 - kk//6 - 1)//k + 1)
-            block[(kk + 4*k - 2*k*(i&1))//3::2*k] = [False]*((n//6 - (kk + 4*k - 2*k*(i&1))//6 - 1)//k + 1)
+            block[(kk + 4*k - 2*k*(i & 1))//3::2*k] = [False]*((n//6 - (kk + 4*k - 2*k*(i & 1))//6 - 1)//k + 1)
 
-    return [2, 3] + [(3*i + 1)|1 for i in xrange(1, n//3 - offset) if block[i]]
+    return [2, 3] + [(3*i + 1) | 1 for i in xrange(1, n//3 - offset) if block[i]]
 
 
 def eratosthenes(n):
@@ -73,7 +74,7 @@ def eratosthenes(n):
     for i in xrange(1, sqrt + 1):
         if block[i]:
             k = 2*i + 1
-            start = (k*k - 1)/ 2
+            start = (k*k - 1)//2
             count = (m - start)//k + ((m - start) % k > 0)
             block[start::k] = [False]*count
 
@@ -107,7 +108,7 @@ def prime_xrange(a, b=None):
         # bb is the smallest even number >= b.
         aa = a - (a % 2)
         bb = b + (b % 2)
-        block_size= min((bb - aa)//2, 8*sqrt)
+        block_size = min((bb - aa)//2, 8*sqrt)
         offsets = {p: -(aa + 1 + p)//2 % p for p in prime_list}
 
         for start in xrange(aa, bb, 2*block_size):
@@ -158,6 +159,7 @@ def prime_xrange(a, b=None):
 ################################################################################
 # Sieves for generating values of arithmetical functions
 ################################################################################
+
 
 def moebius_xrange(a, b=None):
     """
@@ -274,4 +276,3 @@ def factored_xrange(a, b=None):
             if block[i] != 1:
                 factorizations[i].append((block[i], 1))
             yield (start + i, factorizations[i])
-

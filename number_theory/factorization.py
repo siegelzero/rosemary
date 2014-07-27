@@ -21,6 +21,7 @@ from rosemary.number_theory.core import (
 # Classical algorithms
 ###############################################################################
 
+
 def trial_division(n, bound=None):
     """
     Returns the smallest prime divisor of n, or proves primality.
@@ -63,7 +64,7 @@ def trial_division(n, bound=None):
     # Next we use a wheel for the rest. All primes >= 7 fall into one of eight
     # residue classes modulo 30. This uses that fact to avoid trial dividing by
     # numbers divisible by 2, 3, or 5.
-    offset = {1:6, 7:4, 11:2, 13:4, 17:2, 19:4, 23:6, 29:2}
+    offset = {1: 6, 7: 4, 11: 2, 13: 4, 17: 2, 19: 4, 23: 6, 29: 2}
     d += offset[d % 30]
 
     while d <= bound:
@@ -337,7 +338,7 @@ def pollard_rho_brent(n):
             k += m
             if k >= r or g > 1:
                 break
-        
+
         r *= 2
         if g > 1:
             break
@@ -353,10 +354,9 @@ def pollard_rho_brent(n):
 
 def z2_gaussian_elimination(exponents):
     """
-    
+
     """
     # Arithmetic done over Z2, so we reduce the exponent vectors modulo 2.
-    #reduced = [[e % 2 for e in row] for row in exponents]
     num_rows = len(exponents)
     num_cols = len(exponents[0])
 
@@ -396,7 +396,7 @@ def z2_gaussian_elimination(exponents):
                     history[m] ^= his
 
         bit <<= 1
-    
+
     vectors = []
     for i in xrange(num_rows):
         value = history[i]
@@ -501,7 +501,7 @@ def dixon(n, num_trials=10000):
             g = gcd(s, pp)
             if g != s:
                 continue
-            
+
             exponent_vector = smooth_factor(s, factor_base, num_primes)
             exponent_matrix.append(exponent_vector)
             num_smooths_found += 1
@@ -576,7 +576,7 @@ def cfrac(n, k=1):
 
         Details
             This algorithm expands sqrt(n) into a simple continued fraction. The
-            values (i, A_{i - 1}, Q_i) output by this algorithm correspond to 
+            values (i, A_{i - 1}, Q_i) output by this algorithm correspond to
         """
         g = integer_sqrt(n)
         A0, A1 = 0, 1
@@ -636,7 +636,7 @@ def cfrac(n, k=1):
     exponent_matrix = []
     num_smooths_found = 0
     a_list = []
-    
+
     max_element = n
     power = 1
     while 2**power < max_element:
@@ -734,8 +734,9 @@ def factor(n):
                 D[d] += 1
                 n = n // d
 
-    p_list = sorted([ (p, D[p]) for p in D ])
+    p_list = sorted([(p, D[p]) for p in D])
     return p_list
+
 
 def factor_back(F):
     """
@@ -754,6 +755,7 @@ def factor_back(F):
         pp *= p**e
 
     return pp
+
 
 def divisors(n):
     """
@@ -779,18 +781,19 @@ def divisors(n):
     else:
         raise ValueError("Input must be an integer or a factorization")
 
-    p_divs = [ p for (p, e) in n_fac ]
+    p_divs = [p for (p, e) in n_fac]
     div_list = []
-    iter_list = ( xrange(e + 1) for (p, e) in n_fac )
+    iter_list = (xrange(e + 1) for (p, e) in n_fac)
 
     for tup in itertools.product(*iter_list):
         pp = 1
         for i in xrange(len(tup)):
             pp *= p_divs[i]**tup[i]
-        div_list += [ pp ]
+        div_list += [pp]
 
     div_list.sort()
     return div_list
+
 
 def prime_divisors(n):
     """
@@ -813,8 +816,9 @@ def prime_divisors(n):
     else:
         raise ValueError("Input must be an integer or a factorization")
 
-    p_divs = [ p for (p, e) in n_fac ]
+    p_divs = [p for (p, e) in n_fac]
     return p_divs
+
 
 def xdivisors(n):
     """
@@ -879,4 +883,3 @@ def is_squarefree(n):
             return False
 
     return True
-

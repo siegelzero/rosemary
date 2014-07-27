@@ -109,6 +109,7 @@ def maximize_divisors(B):
 
     num_primes = len(p_list)
     max_tau = [1, 1]
+
     def backtrack(last_i, last_e, total, tau):
         if tau > max_tau[0]:
             max_tau[0] = tau

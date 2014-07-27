@@ -19,6 +19,7 @@ from rosemary.number_theory.core import (
 # primitive roots
 ########################################################################################################################
 
+
 def is_primitive_root(a, p, prime_divisors=None):
     """
     Returns True if a is a primitive root mod p and False otherwise.
@@ -95,7 +96,7 @@ def fibonacci_primitive_roots(p):
     Input:
         * p: int
             A prime number. The primality of p is not verified.
-    
+
     Output:
         * roots: list
             This is a list of the fibonacci primitive roots mod p. This list
@@ -130,6 +131,7 @@ def fibonacci_primitive_roots(p):
 ########################################################################################################################
 # root extraction
 ########################################################################################################################
+
 
 def sqrts_mod_p(a, p):
     """
@@ -168,7 +170,7 @@ def sqrts_mod_p(a, p):
     if p % 8 in (3, 7):
         x = pow(a, (p + 1)//4, p)
     elif p % 8 == 5:
-        x = pow(a, (p + 3)// 8, p)
+        x = pow(a, (p + 3)//8, p)
         if x*x % p != a:
             x = x*pow(2, (p - 1)//4, p) % p
     else:
@@ -275,7 +277,7 @@ def sqrts_mod_n(a, n, n_factorization=None):
         moduli.append(pk)
 
     if len(congruences) == 1:
-        values = [r for (r, pk) in congruences[0]]
+        values = [r for (r, _) in congruences[0]]
     else:
         preconditioning_data = crt_preconditioning_data(moduli)
         values = []
@@ -417,6 +419,7 @@ def discrete_log(a, b, p):
 ################################################################################
 # solutions to congruences
 ################################################################################
+
 
 def linear_congruence(a, b, n):
     """

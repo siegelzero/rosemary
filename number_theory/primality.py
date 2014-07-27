@@ -8,6 +8,7 @@ from bisect import bisect_left
 from math import log
 from random import randint
 
+
 def is_probable_prime(n, a=None):
     """
     Determines if n is a probable prime.
@@ -18,7 +19,7 @@ def is_probable_prime(n, a=None):
     Input:
         * n: odd positive integer (n > 1)
         * a: positive integer (default=None)
-            
+
     Output:
         * b: bool
 
@@ -73,6 +74,7 @@ def is_prime(n):
         d = rosemary.number_theory.factorization.trial_division(n)
         return d == n
 
+
 def is_prime_miller(n):
     """
     Determines if n is prime (pending ERH).
@@ -98,6 +100,7 @@ def is_prime_miller(n):
             return False
     return True
 
+
 def next_prime(n):
     """
     next_prime(n):
@@ -119,6 +122,7 @@ def next_prime(n):
     while not is_prime(n):
         n += 2
     return n
+
 
 def next_probable_prime(n):
     """
@@ -142,6 +146,7 @@ def next_probable_prime(n):
         n += 2
     return n
 
+
 def random_prime(a, b):
     """
     Returns a random prime in [a, b].
@@ -162,4 +167,3 @@ def lucas_lehmer(p):
     for _ in xrange(1, p - 1):
         v = (v*v - 2) % mp
     return (v == 0)
-

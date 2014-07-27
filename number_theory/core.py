@@ -2,6 +2,7 @@
 # Basic number theoretic routines
 ################################################################################
 
+
 def gcd(x, y):
     """
     Returns the greatest common divisor of x and y.
@@ -439,7 +440,6 @@ def integer_sqrt(n):
         return int(n**(0.5))
 
     # Here, bn is the number of bits in the binary representation of n.
-    #bn = integer_log(n, 2) + 1
     bn = n.bit_length()
     x = 2**(bn//2 + 1)
 
@@ -841,4 +841,3 @@ def valuation(p, n):
         else:
             hi = mid
     return lo
-

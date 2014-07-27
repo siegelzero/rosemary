@@ -15,6 +15,7 @@ import rosemary.number_theory.sieves
 # multiplicative functions
 ########################################################################################################################
 
+
 def euler_phi(n):
     """
     Returns the number of positive integers <= n that are coprime to n.
@@ -209,6 +210,7 @@ def tau(n):
 # Other arithmetical functions
 ################################################################################
 
+
 def carmichael_lambda(n):
     """
     Returns the smallest positive integer m such that a^m = 1 (mod n) for all
@@ -336,6 +338,7 @@ def primorial(n):
 # Lists of values of multiplicative functions
 ########################################################################################################################
 
+
 def euler_phi_list(n):
     """
     Returns a list of values of euler_phi(k) for 1 <= k <= n.
@@ -356,7 +359,7 @@ def euler_phi_list(n):
     Details:
         This function creates a list of (n + 1) elements, and fills the list by
         sieving and using the product definition of euler_phi(n).
-    """ 
+    """
     if n <= 0:
         raise ValueError("euler_phi_list: Must have n > 0.")
 
@@ -546,7 +549,7 @@ def euler_phi_sum(n):
     phi_list = euler_phi_list(sqrt)
 
     # for i <= sqrt(n), compute the sum directly
-    cache = {1:1}
+    cache = {1: 1}
     for i in xrange(2, sqrt + 1):
         cache[i] = cache[i - 1] + phi_list[i]
 
@@ -595,7 +598,7 @@ def euler_phi_weighted_sum(n):
     totients = euler_phi_list(sqrt)
 
     # for i <= sqrt(n), compute the sum directly
-    cache = {1:1}
+    cache = {1: 1}
     for i in xrange(2, sqrt + 1):
         cache[i] = cache[i - 1] + i*totients[i]
 
@@ -644,7 +647,7 @@ def moebius_sum(n):
     mu_list = moebius_list(sqrt)
 
     # for i <= sqrt(n), compute the sum directly
-    cache = {1:1}
+    cache = {1: 1}
     for i in xrange(2, sqrt + 1):
         cache[i] = cache[i - 1] + mu_list[i]
 
@@ -703,6 +706,7 @@ def sigma_sum(n):
 ########################################################################################################################
 # Miscellaneous
 ########################################################################################################################
+
 
 def euler_phi_inverse(n):
     """
@@ -785,4 +789,3 @@ def euler_phi_inverse(n):
 
     values.sort()
     return values
-
