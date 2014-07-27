@@ -4,22 +4,22 @@ import random
 # Algorithms for approximate colorings
 ################################################################################
 
+
 def dsatur(graph):
     """
     Returns an upper bound to the chromatic number of the graph, along with an
     approximate coloring.
 
     Input:
-        * graph: (Graph)
+        * graph: Graph
 
     Output:
-        * (num_colors, color_map)
-            * num_colors: (int)
-                This is an upper bound for the chromatic number of the graph.
-            * color_map: (dict)
-                This dict gives color info for the vertices of the graph. The
-                keys are vertices, and the value corresponding to each key is
-                the color in the approximate coloring.
+        * (num_colors, color_classes)
+            * num_colors: int
+                An upper bound for the chromatic number of the graph.
+
+            * color_classes: list
+                A partition of the vertices into color classes.
 
     Details:
         This is the DSATUR algorithm outlined in "New Methods to Color the
@@ -30,14 +30,8 @@ def dsatur(graph):
     uncolored = set(vertices)
     color_map = {}
 
-    # Arrange the vertices by decreasing order of degrees.
-    degrees = []
-    for v in vertices:
-        v_degree = len(graph[v])
-        degrees.append((v_degree, v))
-
     # Pick a vertex of maximal degree and color it with color 0.
-    (_, u) = max(degrees)
+    u = graph.max_degree_vertex()
     color_map[u] = 0
     num_colors = 1
     uncolored.remove(u)
@@ -51,7 +45,7 @@ def dsatur(graph):
         saturation_degrees = []
         adjacent_colors = {}
         for u in uncolored:
-            adjacent_colors[u] = set([])
+            adjacent_colors[u] = set()
             num_uncolored_neighbors = 0
             for v in graph[u]:
                 if v in color_map:
@@ -75,7 +69,11 @@ def dsatur(graph):
                     num_colors += 1
                 break
 
-    return (num_colors, color_map)
+    color_classes = [[] for i in xrange(num_colors)]
+    for (u, color) in color_map.iteritems():
+        color_classes[color].append(u)
+
+    return (num_colors, color_classes)
 
 
 def greedy_sequential(graph):
@@ -100,7 +98,12 @@ def greedy_sequential(graph):
                     num_colors += 1
                 break
 
-    return (num_colors, colors)
+    color_classes = [[] for i in xrange(num_colors)]
+    for (u, color) in colors.iteritems():
+        color_classes[color].append(u)
+
+    return (num_colors, color_classes)
+
 
 def xrlf(graph):
     vertices = graph.vertices()
@@ -108,7 +111,7 @@ def xrlf(graph):
     k = 0
     exact_limit = 60
     trial_num = [40]
-    cand_num = 50 
+    cand_num = 50
     set_lim = [90]
 
     def find_subset(subgraph, vertices, W, C, F):
@@ -119,7 +122,6 @@ def xrlf(graph):
         best = [0, set()]
         list_W = list(W)
         len_W = len(list_W)
-        #print len_W
 
         def backtrack(used, neighbors, diff, last_index):
             ext = sum(1 for (u, v, _) in F if (u in used and v in diff) or (v in used and u in diff))
@@ -142,7 +144,6 @@ def xrlf(graph):
         diff = vertices.difference(C)
         backtrack(set(), set(), diff, 0)
         return set(best[1])
-
 
     def ind_set(H):
         U_list = H.vertices()
@@ -245,7 +246,7 @@ def branch_and_bound(graph):
 
     Input:
         * graph (Graph)
-    
+
     Output:
         * (k, color_map) (tuple)
             * k: int
@@ -342,13 +343,11 @@ def branch_and_bound(graph):
             for j in xrange(1, num_colors + 1):
                 if j not in neighbor_colors:
                     new_color_map[u] = j
-                    best_number = color(uncolored_difference([u]),
-                            new_color_map, best_number, num_colors)
+                    best_number = color(uncolored_difference([u]), new_color_map, best_number, num_colors)
 
             if num_colors < best_number - 1:
                 new_color_map[u] = num_colors + 1
-                best_number = color(uncolored_difference([u]), new_color_map,
-                        best_number, num_colors + 1)
+                best_number = color(uncolored_difference([u]), new_color_map, best_number, num_colors + 1)
 
             return best_number
 

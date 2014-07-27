@@ -1,5 +1,10 @@
 import rosemary.algebra.matrices.matrices
+import rosemary.combinatorics.enumeration
 import rosemary.graphs.algorithms.traversal
+
+import copy
+import itertools
+import random
 
 
 class Graph(object):
@@ -31,6 +36,10 @@ class Graph(object):
         """
         return self.graph_dict.iterkeys()
 
+    def copy(self):
+        new_graph = copy.deepcopy(self)
+        return new_graph
+
     def num_vertices(self):
         return len(self.graph_dict.keys())
 
@@ -43,6 +52,17 @@ class Graph(object):
         """
         if u not in self.graph_dict:
             self.graph_dict[u] = {}
+
+    def delete_vertex(self, u):
+        """
+        Deletes the vertex u from self, along with any edges adjacent to u.
+        """
+        graph_dict = self.graph_dict
+        if u in graph_dict:
+            del graph_dict[u]
+            for v in graph_dict:
+                if u in graph_dict[v]:
+                    del graph_dict[v][u]
 
     def add_vertices(self, vertex_list):
         """
@@ -129,11 +149,31 @@ class Graph(object):
 
         return edges_seen
 
-    def vertices(self):
+    def vertices(self, **kwargs):
         """
         Returns a sorted list of the vertices of self.
         """
-        vertex_list = sorted(self.graph_dict.keys())
+        vertices = self.graph_dict.keys()
+        if 'order' in kwargs:
+            order = kwargs['order']
+
+            if order == 'degree':
+                vertex_list = sorted(vertices, key=self.degree)
+            elif order == 'induced':
+                num_vertices = self.num_vertices()
+                new_graph = self.copy()
+                vertex_list = []
+
+                while len(vertex_list) < num_vertices:
+                    vertex = new_graph.min_degree_vertex()
+                    vertex_list.append(vertex)
+                    new_graph.delete_vertex(vertex)
+
+            else:
+                vertex_list = sorted(vertices)
+        else:
+            vertex_list = sorted(vertices)
+
         return vertex_list
 
     def vertex_set(self):
@@ -142,6 +182,28 @@ class Graph(object):
         """
         vertices_seen = set(self.graph_dict.keys())
         return vertices_seen
+
+    def max_degree_vertex(self):
+        """
+        Returns a vertx of self of maximal degree.
+        """
+        vertices = self.vertices(order='degree')
+
+        if len(vertices) == 0:
+            raise ValueError('min_degree_vertex: Graph has no vertices.')
+
+        return vertices[-1]
+
+    def min_degree_vertex(self):
+        """
+        Returns a vertx of self of minimal degree.
+        """
+        vertices = self.vertices(order='degree')
+
+        if len(vertices) == 0:
+            raise ValueError('min_degree_vertex: Graph has no vertices.')
+
+        return vertices[0]
 
     def degree(self, vertex):
         """
@@ -156,8 +218,8 @@ class Graph(object):
         Returns a sorted list of the neighbors of vertex; i.e. the vertices
         adjacent to vertex.
         """
-        neighbor_list = sorted(self.graph_dict[vertex].keys())
-        return neighbor_list
+        neighbor_set = set(self.graph_dict[vertex].keys())
+        return neighbor_set
 
     def adjacency_matrix(self):
         """
@@ -320,6 +382,7 @@ class Graph(object):
         num_seen = len(list(vertex_generator))
         return num_seen == num_vertices
 
+
 def complete_graph(n):
     """
     Returns the complete graph on vertices 0, 1, ..., n - 1.
@@ -331,3 +394,13 @@ def complete_graph(n):
             Kn.add_edge(u, v)
 
     return Kn
+
+
+def random_graph(n, density):
+    vertices = range(n)
+    graph = Graph()
+    for edge in itertools.combinations(vertices, 2):
+        r = random.uniform(0, 1)
+        if r <= density:
+            graph.add_edge(edge)
+    return graph

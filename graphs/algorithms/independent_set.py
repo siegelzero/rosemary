@@ -22,4 +22,3 @@ def maximum_independent_set(graph):
     backtrack([], set(), 0, -1)
 
     return best[1]
-

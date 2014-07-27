@@ -119,3 +119,25 @@ def domino_tilings(n):
     E = ExactCoverBinary(ints)
     num_sols = E.number_of_solutions()
     return num_sols
+
+def latin_square_ints(n):
+    ints = []
+    all_blocks = {}
+    for i in xrange(n):
+        all_blocks[i] = []
+        for j in xrange(n):
+            blocks = [[0]*n for _ in xrange(n)]
+            blocks[j][i] = 1
+            all_blocks[i].append(blocks)
+
+    for p in xrange(n):
+        for (i, a) in enumerate(all_blocks[p]):
+            for (j, b) in enumerate(all_blocks[p]):
+                t = []
+                for s in a + b:
+                    t.extend(s)
+                val = sum(2**(2*n*n - k - 1) for k in xrange(2*n*n) if t[k])
+                ints.append((val << (n*n)) | (1 << (n*n - j*n - i - 1)))
+
+    return ints
+
