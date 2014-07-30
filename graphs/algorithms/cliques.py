@@ -12,24 +12,22 @@ def maximal_cliques(graph):
     for v in vertices:
         greater_vertices[v] = {u for u in vertices if u > v}
 
-    cliques = []
-
     def backtrack(partial, last, choices, N, size):
         if size > 0:
             last_neighbors = neighbors[last]
             greater_than_last = greater_vertices[last]
             N = N & last_neighbors
-            choices = choices & last_neighbors & greater_than_last
+            choices = (choices & last_neighbors) & greater_than_last
 
         if not N:
-            cliques.append(partial)
+            yield partial
 
         for e in choices:
-            backtrack(partial + [e], e, choices, N, size + 1)
+            for clique in backtrack(partial + [e], e, choices, N, size + 1):
+                yield clique
 
-    backtrack([], 0, vertices, vertices, 0)
-
-    return cliques
+    for clique in backtrack([], 0, vertices, vertices, 0):
+        yield clique
 
 
 def pardalos(graph):

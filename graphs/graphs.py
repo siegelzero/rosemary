@@ -215,8 +215,8 @@ class Graph(object):
 
     def neighbors(self, vertex):
         """
-        Returns a sorted list of the neighbors of vertex; i.e. the vertices
-        adjacent to vertex.
+        Returns a set of the neighbors of vertex; i.e. the vertices adjacent to
+        vertex.
         """
         neighbor_set = set(self.graph_dict[vertex].keys())
         return neighbor_set
