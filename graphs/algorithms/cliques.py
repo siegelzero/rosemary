@@ -1,11 +1,60 @@
 import rosemary.graphs.algorithms.coloring
 
+
 ################################################################################
 # Algorithms for enumerating all maximal cliques.
 ################################################################################
 
 
-def bron_kerbosch_simple(graph):
+def bron_kerbosch(graph):
+    """
+    Returns an iterator over all maximal cliques of graph.
+
+    Input:
+        * graph: Graph
+
+    Output:
+        * cliques: iterator
+
+    Details:
+        The algorithm used in this method is the Bron-Kerbosch algorithm with
+        pivoting. See Algorithm 2 in the paper "Enumerating All Connected
+        Maximal Common Subgraphs in Two Graphs" by I. Koch for reference. We
+        unroll the recursion to avoid recursion depth limitations.
+    """
+    vertices = graph.vertex_set()
+
+    neighbors = {}
+    for u in vertices:
+        neighbors[u] = graph.neighbors(u)
+
+    stack = [([], vertices, set())]
+    pop = stack.pop
+    push = stack.append
+
+    while stack:
+        (partial, allowed, seen) = pop()
+
+        if not allowed and not seen:
+            yield partial
+        elif allowed:
+            # Find a vertex u adjacent to the most allowed vertices.
+            max_deg = -1
+            for v in allowed:
+                deg = len(neighbors[v] & allowed)
+                if deg > max_deg:
+                    max_deg = deg
+                    u = v
+
+            for v in allowed - neighbors[u]:
+                allowed.remove(v)
+                push((partial + [v],
+                      allowed & neighbors[v],
+                      seen & neighbors[v]))
+                seen.add(v)
+
+
+def bron_kerbosch_no_pivots(graph):
     """
     Returns an iterator over all maximal cliques of graph.
 
@@ -19,7 +68,8 @@ def bron_kerbosch_simple(graph):
         The algorithm used in this method is the standard Bron-Kerbosch
         algorithm with no pivoting. See Algorithm 1 in the paper "Enumerating
         All Connected Maximal Common Subgraphs in Two Graphs" by I. Koch for
-        reference.
+        reference. This algorithm is included mainly for reference, as the
+        algorithm with pivoting is typically superior.
     """
     vertices = graph.vertex_set()
 
@@ -42,50 +92,9 @@ def bron_kerbosch_simple(graph):
     return backtrack([], vertices, set())
 
 
-def cazals(graph):
-    """
-    Returns an iterator over all maximal cliques of graph.
-
-    Input:
-        * graph: Graph
-
-    Output:
-        * cliques: iterator
-
-    Details:
-        The algorithm used in this method is the Bron-Kerbosch algorithm with
-        pivoting. See Algorithm 2 in the paper "Enumerating All Connected
-        Maximal Common Subgraphs in Two Graphs" by I. Koch for reference.
-    """
-    vertices = graph.vertex_set()
-
-    neighbors = {}
-    for u in vertices:
-        neighbors[u] = graph.neighbors(u)
-
-    stack = [([], vertices, set())]
-    pop = stack.pop
-    push = stack.append
-
-    while stack:
-        (partial, allowed, seen) = pop()
-
-        if not allowed and not seen:
-            yield partial
-        elif allowed:
-            max_deg = -1
-            for v in allowed:
-                deg = len(neighbors[v] & allowed)
-                if deg > max_deg:
-                    max_deg = deg
-                    u = v
-
-            for v in allowed - neighbors[u]:
-                allowed.remove(v)
-                push((partial + [v],
-                      allowed & neighbors[v],
-                      seen & neighbors[v]))
-                seen.add(v)
+################################################################################
+# Algorithms for enumerating all maximal cliques.
+################################################################################
 
 
 def pardalos(graph):
