@@ -404,3 +404,15 @@ def random_graph(n, density):
         if r <= density:
             graph.add_edge(edge)
     return graph
+
+
+def load_dimacs_graph(path):
+    graph = Graph()
+    f = open(path, 'r')
+
+    for line in f:
+        if line.startswith('e'):
+            (u, v) = [int(e) for e in line.split(' ')[1:]]
+            graph.add_edge(u, v)
+
+    return graph

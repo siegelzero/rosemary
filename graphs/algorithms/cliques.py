@@ -1,33 +1,91 @@
 import rosemary.graphs.algorithms.coloring
 
+################################################################################
+# Algorithms for enumerating all maximal cliques.
+################################################################################
 
-def maximal_cliques(graph):
+
+def bron_kerbosch_simple(graph):
+    """
+    Returns an iterator over all maximal cliques of graph.
+
+    Input:
+        * graph: Graph
+
+    Output:
+        * cliques: iterator
+
+    Details:
+        The algorithm used in this method is the standard Bron-Kerbosch
+        algorithm with no pivoting. See Algorithm 1 in the paper "Enumerating
+        All Connected Maximal Common Subgraphs in Two Graphs" by I. Koch for
+        reference.
+    """
     vertices = graph.vertex_set()
 
     neighbors = {}
-    for v in vertices:
-        neighbors[v] = set(graph[v].keys())
+    for u in vertices:
+        neighbors[u] = graph.neighbors(u)
 
-    greater_vertices = {}
-    for v in vertices:
-        greater_vertices[v] = {u for u in vertices if u > v}
+    def backtrack(used, allowed, forbidden):
+        if not allowed and not forbidden:
+            yield used
+        else:
+            while allowed:
+                u = allowed.pop()
+                new_allowed = allowed & neighbors[u]
+                new_forbidden = forbidden & neighbors[u]
+                for clique in backtrack(used + [u], new_allowed, new_forbidden):
+                    yield clique
+                forbidden.add(u)
 
-    def backtrack(partial, last, choices, N, size):
-        if size > 0:
-            last_neighbors = neighbors[last]
-            greater_than_last = greater_vertices[last]
-            N = N & last_neighbors
-            choices = (choices & last_neighbors) & greater_than_last
+    return backtrack([], vertices, set())
 
-        if not N:
+
+def cazals(graph):
+    """
+    Returns an iterator over all maximal cliques of graph.
+
+    Input:
+        * graph: Graph
+
+    Output:
+        * cliques: iterator
+
+    Details:
+        The algorithm used in this method is the Bron-Kerbosch algorithm with
+        pivoting. See Algorithm 2 in the paper "Enumerating All Connected
+        Maximal Common Subgraphs in Two Graphs" by I. Koch for reference.
+    """
+    vertices = graph.vertex_set()
+
+    neighbors = {}
+    for u in vertices:
+        neighbors[u] = graph.neighbors(u)
+
+    stack = [([], vertices, set())]
+    pop = stack.pop
+    push = stack.append
+
+    while stack:
+        (partial, allowed, seen) = pop()
+
+        if not allowed and not seen:
             yield partial
+        elif allowed:
+            max_deg = -1
+            for v in allowed:
+                deg = len(neighbors[v] & allowed)
+                if deg > max_deg:
+                    max_deg = deg
+                    u = v
 
-        for e in choices:
-            for clique in backtrack(partial + [e], e, choices, N, size + 1):
-                yield clique
-
-    for clique in backtrack([], 0, vertices, vertices, 0):
-        yield clique
+            for v in allowed - neighbors[u]:
+                allowed.remove(v)
+                push((partial + [v],
+                      allowed & neighbors[v],
+                      seen & neighbors[v]))
+                seen.add(v)
 
 
 def pardalos(graph):
@@ -48,7 +106,8 @@ def pardalos(graph):
         This method is based on the algorithm by Carraghan and Pardalos from the
         paper "An Exact Algorithm for the Maximum Clique Problem". We follow the
         outline in the paper "A Fast Algorithm for the Maximum Clique Problem"
-        by Ostergard.
+        by Ostergard. Experimental evidence suggests that this algorithm is
+        superior to the Ostargard algorithm for graphs with high edge density.
     """
     vertices = graph.vertices(order='induced')
     num_vertices = len(vertices)
@@ -66,10 +125,7 @@ def pardalos(graph):
             return
 
         last_i = 0
-        while candidates:
-            if size + len(candidates) <= max_clique[0]:
-                return
-
+        while candidates and size + len(candidates) > max_clique[0]:
             for i in xrange(last_i, num_vertices):
                 if vertices[i] in candidates:
                     u = vertices[i]
@@ -99,7 +155,9 @@ def ostergard(graph):
 
     Details:
         This function follows the algorithm outlined in the paper "A Fast
-        Algorithm for the Maximum Clique Problem" by Ostgergard.
+        Algorithm for the Maximum Clique Problem" by Ostgergard. Experimental
+        evidence suggests that this algorithm is superior to the Pardalos
+        algorithm for graphs with low edge density.
     """
     neighbors = {}
     for v in graph:
@@ -124,10 +182,7 @@ def ostergard(graph):
             return
 
         last_i = 0
-        while candidates:
-            if size + len(candidates) <= max_clique[0]:
-                return
-
+        while candidates and size + len(candidates) > max_clique[0]:
             # Find the candidate vertex v_i of least index in our ordering.
             for i in xrange(last_i, num_vertices):
                 if vertices[i] in candidates:
@@ -136,13 +191,13 @@ def ostergard(graph):
                     break
 
             if size + largest[i] <= max_clique[0]:
-                return
+                break
 
             candidates.discard(u)
             backtrack(candidates & neighbors[u], used + [u], size + 1)
 
             if found[0]:
-                return
+                break
 
     # Each S[i] is the set of vertices {v_i, v_{i + 1}, ..., v_{n - 1}}.
     # largest[i] is the size of the maximum clique in S[i].
@@ -157,40 +212,5 @@ def ostergard(graph):
         vi = vertices[i]
         backtrack(S[i] & neighbors[vi], [vi], 1)
         largest[i] = max_clique[0]
-
-    return max_clique
-
-
-def kreher(graph):
-    vertices = graph.vertex_set()
-
-    neighbors = {}
-    for u in vertices:
-        neighbors[u] = graph.neighbors(u)
-
-    greater_vertices = {}
-    for u in vertices:
-        greater_vertices[u] = {v for v in vertices if v > u}
-
-    max_clique = [0, []]
-
-    def backtrack(partial, last, choices, size):
-        if size > max_clique[0]:
-            max_clique[0] = size
-            max_clique[1] = partial
-
-        if size == 0:
-            choices = vertices
-        else:
-            choices = (choices & greater_vertices[last]) & neighbors[last]
-
-        M = size + len(choices)
-
-        for x in choices:
-            if M <= max_clique[0]:
-                break
-            backtrack(partial + [x], x, choices, size + 1)
-
-    backtrack([], 0, vertices, 0)
 
     return max_clique

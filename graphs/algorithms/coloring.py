@@ -355,9 +355,11 @@ def branch_and_bound(graph):
     best = [len(vertices), []]
     color(set(vertices), {}, len(vertices), 0)
 
-    # The vertices are assigned colors >= 1, so we normalize to colors >= 0.
-    color_map = best[1]
-    for v in color_map:
-        color_map[v] -= 1
+    num_colors, color_map = best
+    color_classes = [[] for _ in xrange(num_colors)]
 
-    return best
+    for v in color_map:
+        color = color_map[v] - 1
+        color_classes[color].append(v)
+
+    return (num_colors, color_classes)
