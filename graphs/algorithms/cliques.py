@@ -92,6 +92,137 @@ def bron_kerbosch_no_pivots(graph):
     return backtrack([], vertices, set())
 
 
+def bron_kerbosch_no_pivots_binary(graph):
+    """
+    Returns an iterator over all maximal cliques of graph.
+
+    Input:
+        * graph: Graph
+
+    Output:
+        * cliques: iterator
+
+    Details:
+        The algorithm used in this method is the standard Bron-Kerbosch
+        algorithm with no pivoting. See Algorithm 1 in the paper "Enumerating
+        All Connected Maximal Common Subgraphs in Two Graphs" by I. Koch for
+        reference. This algorithm is included mainly for reference, as the
+        algorithm with pivoting is typically superior.
+    """
+    vertex_list = graph.vertices()
+    vertices = 2**(len(vertex_list)) - 1
+
+    i2v = {}
+    v2i = {}
+
+    idx = 1
+    for u in vertex_list:
+        v2i[u] = idx
+        i2v[idx] = u
+        idx *= 2
+
+    neighbors = {}
+    for u in vertex_list:
+        ui = v2i[u]
+        neighbors[ui] = 0
+        for v in graph.neighbors(u):
+            neighbors[ui] |= v2i[v]
+
+    def backtrack(used, allowed, forbidden):
+        if not allowed and not forbidden:
+            yield used
+        else:
+            while allowed:
+                u = allowed & (-allowed)
+                allowed &= (allowed - 1)
+                new_allowed = allowed & neighbors[u]
+                new_forbidden = forbidden & neighbors[u]
+
+                for clique in backtrack(used | u, new_allowed, new_forbidden):
+                    yield clique
+
+                forbidden |= u
+
+    return backtrack(0, vertices, 0)
+
+
+def bron_kerbosch_binary(graph):
+    """
+    Returns an iterator over all maximal cliques of graph.
+
+    Input:
+        * graph: Graph
+
+    Output:
+        * cliques: iterator
+
+    Details:
+        The algorithm used in this method is the standard Bron-Kerbosch
+        algorithm with no pivoting. See Algorithm 1 in the paper "Enumerating
+        All Connected Maximal Common Subgraphs in Two Graphs" by I. Koch for
+        reference. This algorithm is included mainly for reference, as the
+        algorithm with pivoting is typically superior.
+    """
+    vertex_list = graph.vertices()
+    vertices = 2**(len(vertex_list)) - 1
+
+    i2v = {}
+    v2i = {}
+
+    idx = 1
+    for u in vertex_list:
+        v2i[u] = idx
+        i2v[idx] = u
+        idx *= 2
+
+    neighbors = {}
+    for u in vertex_list:
+        ui = v2i[u]
+        neighbors[ui] = 0
+        for v in graph.neighbors(u):
+            neighbors[ui] |= v2i[v]
+
+    stack = [(0, vertices, 0)]
+    pop = stack.pop
+    push = stack.append
+
+    while stack:
+        (partial, allowed, seen) = pop()
+
+        if not allowed and not seen:
+            yield partial
+        elif allowed:
+            # Find a vertex u adjacent to the most allowed vertices.
+            max_deg = -1
+            t_allowed = allowed
+            while t_allowed:
+                v = t_allowed & (-t_allowed)
+                k = allowed & neighbors[v]
+
+                deg = 0
+                while k:
+                    k &= k - 1
+                    deg += 1
+
+                if deg > max_deg:
+                    max_deg = deg
+                    u = v
+
+                t_allowed &= t_allowed - 1
+
+            diff = (allowed ^ neighbors[u]) & allowed
+            while diff:
+                v = diff & (-diff)
+                nbrs = neighbors[v]
+                allowed &= (~v)
+                push((partial | v, allowed & nbrs, seen & nbrs))
+                seen |= v
+                diff &= diff - 1
+
+
+maximal_cliques = bron_kerbosch
+
+
 ################################################################################
 # Algorithms for enumerating all maximal cliques.
 ################################################################################
@@ -164,7 +295,7 @@ def ostergard(graph):
 
     Details:
         This function follows the algorithm outlined in the paper "A Fast
-        Algorithm for the Maximum Clique Problem" by Ostgergard. Experimental
+        Algorithm for the Maximum Clique Problem" by Ostergard. Experimental
         evidence suggests that this algorithm is superior to the Pardalos
         algorithm for graphs with low edge density.
     """
@@ -220,6 +351,60 @@ def ostergard(graph):
         found = [False]
         vi = vertices[i]
         backtrack(S[i] & neighbors[vi], [vi], 1)
+        largest[i] = max_clique[0]
+
+    return max_clique
+
+
+maximum_clique = ostergard
+
+
+################################################################################
+# Algorithms for maximum weight cliques
+################################################################################
+
+def max_weight(graph):
+    neighbors = {}
+    for v in graph:
+        neighbors[v] = graph.neighbors(v)
+
+    num_vertices = graph.num_vertices()
+    vertices = sorted(graph.vertex_set(), key=lambda u: sum(neighbors[u]))
+    max_clique = [0, []]
+
+    def backtrack(candidates, used, weight):
+        if not candidates:
+            if weight > max_clique[0]:
+                max_clique[0] = weight
+                max_clique[1] = used
+            return
+
+        last_i = 0
+        while candidates and weight + sum(candidates) > max_clique[0]:
+            # Find the candidate vertex v_i of least index in our ordering.
+            for i in xrange(last_i, num_vertices):
+                if vertices[i] in candidates:
+                    u = vertices[i]
+                    last_i = i + 1
+                    break
+
+            if weight + largest[i] <= max_clique[0]:
+                break
+
+            candidates.discard(u)
+            backtrack(candidates & neighbors[u], used + [u], weight + u)
+
+    # Each S[i] is the set of vertices {v_i, v_{i + 1}, ..., v_{n - 1}}.
+    # largest[i] is the size of the maximum clique in S[i].
+    S = [0]*num_vertices
+    largest = [0]*num_vertices
+
+    for i in xrange(num_vertices):
+        S[i] = set(vertices[i:])
+
+    for i in xrange(num_vertices - 1, -1, -1):
+        vi = vertices[i]
+        backtrack(S[i] & neighbors[vi], [vi], vi)
         largest[i] = max_clique[0]
 
     return max_clique

@@ -2,6 +2,8 @@ import rosemary.algebra.matrices.matrices
 import rosemary.combinatorics.enumeration
 import rosemary.graphs.algorithms.traversal
 
+from rosemary.number_theory.core import gcd
+
 import copy
 import itertools
 import random
@@ -37,13 +39,22 @@ class Graph(object):
         return self.graph_dict.iterkeys()
 
     def copy(self):
+        """
+        Returns a copy of self.
+        """
         new_graph = copy.deepcopy(self)
         return new_graph
 
     def num_vertices(self):
+        """
+        Returns the number of vertices of self.
+        """
         return len(self.graph_dict.keys())
 
     def num_edges(self):
+        """
+        Returns the number of edges of self.
+        """
         return len(self.edge_set())
 
     def add_vertex(self, u):
@@ -212,6 +223,16 @@ class Graph(object):
         """
         degree = len(self.graph_dict[vertex].keys())
         return degree
+
+    def density(self):
+        """
+        Returns the edge density of self.
+        """
+        num_vertices = self.num_vertices()
+        num_edges = self.num_edges()
+        total_possible = rosemary.combinatorics.enumeration.binomial(num_vertices, 2)
+        density = num_edges / (1.0*total_possible)
+        return density
 
     def neighbors(self, vertex):
         """
@@ -414,5 +435,18 @@ def load_dimacs_graph(path):
         if line.startswith('e'):
             (u, v) = [int(e) for e in line.split(' ')[1:]]
             graph.add_edge(u, v)
+
+    return graph
+
+
+def coprime_pairs_graph(n):
+    """
+    Graph with vertices 1, 2, ..., n, with edges between coprime pairs.
+    """
+    graph = Graph()
+    for i in xrange(1, n + 1):
+        for j in xrange(1, i):
+            if gcd(i, j) == 1:
+                graph.add_edge(i, j)
 
     return graph
