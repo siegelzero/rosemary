@@ -42,7 +42,8 @@ class Graph(object):
         """
         Returns a copy of self.
         """
-        new_graph = copy.deepcopy(self)
+        new_graph = Graph()
+        new_graph.graph_dict = copy.deepcopy(self.graph_dict)
         return new_graph
 
     def num_vertices(self):
@@ -74,6 +75,44 @@ class Graph(object):
             for v in graph_dict:
                 if u in graph_dict[v]:
                     del graph_dict[v][u]
+
+    def delete_vertices(self, vertices):
+        """
+        Deletes vertices from self, along with any adjacent edges.
+        """
+        graph_dict = self.graph_dict
+
+        for u in vertices:
+            if u in graph_dict:
+                del graph_dict[u]
+                for v in graph_dict:
+                    if u in graph_dict[v]:
+                        del graph_dict[v][u]
+
+    def remove_vertex(self, u):
+        """
+        Returns a copy of self with vertex u removed.
+        """
+        new_graph = self.copy()
+        new_graph.delete_vertex(u)
+        return new_graph
+
+    def remove_vertices(self, vertices):
+        """
+        Returns a copy of self with vertex u removed.
+        """
+        new_graph = self.copy()
+        new_graph.delete_vertices(vertices)
+        return new_graph
+
+    def remove_neighborhood(self, u):
+        """
+        Returns a copy of self with the neighborhood of u removed; i.e. u along
+        with all vertices adjacent to u.
+        """
+        neighborhood = self.neighborhood(u)
+        new_graph = self.remove_vertices(neighborhood)
+        return new_graph
 
     def add_vertices(self, vertex_list):
         """
@@ -216,13 +255,17 @@ class Graph(object):
 
         return vertices[0]
 
-    def degree(self, vertex):
+    def degree(self, u):
         """
         Returns the degree of the vertex; i.e. the number of vertices adjacent
         to vertex.
         """
-        degree = len(self.graph_dict[vertex].keys())
+        degree = len(self.neighbors(u))
         return degree
+
+    def total_degree(self, vertices):
+        total = sum(self.degree(u) for u in vertices)
+        return total
 
     def density(self):
         """
@@ -234,13 +277,20 @@ class Graph(object):
         density = num_edges / (1.0*total_possible)
         return density
 
-    def neighbors(self, vertex):
+    def neighbors(self, u):
         """
-        Returns a set of the neighbors of vertex; i.e. the vertices adjacent to
-        vertex.
+        Returns a set of the neighbors of u; i.e. the vertices adjacent to u.
         """
-        neighbor_set = set(self.graph_dict[vertex].keys())
-        return neighbor_set
+        neighbors = set(self.graph_dict[u].keys())
+        return neighbors
+
+    def neighborhood(self, u):
+        """
+        Returns the neighbors of u along with u.
+        """
+        neighbors = self.neighbors(u)
+        neighbors.add(u)
+        return neighbors
 
     def adjacency_matrix(self):
         """
@@ -352,14 +402,14 @@ class Graph(object):
         Returns the subgraph of self induced by vertices.
         """
         induced = Graph()
+        vertex_set = set(vertices)
 
         for v in vertices:
             induced.graph_dict[v] = {}
 
         for u in vertices:
-            for v in vertices:
-                if v in self.graph_dict[u]:
-                    induced.add_edge(u, v)
+            for v in (vertex_set & self.neighbors(u)):
+                induced.add_edge(u, v)
 
         return induced
 
@@ -393,16 +443,6 @@ class Graph(object):
 
         return complement_graph
 
-    def is_connected(self):
-        """
-        Returns True if self is connected, and False otherwise.
-        """
-        start = self.graph_dict.keys()[0]
-        vertex_generator = rosemary.graphs.algorithms.traversal.breadth_first_search(self, start)
-        num_vertices = self.num_vertices()
-        num_seen = len(list(vertex_generator))
-        return num_seen == num_vertices
-
 
 def complete_graph(n):
     """
@@ -435,6 +475,17 @@ def load_dimacs_graph(path):
         if line.startswith('e'):
             (u, v) = [int(e) for e in line.split(' ')[1:]]
             graph.add_edge(u, v)
+
+    return graph
+
+
+def load_graph(path):
+    graph = Graph()
+    f = open(path, 'r')
+
+    for line in f:
+        (u, v) = [int(e) for e in line.split(' ')]
+        graph.add_edge(u, v)
 
     return graph
 

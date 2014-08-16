@@ -284,7 +284,7 @@ def ostergard(graph):
     vertices = []
     (num_colors, coloring) = rosemary.graphs.algorithms.coloring.greedy_sequential(graph)
     for color_class in coloring:
-        vertices.extend(sorted(color_class, key=graph.degree))
+        vertices.extend(sorted(color_class, key=graph.degree, reverse=True))
 
     vertices = vertices[::-1]
     num_vertices = len(vertices)
@@ -399,6 +399,8 @@ def maximum_weight_clique(graph, weight_map=None):
                 Vertices of a maximum weight clique of graph.
 
     Details:
+        The algorithm used in this function is from the paper "A New Algorithm
+        for the Maximum-Weight Clique Problem" by Ostergard.
     """
     # Use the key for each vertex as its weight if weight_map is None.
     if weight_map is None:
@@ -461,3 +463,8 @@ def maximum_weight_clique(graph, weight_map=None):
         largest[i] = max_clique[0]
 
     return tuple(max_clique)
+
+
+################################################################################
+# Algorithms for finding large cliques
+################################################################################

@@ -1,30 +1,39 @@
-import random
+import rosemary.graphs.algorithms.independent_sets
 
 ################################################################################
 # Algorithms for approximate colorings
 ################################################################################
 
 
-def dsatur(graph):
+def dsatur(graph, classes=True):
     """
-    Returns an upper bound to the chromatic number of the graph, along with an
-    approximate coloring.
+    Returns an approximation (upper bound) to the chromatic number of the graph,
+    along with an approximate coloring.
 
     Input:
         * graph: Graph
+            Graph to color.
+
+        * classes: bool (default=True)
+            If True, the algorithm returns a partition of the vertices into
+            color classes. Otherwise, returns a color map.
 
     Output:
-        * (num_colors, color_classes)
-            * num_colors: int
+        * (k, color_classes): tuple
+            * k: int
                 An upper bound for the chromatic number of the graph.
 
             * color_classes: list
                 A partition of the vertices into color classes.
 
     Details:
-        This is the DSATUR algorithm outlined in "New Methods to Color the
-        Vertices of a Graph" by Brelaz. This algorithm is exact for bipartite
-        graphs.
+        This is the classical DSATUR algorithm of Brelaz. The algorithm colors a
+        vertex, then selects the next vertex to be colored from the set which
+        has the largest number of different colors assigned to its neighbors.
+        The chosen vertex is colored with the least possible color.
+
+        See the paper "New Methods to Color the Vertices of a Graph" by Brelaz
+        for the original reference.
     """
     vertices = graph.vertices()
     uncolored = set(vertices)
@@ -37,11 +46,8 @@ def dsatur(graph):
     uncolored.remove(u)
 
     while uncolored:
-        # Compute the saturation degree of each uncolored vertex.
-        # The saturation degree of a vertex is the number of different colors to
-        # which it is adjacent. We will choose a vertex of maximal saturation
-        # degree, breaking any ties by choosing the vertex with the maximal
-        # number of uncolored neighbors.
+        # Choose a vertex of maximal saturation degree, breaking any ties by
+        # choosing the vertex with the maximal number of uncolored neighbors.
         saturation_degrees = []
         adjacent_colors = {}
         for u in uncolored:
@@ -69,17 +75,53 @@ def dsatur(graph):
                     num_colors += 1
                 break
 
-    color_classes = [[] for i in xrange(num_colors)]
-    for (u, color) in color_map.iteritems():
-        color_classes[color].append(u)
+    if not classes:
+        return (num_colors, color_map)
+    else:
+        color_classes = [[] for i in xrange(num_colors)]
+        for (u, color) in color_map.iteritems():
+            color_classes[color].append(u)
 
-    return (num_colors, color_classes)
+        return (num_colors, color_classes)
 
 
-def greedy_sequential(graph):
-    vertices = graph.vertices()
+def greedy_sequential(graph, vertices=None):
+    """
+    Returns an approximation (upper bound) to the chromatic number of the graph,
+    along with an approximate coloring.
+
+    Input:
+        * graph: Graph
+            Graph to color.
+
+        * vertices: list (default=None)
+            An optional ordering of the vertices.
+
+    Output:
+        * (k, color_classes): tuple
+            * k: int
+                An upper bound for the chromatic number of the graph.
+
+            * color_classes: list
+                A partition of the vertices into color classes.
+
+    Details:
+        This is the classical greedy sequential algorithm. The first vertex is
+        put into the first color class. Thereafter, each vertex is colored with
+        the minimum color such that no conflicts are created.
+
+        A useful fact is that if we take any permutation of the vertices in
+        which the vertices of each color class are adjacent in the permutation,
+        then applying the greedy sequential algorithm will produce a coloring at
+        least as good as the original. Because of this, it is often useful to
+        iteratively apply the greedy sequential algorithm to refine a given
+        coloring. See "Iterated Greedy Graph Coloring and the Difficulty
+        Landscape" by Culberson for details about this.
+    """
+    if vertices is None:
+        vertices = graph.vertices(order='degree')[::-1]
+
     colors = {}
-
     v = vertices[0]
     colors[v] = 0
     num_colors = 1
@@ -105,155 +147,122 @@ def greedy_sequential(graph):
     return (num_colors, color_classes)
 
 
-def xrlf(graph):
-    vertices = graph.vertices()
-    R = set(vertices)
-    k = 0
-    exact_limit = 60
-    trial_num = [40]
-    cand_num = 50
-    set_lim = [90]
+def maxis(graph, **kwargs):
+    """
+    Returns an approximation (upper bound) to the chromatic number of graph,
+    along with an approximate coloring.
 
-    def find_subset(subgraph, vertices, W, C, F):
-        """
-        Returns a subset W' <= W that maximizes the size of the set
-        {(u, v) in H : u in W' and v in U - (C u W')}
-        """
-        best = [0, set()]
-        list_W = list(W)
-        len_W = len(list_W)
+    Input:
+        * graph: Graph
+            Graph to color.
 
-        def backtrack(used, neighbors, diff, last_index):
-            ext = sum(1 for (u, v, _) in F if (u in used and v in diff) or (v in used and u in diff))
+        * kwargs
+            Possible keywords:
+            * verbose: bool (default=False)
+                If True, extra information is printed to the terminal.
 
-            if ext > best[0]:
-                best[0] = ext
-                best[1] = used
+            * color_limit: int (default=58)
+                Upper limit on the size of the reduced graph for when a final
+                exact coloring is performed.
 
-            for i in xrange(last_index + 1, len_W):
-                v = list_W[i]
-                if v in neighbors:
-                    continue
+            * mis_limit: int (default=0)
+                Upper limit on the size of the reduced graph for when exact
+                techniques are used for extracting maximum independent sets.
 
-                t_used = used.union([v])
-                t_neighbors = neighbors.union([u for u in subgraph[v]])
-                t_diff = diff.difference([v])
+    Output:
+        * (k, color_classes): tuple
+            * k: int
+                Approximation to the chromatic number of graph.
 
-                backtrack(t_used, t_neighbors, t_diff, i)
+            * color_classes: list
+                A partition of the vertices of graph into color classes.
 
-        diff = vertices.difference(C)
-        backtrack(set(), set(), diff, 0)
-        return set(best[1])
+    Details:
+        The algorithm proceeds by repeatedly removing large independent sets
+        from the graph, assigning the vertices in each set to a color class. By
+        default, we use a truncated backtracking approach to find large
+        independent sets, enhanced by some heuristics. Once a sufficient number
+        of vertices have been removed, we use an exact coloring method on the
+        remaining graph.
 
-    def ind_set(H):
-        U_list = H.vertices()
-        U = set(U_list)
-        F = H.edges()
+        This algorithm roughly follows the MAXIS method outlined in the paper
+        "Iterated Greedy Graph Coloring and the Difficulty Landscape" by
+        Culberson.
+    """
+    approximate = rosemary.graphs.algorithms.independent_sets.culberson
+    exact = rosemary.graphs.algorithms.independent_sets.branch_and_bound
 
-        best = -1
-        CC = set()
-        C0 = set()
-        Dmin = min(len(H[v]) for v in U)
-        Dmax = max(len(H[v]) for v in U)
+    reduced_graph = graph.copy()
+    vertices = graph.vertex_set()
+    num_vertices = len(vertices)
 
-        if trial_num == 1 and len(U) > set_lim[0]:
-            vmax = [v for v in U if len(H[v]) == Dmax][0]
-            C0.add(vmax)
+    verbose = kwargs.get('verbose', False)
+    color_limit = kwargs.get('color_limit', 58)
+    mis_limit = kwargs.get('mis_limit', 0)
 
-        if min(trial_num[0], set_lim[0] + Dmin) >= len(U):
-            set_lim[0] = len(U)
-            trial_num[0] = 1
+    if verbose:
+        print "Using color_limit={}, mis_limit={}".format(color_limit, mis_limit)
+        print "Graph density: {}".format(graph.density())
 
-        for k in xrange(trial_num[0]):
-            if C0:
-                C = set(C0)
-                X = set(u for u in U if u in H[vmax])
-            elif len(U) > set_lim[0]:
-                v = random.choice(U_list)
-                C = set([v])
-                X = set(u for u in U if v in H[u])
-            else:
-                C = set()
-                X = set()
+    color_classes = []
+    num_colors = 0
 
-            W = U.difference(C.union(X))
-            kill = False
+    while num_vertices > color_limit:
+        if num_vertices > mis_limit:
+            if verbose:
+                print "Finding approximate MIS..."
+            (size, independent_set) = approximate(reduced_graph)
+        else:
+            if verbose:
+                print "Finding exact MIS..."
+            (size, independent_set) = exact(reduced_graph)
 
-            while len(W) > 0:
-                if kill is True:
-                    break
+        color_classes.append(independent_set)
+        num_colors += 1
 
-                if len(W) <= set_lim[0]:
-                    WW = find_subset(H, U, W, C, F)
-                    C.update(WW)
+        reduced_graph.delete_vertices(independent_set)
+        vertices = reduced_graph.vertex_set()
+        num_vertices -= size
 
-                    diff = U.difference(C)
-                    new = sum(1 for (u, v, _) in F if (u in WW and v in diff) or (v in WW and u in diff))
-                    if new > best:
-                        CC = C
-                        best = new
+        if verbose:
+            print "Color class of size {} found.".format(size),
+            print "Remaining vertices: {}".format(num_vertices)
 
-                    kill = True
-                    continue
+    if num_vertices:
+        if verbose:
+            print "Using exact coloring techniques for last {} vertices".format(num_vertices)
+        num, colors = branch_and_bound(reduced_graph)
+    else:
+        num, colors = 0, 0
 
-                bestdegree = -1
-                candidates = random.sample(W, min(len(W), cand_num))
-                for u in candidates:
-                    num = sum(1 for (w, v, _) in F if w == u and v in X)
-                    if num > bestdegree:
-                        bestdegree = num
-                        cand = u
-
-                C.add(cand)
-                X.update(v for v in W if cand in H[v])
-                W = W.difference(X)
-                W.discard(cand)
-
-        return CC
-
-    color_map = {}
-    while len(R) > exact_limit:
-        induced = graph.induced_subgraph(R)
-        i_set = ind_set(induced)
-
-        for v in i_set:
-            color_map[v] = k
-
-        R = R.difference(i_set)
-        k += 1
-
-    left = 0
-    if R:
-        induced = graph.induced_subgraph(R)
-        left, exact = branch_and_bound(induced)
-
-        for v in exact:
-            exact[v] += k
-
-        color_map.update(exact)
-
-    return k + left, color_map
+    return num_colors + num, color_classes + colors
 
 
 ################################################################################
 # Algorithms for exact colorings
 ################################################################################
 
-def branch_and_bound(graph):
+
+def branch_and_bound(graph, classes=True):
     """
     Given a graph, this returns the chromatic number of the graph together with
     a vertex coloring.
 
     Input:
-        * graph (Graph)
+        * graph: Graph
+            Graph to color.
+
+        * classes: bool (default=True)
+            If True, the algorithm returns a partition of the vertices into
+            color classes. Otherwise, returns a color map.
 
     Output:
-        * (k, color_map) (tuple)
+        * (k, color_classes) (tuple)
             * k: int
                 The chromatic number of the graph
-            * color_map (dict)
-                A dict with vertices as keys and associated colors as
-                corresponding values.
+
+            * color_classes: list
+                A partition of the vertices of graph into color classes.
 
     Details:
         This follows the algorithm CHROM_NUM as outlined in the paper
@@ -261,69 +270,47 @@ def branch_and_bound(graph):
         II, Graph Coloring and Number Partitioning" By Johnson, Aragon, McGeoch,
         and Schevon.
     """
-    def color(uncolored, color_map, best_number, num_colors):
-        """
-        Returns the least number of colors required to color the uncolored
-        vertices of the parent graph.
-
-        Input:
-            * uncolored: (set)
-                A set of the uncolored vertices of the graph.
-
-            * color_map: (dict)
-                A dict with the colored vertices of the graph as keys, and the
-                corresponding colors as values.
-
-            * best_number: (int)
-                The number of colors in the best legal coloring seen so far.
-
-            * num_colors: (int)
-                The number of colors used in the coloring in color_map
-
-        Output:
-            * best_number:
-                The least number of colors required to color the uncolored
-                vertices of the graph.
-        """
-        new_color_map = color_map.copy()
+    def color(best_number, num_colors):
         if len(uncolored) == 1:
-            u = uncolored.pop()
-            adjacent_colors = set(color_map[v] for v in graph[u] if v in color_map)
+            u = list(uncolored)[0]
+            adjacent_colors = set(color_map[v] for v in neighbors[u] if v in color_map)
 
             # If there is any color j, 1 <= j <= num_colors, such that no vertex
             # adjacent to u has color j, then return num_colors.
             for j in xrange(1, num_colors + 1):
                 if j not in adjacent_colors:
-                    new_color_map[u] = j
+                    color_map[u] = j
                     if num_colors < best[0]:
                         best[0] = num_colors
-                        best[1] = new_color_map
+                        best[1] = color_map.copy()
+                    del color_map[u]
                     return num_colors
 
             if num_colors + 1 < best_number:
-                new_color_map[u] = num_colors + 1
+                color_map[u] = num_colors + 1
                 if num_colors + 1 < best[0]:
                     best[0] = num_colors + 1
-                    best[1] = new_color_map
+                    best[1] = color_map.copy()
+                del color_map[u]
                 return num_colors + 1
 
-            new_color_map[u] = best_number
+            color_map[u] = best_number
             if best_number < best[0]:
                 best[0] = best_number
-                best[1] = new_color_map
+                best[1] = color_map.copy()
+            del color_map[u]
             return best_number
 
         else:
-            # Compute the saturation degree of each vertex.
-            # We want the vertex u adjacent to colored vertices with the maximum
-            # number of different colors. We break ties in favor of vertices
-            # that are adjacent to the most as yet uncolored vertices.
+            # Choose the vertex u adjacent to the maximum number of different
+            # colors, breaking ties in favor of vertices adjacent to the maximum
+            # number of uncolored vertices.
             triples = []
             for u in uncolored:
                 adjacent_colors = set()
                 adjacent_colors_add = adjacent_colors.add
                 num_uncolored_neighbors = 0
-                for v in graph[u]:
+                for v in neighbors[u]:
                     if v in color_map:
                         adjacent_colors_add(color_map[v])
                     else:
@@ -332,34 +319,55 @@ def branch_and_bound(graph):
                 triples.append((num_adjacent_colors, num_uncolored_neighbors, u))
 
             u = max(triples)[2]
-            neighbor_colors = set(color_map[v] for v in graph[u] if v in color_map)
-            num_adjacent_colors = len(neighbor_colors)
+            adjacent_colors = set(color_map[v] for v in neighbors[u] if v in color_map)
+            num_adjacent_colors = len(adjacent_colors)
 
-            # if u is adjacent to best_number - 1 colors, return best_number
             if num_adjacent_colors == best_number - 1:
                 return best_number
 
-            uncolored_difference = uncolored.difference
             for j in xrange(1, num_colors + 1):
-                if j not in neighbor_colors:
-                    new_color_map[u] = j
-                    best_number = color(uncolored_difference([u]), new_color_map, best_number, num_colors)
+                if j not in adjacent_colors:
+                    color_map[u] = j
+                    pop(u)
+                    best_number = color(best_number, num_colors)
+                    push(u)
+                    del color_map[u]
 
             if num_colors < best_number - 1:
-                new_color_map[u] = num_colors + 1
-                best_number = color(uncolored_difference([u]), new_color_map, best_number, num_colors + 1)
+                color_map[u] = num_colors + 1
+                pop(u)
+                best_number = color(best_number, num_colors + 1)
+                push(u)
+                del color_map[u]
 
             return best_number
 
     vertices = graph.vertices()
     best = [len(vertices), []]
-    color(set(vertices), {}, len(vertices), 0)
 
+    # color_map and uncolored are global data structure used by the recursive
+    # method.
+    color_map = {}
+    uncolored = set(vertices)
+
+    # For speed.
+    pop = uncolored.remove
+    push = uncolored.add
+    neighbors = {}
+    for u in graph:
+        neighbors[u] = graph.neighbors(u)
+
+    # Main entry to the recursive function.
+    color(len(vertices), 0)
     num_colors, color_map = best
-    color_classes = [[] for _ in xrange(num_colors)]
 
-    for v in color_map:
-        color = color_map[v] - 1
-        color_classes[color].append(v)
+    if not classes:
+        return (num_colors, color_map)
+    else:
+        color_classes = [[] for _ in xrange(num_colors)]
 
-    return (num_colors, color_classes)
+        for v in color_map:
+            color = color_map[v] - 1
+            color_classes[color].append(v)
+
+        return (num_colors, color_classes)
