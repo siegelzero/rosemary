@@ -17,6 +17,7 @@ from rosemary.number_theory.core import (
     jacobi_symbol,
 )
 
+
 ###############################################################################
 # Classical algorithms
 ###############################################################################
@@ -685,6 +686,7 @@ def cfrac(n, k=1):
 # Methods related to factorization and divisors
 ################################################################################
 
+
 def factor(n):
     """
     factorization(n):
@@ -822,9 +824,18 @@ def prime_divisors(n):
 
 def xdivisors(n):
     """
-    xdivisors(n):
     Returns an iterator over the positive integer divisors of n.
-    The divisors are not yielded in increasing order.
+
+    Input:
+        * n: int (n > 0)
+
+    Output:
+        * divisors: iterator
+            Iterator over the positive integer divisors of n.
+
+    Examples:
+        >>> list(xdivisors(10))
+        [1, 5, 2, 10]
     """
     if isinstance(n, (int, long)):
         n_fac = factor(n)
@@ -835,12 +846,12 @@ def xdivisors(n):
 
     p_divs = [p for (p, e) in n_fac]
     iter_list = (xrange(e + 1) for (p, e) in n_fac)
+
     for tup in itertools.product(*iter_list):
         pp = 1
-        for i in xrange(len(tup)):
-            pp *= p_divs[i]**tup[i]
+        for (p, e) in itertools.izip(p_divs, tup):
+            pp *= p**e
         yield pp
-    return
 
 
 def is_squarefree(n):
