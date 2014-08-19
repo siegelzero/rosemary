@@ -199,6 +199,21 @@ def sqrts_mod_p(a, p):
 
 
 def sqrts_mod_pk(a, p, k):
+    """
+    Returns all solutions x, 1 <= x <= n, to the congruence x^2 = a (mod n).
+
+    Given a prime p and integers a and k, this function returns all solutions to
+    the congruence x^2 = a (mod p^k).
+
+    Input:
+        * a: int
+        * p: int (p >= 2)
+        * k: int (k >= 1)
+
+    Output:
+        * roots: list
+            A list of all square roots of a modulo p^k.
+    """
     def hensel(a, r, p, k):
         """
         Lifts solution r^2 = a (mod p^k) to solutions modulo p^{k + 1}.
