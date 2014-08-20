@@ -58,16 +58,146 @@ class Graph(object):
         """
         return len(self.edge_set())
 
+    def vertices(self, **kwargs):
+        """
+        Returns a sorted list of the vertices of self.
+        """
+        vertices = self.graph_dict.keys()
+        if 'order' in kwargs:
+            order = kwargs['order']
+
+            if order == 'degree':
+                vertex_list = sorted(vertices, key=self.degree)
+            elif order == 'induced':
+                num_vertices = self.num_vertices()
+                new_graph = self.copy()
+                vertex_list = []
+
+                while len(vertex_list) < num_vertices:
+                    vertex = new_graph.min_degree_vertex()
+                    vertex_list.append(vertex)
+                    new_graph.delete_vertex(vertex)
+
+            else:
+                vertex_list = sorted(vertices)
+        else:
+            vertex_list = sorted(vertices)
+
+        return vertex_list
+
+    def vertex_set(self):
+        """
+        Returns a set containing the vertices of self.
+        """
+        vertex_set = set(self.graph_dict.keys())
+        return vertex_set
+
+    def edges(self):
+        """
+        Returns a sorted list of the edges of self.
+        """
+        edge_list = sorted(self.edge_set())
+        return edge_list
+
+    def edge_set(self):
+        """
+        Returns a set containing the vertices of self.
+        """
+        edges_seen = set()
+        graph_dict = self.graph_dict
+
+        for u in graph_dict:
+            for v in graph_dict[u]:
+                weight = graph_dict[u][v]
+                triple = (min(u, v), max(u, v), weight)
+                edges_seen.add(triple)
+
+        return edges_seen
+
+    def max_degree_vertex(self):
+        """
+        Returns a vertx of self of maximal degree.
+        """
+        vertices = self.vertices(order='degree')
+
+        if len(vertices) == 0:
+            raise ValueError('min_degree_vertex: Graph has no vertices.')
+
+        return vertices[-1]
+
+    def min_degree_vertex(self):
+        """
+        Returns a vertx of self of minimal degree.
+        """
+        vertices = self.vertices(order='degree')
+
+        if len(vertices) == 0:
+            raise ValueError('min_degree_vertex: Graph has no vertices.')
+
+        return vertices[0]
+
+    def degree(self, u):
+        """
+        Returns the degree of the vertex; i.e. the number of vertices adjacent
+        to vertex.
+        """
+        degree = len(self.neighbors(u))
+        return degree
+
+    def total_degree(self, vertices):
+        """
+        Returns the sum of the degrees of all vertices in the list.
+        """
+        total = sum(self.degree(u) for u in vertices)
+        return total
+
+    def density(self):
+        """
+        Returns the edge density of self.
+        """
+        num_vertices = self.num_vertices()
+        num_edges = self.num_edges()
+        total_possible = rosemary.combinatorics.enumeration.binomial(num_vertices, 2)
+        density = num_edges / (1.0*total_possible)
+        return density
+
+    def neighbors(self, u):
+        """
+        Returns a set of the neighbors of u; i.e. the vertices adjacent to u.
+        """
+        neighbors = set(self.graph_dict[u].keys())
+        return neighbors
+
+    def neighborhood(self, u):
+        """
+        Returns the neighbors of u along with u.
+        """
+        neighbors = self.neighbors(u)
+        neighbors.add(u)
+        return neighbors
+
+    ############################################################
+    # Methods for adding / deleting vertices
+    ############################################################
+
     def add_vertex(self, u):
         """
-        Adds the vertex u to self.
+        Adds the vertex u to self. If u in not in self, nothing is done.
         """
         if u not in self.graph_dict:
             self.graph_dict[u] = {}
 
+    def add_vertices(self, vertex_list):
+        """
+        Adds the vertices to self.
+        """
+        for u in vertex_list:
+            self.add_vertex(u)
+
     def delete_vertex(self, u):
         """
-        Deletes the vertex u from self, along with any edges adjacent to u.
+        Deletes the vertex u from self, along with any edges adjacent to u. If u
+        is not in self, then nothing is done.
         """
         graph_dict = self.graph_dict
         if u in graph_dict:
@@ -78,7 +208,8 @@ class Graph(object):
 
     def delete_vertices(self, vertices):
         """
-        Deletes vertices from self, along with any adjacent edges.
+        Deletes vertices from self, along with any adjacent edges. Any vertices
+        which are not in self are skipped.
         """
         graph_dict = self.graph_dict
 
@@ -88,25 +219,6 @@ class Graph(object):
                 for v in graph_dict:
                     if u in graph_dict[v]:
                         del graph_dict[v][u]
-
-    def delete_edge(self, u, v=None):
-        if v is None:
-            if len(u) == 2:
-                (u, v) = u
-            elif len(u) == 3:
-                (u, v, _) = u
-            else:
-                raise ValueError("delete_edge: Invalid edge passed.")
-
-        graph_dict = self.graph_dict
-
-        if v in graph_dict:
-            if u in graph_dict[v]:
-                del graph_dict[v][u]
-
-        if u in graph_dict:
-            if v in graph_dict[u]:
-                del graph_dict[u][v]
 
     def remove_vertex(self, u):
         """
@@ -123,22 +235,6 @@ class Graph(object):
         new_graph = self.copy()
         new_graph.delete_vertices(vertices)
         return new_graph
-
-    def remove_neighborhood(self, u):
-        """
-        Returns a copy of self with the neighborhood of u removed; i.e. u along
-        with all vertices adjacent to u.
-        """
-        neighborhood = self.neighborhood(u)
-        new_graph = self.remove_vertices(neighborhood)
-        return new_graph
-
-    def add_vertices(self, vertex_list):
-        """
-        Adds the vertices to self.
-        """
-        for u in vertex_list:
-            self.add_vertex(u)
 
     def add_edge(self, u, v=None, weight=1):
         """
@@ -196,120 +292,62 @@ class Graph(object):
         for edge in edge_list:
             self.add_edge(*edge)
 
-    def edges(self):
+    def delete_edge(self, u, v=None):
         """
-        Returns a sorted list of the edges of self.
+        Deletes edge from self. If edge is not in self, nothing is done.
         """
-        edge_list = sorted(self.edge_set())
-        return edge_list
+        if v is None:
+            if len(u) == 2:
+                (u, v) = u
+            elif len(u) == 3:
+                (u, v, _) = u
+            else:
+                raise ValueError("delete_edge: Invalid edge passed.")
 
-    def edge_set(self):
-        """
-        Returns a set containing the vertices of self.
-        """
-        edges_seen = set()
         graph_dict = self.graph_dict
 
-        for u in graph_dict:
-            for v in graph_dict[u]:
-                weight = graph_dict[u][v]
-                triple = (min(u, v), max(u, v), weight)
-                edges_seen.add(triple)
+        if v in graph_dict:
+            if u in graph_dict[v]:
+                del graph_dict[v][u]
 
-        return edges_seen
+        if u in graph_dict:
+            if v in graph_dict[u]:
+                del graph_dict[u][v]
 
-    def vertices(self, **kwargs):
+    def remove_edge(self, u, v=None):
         """
-        Returns a sorted list of the vertices of self.
+        Deletes edge from self. If edge is not in self, nothing is done.
         """
-        vertices = self.graph_dict.keys()
-        if 'order' in kwargs:
-            order = kwargs['order']
-
-            if order == 'degree':
-                vertex_list = sorted(vertices, key=self.degree)
-            elif order == 'induced':
-                num_vertices = self.num_vertices()
-                new_graph = self.copy()
-                vertex_list = []
-
-                while len(vertex_list) < num_vertices:
-                    vertex = new_graph.min_degree_vertex()
-                    vertex_list.append(vertex)
-                    new_graph.delete_vertex(vertex)
-
+        if v is None:
+            if len(u) == 2:
+                (u, v) = u
+            elif len(u) == 3:
+                (u, v, _) = u
             else:
-                vertex_list = sorted(vertices)
-        else:
-            vertex_list = sorted(vertices)
+                raise ValueError("delete_edge: Invalid edge passed.")
 
-        return vertex_list
+        new_graph_dict = copy.deepcopy(self.graph_dict)
 
-    def vertex_set(self):
-        """
-        Returns a set containing the edges of self.
-        """
-        vertices_seen = set(self.graph_dict.keys())
-        return vertices_seen
+        if v in new_graph_dict:
+            if u in new_graph_dict[v]:
+                del new_graph_dict[v][u]
 
-    def max_degree_vertex(self):
-        """
-        Returns a vertx of self of maximal degree.
-        """
-        vertices = self.vertices(order='degree')
+        if u in new_graph_dict:
+            if v in new_graph_dict[u]:
+                del new_graph_dict[u][v]
 
-        if len(vertices) == 0:
-            raise ValueError('min_degree_vertex: Graph has no vertices.')
+        new_graph = Graph()
+        new_graph.graph_dict = new_graph_dict
+        return new_graph
 
-        return vertices[-1]
-
-    def min_degree_vertex(self):
+    def remove_neighborhood(self, u):
         """
-        Returns a vertx of self of minimal degree.
+        Returns a copy of self with the neighborhood of u removed; i.e. u along
+        with all vertices adjacent to u.
         """
-        vertices = self.vertices(order='degree')
-
-        if len(vertices) == 0:
-            raise ValueError('min_degree_vertex: Graph has no vertices.')
-
-        return vertices[0]
-
-    def degree(self, u):
-        """
-        Returns the degree of the vertex; i.e. the number of vertices adjacent
-        to vertex.
-        """
-        degree = len(self.neighbors(u))
-        return degree
-
-    def total_degree(self, vertices):
-        total = sum(self.degree(u) for u in vertices)
-        return total
-
-    def density(self):
-        """
-        Returns the edge density of self.
-        """
-        num_vertices = self.num_vertices()
-        num_edges = self.num_edges()
-        total_possible = rosemary.combinatorics.enumeration.binomial(num_vertices, 2)
-        density = num_edges / (1.0*total_possible)
-        return density
-
-    def neighbors(self, u):
-        """
-        Returns a set of the neighbors of u; i.e. the vertices adjacent to u.
-        """
-        neighbors = set(self.graph_dict[u].keys())
-        return neighbors
-
-    def neighborhood(self, u):
-        """
-        Returns the neighbors of u along with u.
-        """
-        neighbors = self.neighbors(u)
-        neighbors.add(u)
-        return neighbors
+        neighborhood = self.neighborhood(u)
+        new_graph = self.remove_vertices(neighborhood)
+        return new_graph
 
     def adjacency_matrix(self):
         """
