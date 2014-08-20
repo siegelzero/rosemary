@@ -69,6 +69,18 @@ class Graph(object):
     def num_edges(self):
         """
         Returns the number of edges of self.
+
+        Input:
+            * self: Graph
+
+        Output:
+            * num_edges: int
+
+        Examples:
+            >>> G = Graph()
+            >>> G.add_edge(0, 1)
+            >>> G.num_edges()
+            1
         """
         return len(self.edge_set())
 
