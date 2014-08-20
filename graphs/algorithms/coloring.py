@@ -85,7 +85,7 @@ def dsatur(graph, classes=True):
         return (num_colors, color_classes)
 
 
-def greedy_sequential(graph, vertices=None):
+def greedy_sequential(graph, **kwargs):
     """
     Returns an approximation (upper bound) to the chromatic number of the graph,
     along with an approximate coloring.
@@ -93,9 +93,18 @@ def greedy_sequential(graph, vertices=None):
     Input:
         * graph: Graph
             Graph to color.
+        * kwargs:
+            Possible keywords:
+            * vertices: list (default=None)
+                An optional ordering of the vertices.
 
-        * vertices: list (default=None)
-            An optional ordering of the vertices.
+            * passes: int (default=1)
+                Optional number of passes to make. A standard is to make two passes;
+                once forwards and once backwards.
+
+            * classes: bool (default=True)
+                If True, returns a partition of the vertices of graph into color
+                classes. Otherwise, returns a color map of the vertices.
 
     Output:
         * (k, color_classes): tuple
@@ -118,33 +127,49 @@ def greedy_sequential(graph, vertices=None):
         coloring. See "Iterated Greedy Graph Coloring and the Difficulty
         Landscape" by Culberson for details about this.
     """
+    vertices = kwargs.get('vertices', None)
+    classes = kwargs.get('classes', True)
+    passes = kwargs.get('passes', 1)
+
     if vertices is None:
         vertices = graph.vertices(order='degree')[::-1]
 
-    colors = {}
+    color_map = {}
     v = vertices[0]
-    colors[v] = 0
+    color_map[v] = 0
     num_colors = 1
 
     for i in xrange(1, len(vertices)):
         v = vertices[i]
         adjacent_colors = set([])
         for u in graph[v]:
-            if u in colors:
-                adjacent_colors.add(colors[u])
+            if u in color_map:
+                adjacent_colors.add(color_map[u])
 
         for color in xrange(num_colors + 1):
             if color not in adjacent_colors:
-                colors[v] = color
+                color_map[v] = color
                 if color == num_colors:
                     num_colors += 1
                 break
 
-    color_classes = [[] for i in xrange(num_colors)]
-    for (u, color) in colors.iteritems():
-        color_classes[color].append(u)
+    if classes or passes == 2:
+        color_classes = [[] for i in xrange(num_colors)]
+        for (u, color) in color_map.iteritems():
+            color_classes[color].append(u)
 
-    return (num_colors, color_classes)
+        if classes and passes == 1:
+            return (num_colors, color_classes)
+
+        elif passes == 2:
+            reversed_vertices = []
+            while color_classes:
+                reversed_vertices.extend(color_classes.pop())
+
+            return greedy_sequential(graph, vertices=reversed_vertices,
+                                     passes=1, classes=classes)
+
+    return (num_colors, color_map)
 
 
 def maxis(graph, **kwargs):
@@ -161,6 +186,10 @@ def maxis(graph, **kwargs):
             * verbose: bool (default=False)
                 If True, extra information is printed to the terminal.
 
+            * classes: bool (default=True)
+                If True, returns a partition of the vertices of graph into color
+                classes. Otherwise, returns a color map of the vertices.
+
             * color_limit: int (default=58)
                 Upper limit on the size of the reduced graph for when a final
                 exact coloring is performed.
@@ -168,6 +197,10 @@ def maxis(graph, **kwargs):
             * mis_limit: int (default=0)
                 Upper limit on the size of the reduced graph for when exact
                 techniques are used for extracting maximum independent sets.
+
+            * greedy: bool (default=False)
+                If True, use a greedy algorithm for finding large independent
+                sets. Otherwise, use a truncated backtracking approach.
 
     Output:
         * (k, color_classes): tuple
@@ -191,14 +224,17 @@ def maxis(graph, **kwargs):
     """
     approximate = rosemary.graphs.algorithms.independent_sets.culberson
     exact = rosemary.graphs.algorithms.independent_sets.branch_and_bound
+    greedy = rosemary.graphs.algorithms.independent_sets.greedy
 
     reduced_graph = graph.copy()
     vertices = graph.vertex_set()
     num_vertices = len(vertices)
 
     verbose = kwargs.get('verbose', False)
+    classes = kwargs.get('classes', True)
     color_limit = kwargs.get('color_limit', 58)
     mis_limit = kwargs.get('mis_limit', 0)
+    use_greedy = kwargs.get('greedy', False)
 
     if verbose:
         print "Using color_limit={}, mis_limit={}".format(color_limit, mis_limit)
@@ -209,9 +245,15 @@ def maxis(graph, **kwargs):
 
     while num_vertices > color_limit:
         if num_vertices > mis_limit:
-            if verbose:
-                print "Finding approximate MIS..."
-            (size, independent_set) = approximate(reduced_graph)
+            if use_greedy:
+                if verbose:
+                    print "Finding approximate (greedy) MIS..."
+                (size, independent_set) = greedy(reduced_graph)
+
+            else:
+                if verbose:
+                    print "Finding approximate MIS..."
+                (size, independent_set) = approximate(reduced_graph)
         else:
             if verbose:
                 print "Finding exact MIS..."
@@ -231,11 +273,21 @@ def maxis(graph, **kwargs):
     if num_vertices:
         if verbose:
             print "Using exact coloring techniques for last {} vertices".format(num_vertices)
-        num, colors = branch_and_bound(reduced_graph)
+        num, colors = branch_and_bound(reduced_graph, classes=True)
     else:
         num, colors = 0, 0
 
-    return num_colors + num, color_classes + colors
+    num_colors += num
+    color_classes += colors
+
+    if classes:
+        return num_colors, color_classes
+    else:
+        color_map = {}
+        for (i, color_class) in enumerate(color_classes):
+            for u in color_class:
+                color_map[u] = i
+        return num_colors, color_map
 
 
 ################################################################################

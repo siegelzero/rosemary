@@ -89,6 +89,25 @@ class Graph(object):
                     if u in graph_dict[v]:
                         del graph_dict[v][u]
 
+    def delete_edge(self, u, v=None):
+        if v is None:
+            if len(u) == 2:
+                (u, v) = u
+            elif len(u) == 3:
+                (u, v, _) = u
+            else:
+                raise ValueError("delete_edge: Invalid edge passed.")
+
+        graph_dict = self.graph_dict
+
+        if v in graph_dict:
+            if u in graph_dict[v]:
+                del graph_dict[v][u]
+
+        if u in graph_dict:
+            if v in graph_dict[u]:
+                del graph_dict[u][v]
+
     def remove_vertex(self, u):
         """
         Returns a copy of self with vertex u removed.
