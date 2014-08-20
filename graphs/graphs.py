@@ -49,6 +49,20 @@ class Graph(object):
     def num_vertices(self):
         """
         Returns the number of vertices of self.
+
+        Input:
+            * self: Graph
+
+        Output:
+            * num_vertices: int
+
+        Examples:
+            >>> G = Graph()
+            >>> G.num_vertices()
+            0
+            >>> G.add_vertices([0, 1, 2])
+            >>> G.num_vertices()
+            3
         """
         return len(self.graph_dict.keys())
 
@@ -182,22 +196,50 @@ class Graph(object):
 
     def add_vertex(self, u):
         """
-        Adds the vertex u to self. If u in not in self, nothing is done.
+        Adds the vertex u to self, modifying self. If u in already a vertex of
+        self, nothing is done.
+
+        Input:
+            * self: Graph
+            * u: vertex of self
+
+        Examples:
+            >>> G = Graph()
+            >>> G.vertices()
+            []
+            >>> G.add_vertex(0)
+            >>> G.vertices()
+            [0]
         """
         if u not in self.graph_dict:
             self.graph_dict[u] = {}
 
     def add_vertices(self, vertex_list):
         """
-        Adds the vertices to self.
+        Adds the vertices in vertex_list to self, modifying self.. Any vertices
+        which are already in self are skipped.
+
+        Input:
+            * self: Graph
+            * vertex_list: iterable (list, set, tuple)
+                List of vertices to add to self.
+
+        Examples:
+            >>> G = Graph()
+            >>> G.add_vertices([0, 1, 2])
+            >>> G.vertices()
+            [0, 1, 2]
         """
+        graph_dict = self.graph_dict
+
         for u in vertex_list:
-            self.add_vertex(u)
+            if u not in graph_dict:
+                graph_dict[u] = {}
 
     def delete_vertex(self, u):
         """
-        Deletes the vertex u from self, along with any edges adjacent to u. If u
-        is not in self, then nothing is done.
+        Deletes the vertex u along with any edges adjacent to u, modifying self.
+        If u is not in self, then nothing is done.
         """
         graph_dict = self.graph_dict
         if u in graph_dict:
