@@ -87,27 +87,56 @@ class Graph(object):
     def vertices(self, **kwargs):
         """
         Returns a sorted list of the vertices of self.
+
+        Input:
+            * self: Graph
+
+            * kwargs:
+                Possible keywords:
+                * order: string (default=None)
+                    An optional ordering of the vertices. This parameter can
+                    take the values 'degree', 'induced', or None.
+
+                    If order is 'degree', the vertices are returned in
+                    nondecreasing order of degree.
+
+                    If order is 'induced', the vertices are returned in the
+                    following order: The first vertex v0 has least degree in
+                    self. Next, v1 has least degree in the graph we obtain from
+                    deleting v0. We repeat in this fasion until all vertices are
+                    listed.
+
+                    If order is None, then the vertices are returned in
+                    lexicographic order.
+
+                * reverse: bool (default=False)
+                    If True, then the vertices are given in reverse order.
+
+        Output:
+            * vertices: list
+                An ordered list of the vertices of self.
         """
         vertices = self.graph_dict.keys()
-        if 'order' in kwargs:
-            order = kwargs['order']
+        order = kwargs.get('order', None)
+        reverse = kwargs.get('reverse', False)
 
-            if order == 'degree':
-                vertex_list = sorted(vertices, key=self.degree)
-            elif order == 'induced':
-                num_vertices = self.num_vertices()
-                new_graph = self.copy()
-                vertex_list = []
+        if order == 'degree':
+            vertex_list = sorted(vertices, key=self.degree)
+        elif order == 'induced':
+            num_vertices = self.num_vertices()
+            new_graph = self.copy()
+            vertex_list = []
 
-                while len(vertex_list) < num_vertices:
-                    vertex = new_graph.min_degree_vertex()
-                    vertex_list.append(vertex)
-                    new_graph.delete_vertex(vertex)
+            while len(vertex_list) < num_vertices:
+                vertex = new_graph.min_degree_vertex()
+                vertex_list.append(vertex)
+                new_graph.delete_vertex(vertex)
 
-            else:
-                vertex_list = sorted(vertices)
         else:
             vertex_list = sorted(vertices)
+
+        if reverse:
+            vertex_list = vertex_list[::-1]
 
         return vertex_list
 

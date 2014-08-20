@@ -93,6 +93,7 @@ def greedy_sequential(graph, **kwargs):
     Input:
         * graph: Graph
             Graph to color.
+
         * kwargs:
             Possible keywords:
             * vertices: list (default=None)
