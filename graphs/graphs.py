@@ -1,5 +1,4 @@
 import rosemary.algebra.matrices.matrices
-import rosemary.combinatorics.enumeration
 import rosemary.graphs.algorithms.traversal
 
 from rosemary.number_theory.core import gcd
@@ -230,53 +229,76 @@ class Graph(object):
 
         return edges_seen
 
-    def max_degree_vertex(self):
+    def maximum_degree(self):
         """
-        Returns a vertex of self of maximal degree.
+        Returns the largest degree over all vertices of self.
+
+        Input:
+            * self: Graph
+
+        Output:
+            * deg: int
+        """
+        vertices = self.vertex_set()
+
+        if len(vertices) == 0:
+            raise ValueError('maximum_degree: Graph has no vertices.')
+
+        deg = max(self.degree(u) for u in vertices)
+        return deg
+
+    def maximum_degree_vertex(self):
+        """
+        Returns a vertex of self of maximum degree.
 
         Input:
             * self: Graph
 
         Output:
             * vertex: vertex of self
-
-        Examples:
-            >>> G = random_graph(5, 0.8)
-            >>> G.max_degree(vertex)
-            3
-            >>> G.degree(3)
-            3
         """
-        vertices = self.vertices(order='degree')
+        vertices = self.vertex_set()
 
         if len(vertices) == 0:
-            raise ValueError('min_degree_vertex: Graph has no vertices.')
+            raise ValueError('maximum_degree_vertex: Graph has no vertices.')
 
-        return vertices[-1]
+        deg = max(vertices, key=self.degree)
+        return deg
 
-    def min_degree_vertex(self):
+    def minimum_degree(self):
         """
-        Returns a vertex of self of minimal degree.
+        Returns the smallest degree over all vertices of self.
+
+        Input:
+            * self: Graph
+
+        Output:
+            * deg: int
+        """
+        vertices = self.vertex_set()
+
+        if len(vertices) == 0:
+            raise ValueError('minimum_degree: Graph has no vertices.')
+
+        deg = min(self.degree(u) for u in vertices)
+        return deg
+
+    def minimum_degree_vertex(self):
+        """
+        Returns a vertex of self of minimum degree.
 
         Input:
             * self: Graph
 
         Output:
             * vertex: vertex of self
-
-        Examples:
-            >>> G = random_graph(5, 0.8)
-            >>> G.min_degree(vertex)
-            1
-            >>> G.degree(3)
-            2
         """
-        vertices = self.vertices(order='degree')
+        vertices = self.vertex_set()
 
         if len(vertices) == 0:
-            raise ValueError('min_degree_vertex: Graph has no vertices.')
+            raise ValueError('minimum_degree_vertex: Graph has no vertices.')
 
-        return vertices[0]
+        return min(vertices, key=self.degree)
 
     def degree(self, u):
         """
@@ -298,13 +320,19 @@ class Graph(object):
         degree = len(self.neighbors(u))
         return degree
 
-    def total_degree(self, vertex_list):
+    def total_degree(self, vertex_list=None):
         """
-        Returns the sum of the degrees of all vertices in vertex_list.
+        Returns the total degree of self.
+
+        The total degree of a graph is the sum of the degrees of all its
+        vertices.
 
         Input:
             * self: Graph
-            * vertex_list: iterable (list, set, tuple)
+
+            * vertex_list: iterable (list, set, tuple) (default=None)
+                Optional list of vertices of self. If given, the sum of the
+                degrees of all vertices in this list is returned.
 
         Output:
             * total: int
@@ -314,12 +342,19 @@ class Graph(object):
             >>> G.total_degree([0, 1, 2])
             7
         """
+        if vertex_list is None:
+            vertex_list = self.vertex_set()
+
         total = sum(self.degree(u) for u in vertex_list)
         return total
 
     def density(self):
         """
-        Returns the edge density of self.
+        Returns the density of self.
+
+        For a simple graph with n vertices, the density is defined as the ratio
+        of the number of edges in the graph over the maximum number of edges of
+        an n-vertex graph, namely n*(n - 1) / 2.
 
         Input:
             * self: Graph
@@ -337,13 +372,16 @@ class Graph(object):
         """
         num_vertices = self.num_vertices()
         num_edges = self.num_edges()
-        total_possible = rosemary.combinatorics.enumeration.binomial(num_vertices, 2)
-        density = num_edges / (1.0*total_possible)
+        total_possible = num_vertices*(num_vertices - 1) / 2.0
+        density = num_edges / total_possible
         return density
 
     def neighbors(self, u):
         """
-        Returns a set of the neighbors of u; i.e. the vertices adjacent to u.
+        Returns the set of neighbors of u.
+
+        The neighbors of u are the vertices adjacent to u, not including u
+        itself.
 
         Input:
             * self: Graph
@@ -360,16 +398,21 @@ class Graph(object):
         neighbors = set(self.graph_dict[u].keys())
         return neighbors
 
-    def neighborhood(self, u):
+    neighborhood = neighbors
+
+    def closed_neighborhood(self, u):
         """
-        Returns the neighbors of u along with u.
+        Returns the closed neighborhood of u.
+
+        The closed neighborhood of u is defined to be the set of neighbors of u
+        along with u itself.
 
         Input:
             * self: Graph
             * u: vertex of self
 
         Output:
-            * neighborhood: set
+            * closed_neighborhood: set
 
         Examples:
             >>> G = random_graph(20, 0.4)
@@ -603,13 +646,12 @@ class Graph(object):
         new_graph.graph_dict = new_graph_dict
         return new_graph
 
-    def remove_neighborhood(self, u):
+    def remove_closed_neighborhood(self, u):
         """
-        Returns a copy of self with the neighborhood of u removed; i.e. u along
-        with all vertices adjacent to u.
+        Returns a copy of self with the closed neighborhood of u removed.
         """
-        neighborhood = self.neighborhood(u)
-        new_graph = self.remove_vertices(neighborhood)
+        closed_neighborhood = self.closed_neighborhood(u)
+        new_graph = self.remove_vertices(closed_neighborhood)
         return new_graph
 
     def adjacency_matrix(self):

@@ -170,8 +170,8 @@ def culberson(graph):
                 break
 
             deg = degree[v]
-            subgraph = graph.remove_neighborhood(v)
-            (new_size, new_deg, new_set) = indset(subgraph)
+            subgraph_vertices = graph.remove_closed_neighborhood(v)
+            (new_size, new_deg, new_set) = indset(subgraph_vertices)
             new_deg += deg
 
             if new_deg > max_deg:
