@@ -115,6 +115,17 @@ class Graph(object):
         Output:
             * vertices: list
                 An ordered list of the vertices of self.
+
+        Examples:
+            >>> G = random_graph(5, 0.5)
+            >>> G.vertices()
+            [0, 1, 2, 3, 4]
+            >>> G.vertices(reverse=True)
+            [4, 3, 2, 1, 0]
+            >>> G.vertices(order='degree')
+            [1, 2, 4, 3, 0]
+            >>> G.vertices(order='induced')
+            [1, 2, 3, 0, 4]
         """
         vertices = self.graph_dict.keys()
         order = kwargs.get('order', None)
@@ -143,35 +154,98 @@ class Graph(object):
     def vertex_set(self):
         """
         Returns a set containing the vertices of self.
+
+        Input:
+            * self: Graph
+
+        Output:
+            * vertex_set: set
+
+        Examples:
+            >>> G = random_graph(10, 0.5)
+            >>> G.vertex_set()
+            {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
         """
         vertex_set = set(self.graph_dict.keys())
         return vertex_set
 
-    def edges(self):
+    def edges(self, weights=False):
         """
         Returns a sorted list of the edges of self.
+
+        Input:
+            * self: Graph
+
+            * weights: bool (default=False)
+                If True, each edge is in the format (u, v, w), where u and v are
+                the endpoints of the edge, and w is the weight (default=1).
+                Otherwise, each edges is in the format (u, v)
+
+        Output:
+            * edge_list: list
+
+        Examples:
+            >>> G = random_graph(5, 0.8)
+            >>> G.edges()
+            [(0, 1), (0, 3), (0, 4), (1, 2), (2, 3), (3, 4)]
+            >>> G.edges(weights=True)
+            [(0, 1, 1), (0, 3, 1), (0, 4, 1), (1, 2, 1), (2, 3, 1), (3, 4, 1)]
         """
-        edge_list = sorted(self.edge_set())
+        edge_list = sorted(self.edge_set(weights=weights))
         return edge_list
 
-    def edge_set(self):
+    def edge_set(self, weights=False):
         """
         Returns a set containing the vertices of self.
+
+        Input:
+            * self: Graph
+
+            * weights: bool (default=False)
+                If True, each edge is in the format (u, v, w), where u and v are
+                the endpoints of the edge, and w is the weight (default=1).
+                Otherwise, each edges is in the format (u, v)
+
+        Output:
+            * edge_list: list
+
+        Examples:
+            >>> G = random_graph(5, 0.8)
+            >>> G.edge_set()
+            {(0, 1), (0, 3), (0, 4), (1, 2), (2, 3), (3, 4)}
+            >>> G.edge_set(weights=True)
+            {(0, 1, 1), (0, 3, 1), (0, 4, 1), (1, 2, 1), (2, 3, 1), (3, 4, 1)}
         """
         edges_seen = set()
         graph_dict = self.graph_dict
 
         for u in graph_dict:
             for v in graph_dict[u]:
-                weight = graph_dict[u][v]
-                triple = (min(u, v), max(u, v), weight)
-                edges_seen.add(triple)
+                if weights:
+                    weight = graph_dict[u][v]
+                    triple = (min(u, v), max(u, v), weight)
+                    edges_seen.add(triple)
+                else:
+                    edges_seen.add((min(u, v), max(u, v)))
 
         return edges_seen
 
     def max_degree_vertex(self):
         """
-        Returns a vertx of self of maximal degree.
+        Returns a vertex of self of maximal degree.
+
+        Input:
+            * self: Graph
+
+        Output:
+            * vertex: vertex of self
+
+        Examples:
+            >>> G = random_graph(5, 0.8)
+            >>> G.max_degree(vertex)
+            3
+            >>> G.degree(3)
+            3
         """
         vertices = self.vertices(order='degree')
 
@@ -182,7 +256,20 @@ class Graph(object):
 
     def min_degree_vertex(self):
         """
-        Returns a vertx of self of minimal degree.
+        Returns a vertex of self of minimal degree.
+
+        Input:
+            * self: Graph
+
+        Output:
+            * vertex: vertex of self
+
+        Examples:
+            >>> G = random_graph(5, 0.8)
+            >>> G.min_degree(vertex)
+            1
+            >>> G.degree(3)
+            2
         """
         vertices = self.vertices(order='degree')
 
@@ -193,22 +280,60 @@ class Graph(object):
 
     def degree(self, u):
         """
-        Returns the degree of the vertex; i.e. the number of vertices adjacent
-        to vertex.
+        Returns the degree of u; i.e. the number of vertices adjacent to u.
+
+        Input:
+            * self: Graph
+            * u: vertex of self
+
+        Output:
+            * degree: int
+                Number of vertices adjacent to u
+
+        Examples:
+            >>> G = random_graph(5, 0.8)
+            >>> G.degree(3)
+            2
         """
         degree = len(self.neighbors(u))
         return degree
 
-    def total_degree(self, vertices):
+    def total_degree(self, vertex_list):
         """
-        Returns the sum of the degrees of all vertices in the list.
+        Returns the sum of the degrees of all vertices in vertex_list.
+
+        Input:
+            * self: Graph
+            * vertex_list: iterable (list, set, tuple)
+
+        Output:
+            * total: int
+
+        Examples:
+            >>> G = random_graph(5, 0.8)
+            >>> G.total_degree([0, 1, 2])
+            7
         """
-        total = sum(self.degree(u) for u in vertices)
+        total = sum(self.degree(u) for u in vertex_list)
         return total
 
     def density(self):
         """
         Returns the edge density of self.
+
+        Input:
+            * self: Graph
+
+        Output:
+            * density: float
+
+        Examples:
+            >>> G = random_graph(100, 0.3)
+            >>> G.density()
+            0.3058585858585859
+            >>> H = G.complement()
+            >>> H.density()
+            0.6941414141414142
         """
         num_vertices = self.num_vertices()
         num_edges = self.num_edges()
@@ -219,6 +344,18 @@ class Graph(object):
     def neighbors(self, u):
         """
         Returns a set of the neighbors of u; i.e. the vertices adjacent to u.
+
+        Input:
+            * self: Graph
+            * u: vertex of self
+
+        Output:
+            * neighbors: set
+
+        Examples:
+            >>> G = random_graph(20, 0.4)
+            >>> G.neighbors(0)
+            {3, 4, 6, 9, 14, 15, 16, 19
         """
         neighbors = set(self.graph_dict[u].keys())
         return neighbors
@@ -226,6 +363,18 @@ class Graph(object):
     def neighborhood(self, u):
         """
         Returns the neighbors of u along with u.
+
+        Input:
+            * self: Graph
+            * u: vertex of self
+
+        Output:
+            * neighborhood: set
+
+        Examples:
+            >>> G = random_graph(20, 0.4)
+            >>> G.neighborhood(0)
+            {0, 3, 4, 6, 9, 14, 15, 16, 19}
         """
         neighbors = self.neighbors(u)
         neighbors.add(u)
@@ -262,6 +411,7 @@ class Graph(object):
 
         Input:
             * self: Graph
+
             * vertex_list: iterable (list, set, tuple)
                 List of vertices to add to self.
 
@@ -281,6 +431,22 @@ class Graph(object):
         """
         Deletes the vertex u along with any edges adjacent to u, modifying self.
         If u is not in self, then nothing is done.
+
+        Input:
+            * self: Graph
+            * u: vertex of self
+
+        Examples:
+            >>> G = random_graph(5, 0.8)
+            >>> G.vertices()
+            [0, 1, 2, 3, 4]
+            >>> G.edges()
+            [(0, 1), (0, 3), (0, 4), (1, 3), (1, 4), (2, 4), (3, 4)]
+            >>> G.delete_vertex(3)
+            >>> G.vertices()
+            [0, 1, 2, 4]
+            >>> G.edges()
+            [(0, 1), (0, 4), (1, 4), (2, 4)]
         """
         graph_dict = self.graph_dict
         if u in graph_dict:
@@ -289,14 +455,28 @@ class Graph(object):
                 if u in graph_dict[v]:
                     del graph_dict[v][u]
 
-    def delete_vertices(self, vertices):
+    def delete_vertices(self, vertex_list):
         """
-        Deletes vertices from self, along with any adjacent edges. Any vertices
-        which are not in self are skipped.
+        Deletes the vertices in vertex_list from self along with any adjacent
+        edges, modifying self. Any vertices not present in self are skipped.
+
+        Input:
+            * self: Graph
+
+            * vertex_list: iterable (list, set, tuple)
+                List of vertices to delete from self.
+
+        Examples:
+            >>> G = random_graph(5, 0.8)
+            >>> G.vertices()
+            [0, 1, 2, 3, 4]
+            >>> G.delete_vertices([0, 1])
+            >>> G.vertices()
+            [2, 3, 4]
         """
         graph_dict = self.graph_dict
 
-        for u in vertices:
+        for u in vertex_list:
             if u in graph_dict:
                 del graph_dict[u]
                 for v in graph_dict:
@@ -311,12 +491,12 @@ class Graph(object):
         new_graph.delete_vertex(u)
         return new_graph
 
-    def remove_vertices(self, vertices):
+    def remove_vertices(self, vertex_list):
         """
         Returns a copy of self with vertex u removed.
         """
         new_graph = self.copy()
-        new_graph.delete_vertices(vertices)
+        new_graph.delete_vertices(vertex_list)
         return new_graph
 
     def add_edge(self, u, v=None, weight=1):
@@ -525,7 +705,7 @@ class Graph(object):
         Examples:
             >>> G = Graph()
             >>> G.add_edges([(1, 2), (1, 5), (2, 3), (2, 5), (3, 4), (4, 5), (4, 6)])
-            >>> G.laplcian_matrix()
+            >>> G.laplacian_matrix()
             [ 2 -1  0  0 -1  0]
             [-1  3 -1  0 -1  0]
             [ 0 -1  2 -1  0  0]
