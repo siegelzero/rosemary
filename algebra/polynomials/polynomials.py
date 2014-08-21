@@ -9,11 +9,12 @@ from rosemary.algebra.polynomials.algorithms import (
     power_jcp,
 )
 
+
 class Polynomial(object):
     def __init__(self, L=None, name='x'):
         """
         Initialize a Polynomial object.
-        
+
         This initializes a new Polynomial object with coefficients from L, and
         variable name.
 
@@ -38,7 +39,7 @@ class Polynomial(object):
             coeffs = list(L)
             num_coeffs = len(coeffs)
             if num_coeffs == 0:
-                coeffs [0]
+                coeffs = [0]
                 num_coeffs = 1
             else:
                 while num_coeffs > 1 and coeffs[num_coeffs - 1] == 0:
@@ -69,8 +70,8 @@ class Polynomial(object):
         if len(self._coefficients) == 1:
             return str(self._coefficients[0])
         terms = [(i, self._coefficients[i]) for i in range(self.degree + 1) if
-                self._coefficients[i]]
-        terms.sort(reverse = True)
+                 self._coefficients[i]]
+        terms.sort(reverse=True)
 
         def print_term(deg, coeff):
             if deg == 0:
@@ -308,9 +309,6 @@ class Polynomial(object):
         Output:
             * (quo, rem) - quotient and remainder of the division of self by
               other.
-
-        Details:
-            The algorithm used is given in Section 4.6.1 of 
         """
         if not isinstance(other, Polynomial):
             try:
@@ -340,7 +338,7 @@ class Polynomial(object):
     def quo_rem(self, other):
         """
         Returns the quotient and remainder of the division.
-        
+
         Given polynomials u(x) (self) and v(x) (other), where deg(self) >=
         deg(other) >= 0, this algorithm finds polynomials q(z) and r(x)
         satisfying u(x) = q(x) * v(x) + r(x).

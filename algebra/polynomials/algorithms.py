@@ -1,5 +1,6 @@
 # Algorithms on polynomials
 
+
 def mul_classical(M, N):
     """
     Returns the product of M and N.
@@ -7,7 +8,7 @@ def mul_classical(M, N):
     Given lists M and N of numbers, this returns the coefficients of the product
     f(x) * g(x), where f(x) = M[0] + M[1]*x + ... + M[k - 1]*x^{k - 1} and g(x)
     = N[0] + N[1]*x + ... + N[l - 1]*x^{l - 1}.
-    
+
     Input:
         * M - A list or tuple of numbers.
         * N - A list or tuple of numbers.
@@ -37,6 +38,7 @@ def mul_classical(M, N):
             P[i + j] += M[i] * N[j]
     return P
 
+
 def mul_karatsuba(M, N):
     """
     Returns the product of M and N.
@@ -44,7 +46,7 @@ def mul_karatsuba(M, N):
     Given lists M and N of numbers, this returns the coefficients of the product
     f(x) * g(x), where f(x) = M[0] + M[1]*x + ... + M[n]*x^n and g(x) = N[0] +
     N[1]*x + ... + N[k]*x^k.
-     
+
     Input:
         * M - A list or tuple of numbers.
         * N - A list or tuple of numbers.
@@ -99,6 +101,7 @@ def mul_karatsuba(M, N):
     xy = list_add(list_add(t2, t1), z0)
     return xy
 
+
 def power_jcp(A, k):
     """
     Returns the kth power
@@ -143,6 +146,7 @@ def power_jcp(A, k):
         P[i] = ss // (i * a0)
     return [0]*shift*k + P
 
+
 def list_add(A, B):
     """
     Adds two lists.
@@ -175,6 +179,7 @@ def list_add(A, B):
             C[i] += c
     return C
 
+
 def list_subtract(A, B):
     """
     Subtract two lists.
@@ -206,4 +211,3 @@ def list_subtract(A, B):
         for (i, c) in enumerate(A):
             C[i] += c
     return C
-

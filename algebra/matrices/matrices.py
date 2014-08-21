@@ -205,7 +205,7 @@ class Matrix(object):
 
         if ncols != other_nrows:
             raise ValueError("Incompatible Matrix dimensions")
-        
+
         other_entries = other.__entries
         result = [[0]*nrows for _ in xrange(other_ncols)]
 
@@ -244,7 +244,7 @@ class Matrix(object):
 
         if other_ncols != nrows:
             raise ValueError("Incompatible Matrix dimensions")
-        
+
         other_entries = other.__entries
         result = [[0]*other_ncols for _ in xrange(nrows)]
 
@@ -343,6 +343,6 @@ class Matrix(object):
 class MatrixZZ(Matrix):
     pass
 
+
 class MatrixQQ(Matrix):
     pass
-
