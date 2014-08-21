@@ -24,3 +24,20 @@ def connected_components(graph):
         visited.update(neighbors)
 
     return components
+
+
+def connected_component(graph, u):
+    """
+    Returns a list of the vertices of graph in the same connected component as
+    the vertex u
+
+    Input:
+        * graph: Graph
+        * u: vertex of graph
+
+    Output:
+        * component: list
+            A list of vertices of graph.
+    """
+    connected_vertices = list(depth_first_search(graph, u))
+    return connected_vertices
