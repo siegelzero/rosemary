@@ -40,7 +40,7 @@ def dsatur(graph, classes=True):
     color_map = {}
 
     # Pick a vertex of maximal degree and color it with color 0.
-    u = graph.max_degree_vertex()
+    u = graph.maximum_degree_vertex()
     color_map[u] = 0
     num_colors = 1
     uncolored.remove(u)
