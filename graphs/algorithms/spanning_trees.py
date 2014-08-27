@@ -57,8 +57,10 @@ def prim(graph, w=None, edge_list=True):
         Using Python heaps, this algorithm runs in time O((m + n)*log(n)), where
         n and m are the number of vertices and edges of the graph, respectively.
         Our implementation is based on the exposition in the book "Python
-        Algorithms" by Lie Hetland. Another solid reference is the book
-        "Algorithms" by Dasgupta, et al.
+        Algorithms" by Lie Hetland. Another standard reference is the book
+        "Algorithms" by Dasgupta, et al. See "Network Flows: Theory, Algorithms,
+        and Applications" by Ahuja, et al for detailed overview of spanning tree
+        algorithms.
     """
     # Choose a root vertex if none is given
     if w is None:
@@ -75,6 +77,9 @@ def prim(graph, w=None, edge_list=True):
 
         previous[u] = p
 
+        # Note that in typical implementations of Prim's algorithm, we relax
+        # before we push to the heap. Here, we use the heap property to get
+        # around this.
         for (v, w) in graph[u].iteritems():
             heappush(heap, (w, u, v))
 
