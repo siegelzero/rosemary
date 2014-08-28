@@ -1,7 +1,7 @@
 class NamedUnionFind(object):
     def __init__(self, node_list):
         """
-        Initialize a new UnionFind object containing nodes in node_list.
+        Initialize a new NamedUnionFind object containing nodes in node_list.
         """
         self.count = {}
         self.name = {}
@@ -42,3 +42,56 @@ class NamedUnionFind(object):
         self.root[w] = large
 
 
+class UnionFind(object):
+    def __init__(self, node_list):
+        """
+        Initialize a new UnionFind object containing nodes in node_list.
+        """
+        rank = {}
+        father = {}
+
+        for u in node_list:
+            rank[u] = 0
+            father[u] = u
+
+        self.rank = rank
+        self.father = father
+
+    def __getitem__(self, u):
+        return self.find(u)
+
+    def find(self, x):
+        """
+        Returns the name of the set containing x.
+        """
+        father = self.father
+        path = []
+        while x != father[x]:
+            path.append(x)
+            x = father[x]
+
+        for v in path:
+            father[v] = x
+
+        return x
+
+    def union(self, x, y):
+        """
+        Combines the sets named x and y.
+        """
+        father = self.father
+        rank = self.rank
+
+        fx = father[x]
+        fy = father[y]
+
+        if fx == fy:
+            return
+
+        if rank[fx] > rank[fy]:
+            father[fy] = fx
+        else:
+            father[fx] = fy
+
+            if rank[fx] == rank[fy]:
+                rank[fy] += 1

@@ -1,4 +1,5 @@
-from heapq import heappush, heappop
+from heapq import heappush, heappop, heapify
+from rosemary.data_structures.unionfind import UnionFind
 
 
 ###############################################################################
@@ -6,9 +7,9 @@ from heapq import heappush, heappop
 ###############################################################################
 
 
-def prim(graph, w=None, edge_list=True):
+def prim(graph, root=None, edge_list=True):
     """
-    Returns a minimum spanning tree of graph of the given graph.
+    Returns a minimum spanning tree of the given graph.
 
     Given a connected weighted graph and optional vertex w, this method returns
     a minimum spanning tree of the graph, rooted at vertex w. In the case that
@@ -18,8 +19,8 @@ def prim(graph, w=None, edge_list=True):
     Input:
         * graph: Graph
 
-        * w: vertex of graph (default=None)
-            Root vertex of spanning tree. If w is None, a (somewhat) random
+        * root: vertex of graph (default=None)
+            Root vertex of spanning tree. If root is None, a (somewhat) random
             vertex is chosen.
 
         * edge_list: bool (default=True)
@@ -54,20 +55,23 @@ def prim(graph, w=None, edge_list=True):
         minimum spanning tree of the component containing the root vertex is
         returned.
 
-        Using Python heaps, this algorithm runs in time O((m + n)*log(n)), where
-        n and m are the number of vertices and edges of the graph, respectively.
-        Our implementation is based on the exposition in the book "Python
+        Prim's algorithm begins with a tree containing only the root vertex, and
+        then repeatedly grows the tree by adding the lightest edge between a
+        vertex in the tree and a vertex outside of the tree. Using Python heaps,
+        this algorithm runs in time O((m + n)*log(n)), where n and m are the
+        number of vertices and edges of the graph, respectively.  Our
+        implementation is based on the exposition in the book "Python
         Algorithms" by Lie Hetland. Another standard reference is the book
         "Algorithms" by Dasgupta, et al. See "Network Flows: Theory, Algorithms,
-        and Applications" by Ahuja, et al for detailed overview of spanning tree
-        algorithms.
+        and Applications" by Ahuja, et al for detailed overview of minimum
+        spanning tree algorithms.
     """
     # Choose a root vertex if none is given
-    if w is None:
-        w = graph.graph_dict.keys()[0]
+    if root is None:
+        root = graph.graph_dict.keys()[0]
 
     previous = {}
-    heap = [(0, None, w)]
+    heap = [(0, None, root)]
 
     while heap:
         (_, p, u) = heappop(heap)
@@ -90,11 +94,85 @@ def prim(graph, w=None, edge_list=True):
         v = previous[u]
         if v is not None:
             edge = min(u, v), max(u, v)
-            weight = graph[u][v]
-            total += weight
+            total += graph[u][v]
             edges.append(edge)
 
     if edge_list:
         return total, sorted(edges)
 
     return total, previous
+
+
+def kruskal(graph):
+    """
+    Returns the edge list of a minimum spanning tree of the given graph.
+
+    Given a connected weighted graph and optional vertex w, this method returns
+    a minimum spanning tree of the graph. In the case that the graph is not
+    connected, it returns a list of the edges of a minimum spanning tree for
+    each connected component.
+
+    Input:
+        * graph: Graph
+
+    Output:
+        * (weight, edges): tuple
+            * weight: number
+                Weight of the minimum spanning tree.
+
+            * edges: list
+                A list of the edges in the minimum spanning tree.
+
+    Examples:
+        >>> G = Graph()
+        >>> G.add_edges([('a', 'b', 5), ('a', 'c', 6), ('a', 'd', 4),
+                         ('b', 'c', 1), ('b', 'd', 2), ('c', 'd', 2),
+                         ('c', 'e', 5), ('c', 'f', 3), ('d', 'f', 4),
+                         ('e', 'f', 4)])
+        >>> kruskal(G)
+        (14, [('a', 'd'), ('b', 'c'), ('b', 'd'), ('c', 'f'), ('e', 'f')])
+
+    Details:
+        This method uses Kruskal's algorithm to find a minimum spanning tree of
+        the given graph. The notion of a spanning tree only makes sense if the
+        graph is connected. In the case that the graph is not connected, then a
+        list of the edges of a minimum spanning forest is returned.
+
+        Kruskal's algorithm begins with an empty tree, and then repeatedly adds
+        the next lightest edge of the graph that doesn't produce a cycle. We
+        implement our own disjoint-set data structure here for cycle detection.
+        Our version of Kruskal's algorithm runs in time O(m log(n)), where n and
+        m are the number of vertices and edges, respectively. See "Algorithms"
+        by Dasgupta, et al for details. See "Network Flows: Theory, Algorithms,
+        and Applications" by Ahuja, et al for detailed overview of minimum
+        spanning tree algorithms.
+    """
+    vertices = graph.vertex_set()
+    num_vertices = len(vertices)
+
+    edges = [(graph[u][v], u, v) for u in graph for v in graph[u]]
+    heapify(edges)
+
+    tree_edges = []
+    total = 0
+    num_edges = 0
+
+    X = UnionFind(vertices)
+    find = X.find
+    union = X.union
+
+    while edges:
+        (w, u, v) = heappop(edges)
+        if find(u) != find(v):
+            edge = min(u, v), max(u, v)
+            total += w
+            tree_edges.append(edge)
+            num_edges += 1
+
+            # A tree on n vertices has n - 1 edges, so break when finished.
+            if num_edges == num_vertices - 1:
+                break
+
+            union(u, v)
+
+    return total, sorted(tree_edges)
