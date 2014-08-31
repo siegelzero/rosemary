@@ -1088,6 +1088,8 @@ def random_graph(n, d):
     """
     vertices = range(n)
     graph = Graph()
+    graph.add_vertices(vertices)
+
     for edge in itertools.combinations(vertices, 2):
         r = random.uniform(0, 1)
         if r <= d:

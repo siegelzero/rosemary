@@ -1,4 +1,4 @@
-from heapq import heappush, heappop, heapify
+from heapq import heappush, heappop, heapify, merge
 from rosemary.data_structures.unionfind import UnionFind
 
 
@@ -58,13 +58,12 @@ def prim(graph, root=None, edge_list=True):
         Prim's algorithm begins with a tree containing only the root vertex, and
         then repeatedly grows the tree by adding the lightest edge between a
         vertex in the tree and a vertex outside of the tree. Using Python heaps,
-        this algorithm runs in time O((m + n)*log(n)), where n and m are the
-        number of vertices and edges of the graph, respectively.  Our
-        implementation is based on the exposition in the book "Python
-        Algorithms" by Lie Hetland. Another standard reference is the book
-        "Algorithms" by Dasgupta, et al. See "Network Flows: Theory, Algorithms,
-        and Applications" by Ahuja, et al for detailed overview of minimum
-        spanning tree algorithms.
+        this algorithm runs in time O((|V| + |E|)*log(|V|)). Our implementation
+        is based on the exposition in the book "Python Algorithms" by Lie
+        Hetland. Another standard reference is the book "Algorithms" by
+        Dasgupta, et al. See "Network Flows: Theory, Algorithms, and
+        Applications" by Ahuja, et al for detailed overview of minimum spanning
+        tree algorithms.
     """
     # Choose a root vertex if none is given
     if root is None:
@@ -139,13 +138,12 @@ def kruskal(graph):
         list of the edges of a minimum spanning forest is returned.
 
         Kruskal's algorithm begins with an empty tree, and then repeatedly adds
-        the next lightest edge of the graph that doesn't produce a cycle. We
-        implement our own disjoint-set data structure here for cycle detection.
-        Our version of Kruskal's algorithm runs in time O(m log(n)), where n and
-        m are the number of vertices and edges, respectively. See "Algorithms"
-        by Dasgupta, et al for details. See "Network Flows: Theory, Algorithms,
-        and Applications" by Ahuja, et al for detailed overview of minimum
-        spanning tree algorithms.
+        the next lightest edge of the graph that doesn't produce a cycle, using
+        a disjoint-set data structure for cycle detection. Our version of
+        Kruskal's algorithm runs in time O(|E| log(|V|)). See "Algorithms" by
+        Dasgupta, et al for details. See "Network Flows: Theory, Algorithms, and
+        Applications" by Ahuja, et al for detailed overview of minimum spanning
+        tree algorithms.
     """
     vertices = graph.vertex_set()
     num_vertices = len(vertices)
@@ -161,18 +159,74 @@ def kruskal(graph):
     find = X.find
     union = X.union
 
-    while edges:
-        (w, u, v) = heappop(edges)
+    # A tree on n vertices has n - 1 edges, so break when finished.
+    while num_edges < num_vertices - 1:
+        (weight, u, v) = heappop(edges)
         if find(u) != find(v):
             edge = min(u, v), max(u, v)
-            total += w
+            total += weight
             tree_edges.append(edge)
             num_edges += 1
-
-            # A tree on n vertices has n - 1 edges, so break when finished.
-            if num_edges == num_vertices - 1:
-                break
-
             union(u, v)
 
     return total, sorted(tree_edges)
+
+
+def cheriton_tarjan(graph):
+    import random
+    vertices = graph.vertices()
+    X = UnionFind(vertices)
+    find = X.find
+    union = X.union
+    PQ = {}
+
+    edges = []
+
+    for u in vertices:
+        Q = []
+        for v in graph[u]:
+            w = graph[u][v]
+            Q.append((w, u, v))
+        heapify(Q)
+        PQ[u] = Q
+
+    t = 0
+    while t < len(vertices) - 1:
+        u = random.choice(vertices)
+        Tu = find(u)
+
+        while True:
+            (_, x, y) = heappop(PQ[Tu])
+            Tx = find(x)
+            Ty = find(y)
+
+            if Tx == Ty:
+                continue
+
+            if Tx == Tu:
+                Tv = Ty
+            else:
+                Tv = Tx
+
+            break
+
+        union(Tu, Tv)
+        u = find(Tu)
+
+        Q = list(merge(PQ[Tu], PQ[Tv]))
+        heapify(Q)
+
+        del PQ[Tv]
+        del PQ[Tu]
+
+        PQ[u] = Q
+
+        edges.append((min(x, y), max(x, y)))
+
+        t += 1
+
+    total = 0
+    for (u, v) in edges:
+        total += graph[u][v]
+
+    return total, sorted(edges)

@@ -20,16 +20,20 @@ def breadth_first_search(graph, start, max_depth=None):
     """
     # Starting vertex has depth 0.
     stack = deque([(start, 0)])
+    pop = stack.popleft
+    append = stack.append
+
     visited = set()
+    add = visited.add
 
     while stack:
-        (u, depth) = stack.popleft()
+        (u, depth) = pop()
         if max_depth is None or depth < max_depth:
             for v in graph.graph_dict[u]:
                 if v in visited:
                     continue
-                stack.append((v, depth + 1))
-                visited.add(v)
+                append((v, depth + 1))
+                add(v)
                 yield v
 
 
@@ -52,13 +56,18 @@ def depth_first_search(graph, start, max_depth=None):
     """
     # Starting vertex has depth 0.
     stack = [(start, 0)]
+    pop = stack.pop
+    extend = stack.extend
+
     visited = set()
+    add = visited.add
 
     while stack:
-        (u, depth) = stack.pop()
+        (u, depth) = pop()
         if u in visited:
             continue
         yield u
-        visited.add(u)
+
+        add(u)
         if max_depth is None or depth < max_depth:
-            stack.extend((v, depth + 1) for v in graph.graph_dict[u] if v not in visited)
+            extend((v, depth + 1) for v in graph.graph_dict[u] if v not in visited)
