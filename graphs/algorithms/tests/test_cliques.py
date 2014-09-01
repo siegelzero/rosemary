@@ -90,7 +90,7 @@ class TestCliques(unittest.TestCase):
         self.assertEqual(len(cliques2), len(cliques3))
 
     def test_maximum_clique(self):
-        print "\nTesting Ostergard algorithm"
+        print "Testing Ostergard algorithm"
         size, clique = ostergard(self.random_graph)
         self.assertEqual(size, 5)
         self.assertEqual(sorted(clique), self.random_graph_clique)
@@ -107,7 +107,7 @@ class TestCliques(unittest.TestCase):
             self.assertEqual(sorted(clique), self.random_graph_clique)
 
     def test_maximum_weight_clique(self):
-        print "\nTesting Maximum-weight clique algorithm"
+        print "Testing Maximum-weight clique algorithm"
         size, clique = maximum_weight_clique(self.coprime_graph10)
         self.assertEqual(size, self.coprime_graph10_weight)
         self.assertEqual(sorted(clique), self.coprime_graph10_clique)

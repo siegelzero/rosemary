@@ -26,6 +26,13 @@ def dsatur(graph, classes=True):
             * color_classes: list
                 A partition of the vertices into color classes.
 
+    Examples:
+        >>> graph = petersen_graph()
+        >>> dsatur(graph)
+        (3, [[0, 7, 8], [1, 3, 5, 9], [2, 4, 6]])
+        >>> dsatur(graph, classes=False)
+        (3, {0: 0, 1: 1, 2: 2, 3: 1, 4: 2, 5: 1, 6: 2, 7: 0, 8: 0, 9: 1})
+
     Details:
         This is the classical DSATUR algorithm of Brelaz. The algorithm colors a
         vertex, then selects the next vertex to be colored from the set which
@@ -114,6 +121,15 @@ def greedy_sequential(graph, **kwargs):
 
             * color_classes: list
                 A partition of the vertices into color classes.
+
+    Examples:
+        >>> graph = petersen_graph()
+        >>> greedy_sequential(graph)
+        (3, [[0, 2, 8, 9], [4, 6, 7], [1, 3, 5]])
+        >>> greedy_sequential(graph, classes=False)
+        (3, {0: 0, 1: 2, 2: 0, 3: 2, 4: 1, 5: 2, 6: 1, 7: 1, 8: 0, 9: 0})
+        >>> greedy_sequential(graph, passes=2)
+        (3, [[1, 3, 5, 9], [4, 6, 7], [0, 2, 8]])
 
     Details:
         This is the classical greedy sequential algorithm. The first vertex is
@@ -210,6 +226,24 @@ def maxis(graph, **kwargs):
 
             * color_classes: list
                 A partition of the vertices of graph into color classes.
+
+    Examples:
+        >>> graph = random_graph(30, 0.5)
+        >>> maxis(graph)
+        (7, [[7, 12, 18, 25], [5, 16, 17], [2, 22, 26, 27, 28],
+        [4, 6, 9, 14, 20], [10, 11, 19, 29],
+        [0, 3, 15, 21, 23, 24], [1, 8, 13]])
+        >>> maxis(graph, classes=False)
+        (7, {0: 5, 1: 6, 2: 2, 3: 5, 4: 3, 5: 1, 6: 3, 7: 0,
+        8: 6, 9: 3, 10: 4, 11: 4, 12: 0, 13: 6, 14: 3, 15: 5,
+        16: 1, 17: 1, 18: 0, 19: 4, 20: 3, 21: 5, 22: 2, 23: 5,
+        24: 5, 25: 0, 26: 2, 27: 2, 28: 2, 29: 4})
+        >>> maxis(graph, greedy=True)[0]
+        7
+        >>> maxis(graph, mis_limit=100)[0]
+        7
+        >>> maxis(graph, color_limit=20)[0]
+        8
 
     Details:
         The algorithm proceeds by repeatedly removing large independent sets
@@ -316,6 +350,13 @@ def branch_and_bound(graph, classes=True):
 
             * color_classes: list
                 A partition of the vertices of graph into color classes.
+
+    Examples:
+        >>> graph = petersen_graph()
+        >>> branch_and_bound(graph)
+        (3, [[0, 2, 8, 9], [4, 6, 7], [1, 3, 5]])
+        >>> branch_and_bound(graph, classes=False)
+        (3, {0: 1, 1: 3, 2: 1, 3: 3, 4: 2, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1})
 
     Details:
         This follows the algorithm CHROM_NUM as outlined in the paper
