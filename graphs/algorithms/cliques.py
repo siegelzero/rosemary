@@ -17,6 +17,17 @@ def bron_kerbosch(graph):
         * cliques: iterator
             Each clique is given by a list of vertices of graph.
 
+    Examples:
+        >>> G = random_graph(10, 0.5)
+        >>> list(bron_kerbosch(G))
+        [[0, 8, 9], [0, 8, 3], [0, 8, 4], [0, 9, 5], [1, 9, 5], [1, 3],
+        [1, 6], [1, 7], [2, 5], [2, 6], [2, 7], [4, 8, 6], [7, 8]]
+        >>> G = coprime_pairs_graph(10)
+        >>> list(bron_kerbosch(G))
+        [[1, 2, 9, 5, 7], [1, 2, 3, 5, 7], [1, 3, 8, 5, 7],
+        [1, 3, 10, 7], [1, 3, 4, 5, 7], [1, 4, 9, 5, 7],
+        [1, 5, 8, 9, 7], [1, 5, 6, 7], [1, 7, 9, 10]]
+
     Details:
         This function uses the standard Bron-Kerbosch algorithm, with no
         pivoting. See the paper "Enumerating All Connected Maximal Common
@@ -53,6 +64,17 @@ def bron_kerbosch_binary(graph):
     Output:
         * cliques: iterator
             Each clique is given by a list of vertices of graph.
+
+    Examples:
+        >>> G = random_graph(10, 0.5)
+        >>> list(bron_kerbosch_binary(G))
+        [[0, 4], [0, 6], [0, 7], [1, 2, 3], [1, 2, 4],
+        [1, 3, 6], [2, 4, 8], [3, 5], [4, 5, 8, 9], [6, 9]]
+        >>> G = coprime_pairs_graph(10)
+        >>> list(bron_kerbosch_binary(G))
+        [[1, 2, 3, 5, 7], [1, 2, 5, 7, 9], [1, 3, 4, 5, 7],
+        [1, 3, 5, 7, 8], [1, 3, 7, 10], [1, 4, 5, 7, 9],
+        [1, 5, 6, 7], [1, 5, 7, 8, 9], [1, 7, 9, 10]]
 
     Details:
         This function uses the standard Bron-Kerbosch algorithm for enumerating
@@ -122,6 +144,16 @@ def tomita(graph):
         * cliques: iterator
             Each clique is given by a list of vertices of graph.
 
+    Examples:
+        >>> G = random_graph(10, 0.5)
+        >>> list(tomita(G))
+        [[7, 0], [6, 9], [6, 0], [4, 8, 2], [4, 8, 9, 5],
+        [4, 1, 2], [4, 0], [3, 5], [3, 1, 6], [3, 1, 2]]
+        >>> G = coprime_pairs_graph(10)
+        [[1, 7, 5, 6], [1, 7, 5, 3, 4], [1, 7, 5, 3, 2],
+        [1, 7, 5, 3, 8], [1, 7, 5, 9, 4], [1, 7, 5, 9, 2],
+        [1, 7, 5, 9, 8], [1, 7, 10, 3], [1, 7, 10, 9]]
+
     Details:
         This function uses a variation of the Bron-Kerbosch algorithm, as
         outlined in the paper "The Worst-Case Time Complexity for Generating All
@@ -181,6 +213,16 @@ def maximal_cliques(graph, algorithm='tomita'):
     Output:
         * cliques: iterator
             Each clique is given by a list of vertices of graph.
+
+    Examples:
+        >>> G = random_graph(10, 0.5)
+        >>> maximal_cliques(G)
+        [[7, 0], [6, 9], [6, 0], [4, 8, 2], [4, 8, 9, 5],
+        [4, 1, 2], [4, 0], [3, 5], [3, 1, 6], [3, 1, 2]]
+        >>> G = coprime_pairs_graph(10)
+        [[1, 7, 5, 6], [1, 7, 5, 3, 4], [1, 7, 5, 3, 2],
+        [1, 7, 5, 3, 8], [1, 7, 5, 9, 4], [1, 7, 5, 9, 2],
+        [1, 7, 5, 9, 8], [1, 7, 10, 3], [1, 7, 10, 9]]
     """
     if algorithm == 'tomita':
         return tomita(graph)
@@ -209,6 +251,13 @@ def pardalos(graph):
 
             * clique: list
                 Vertices of a maximum clique of graph.
+
+    Examples:
+        >>> G = coprime_pairs_graph(10)
+        >>> pardalos(G)
+        (5, [1, 2, 3, 5, 7])
+        >>> G = random_graph(30, 0.5)
+        (6, [0, 11, 20, 23, 26, 28])
 
     Details:
         This method is based on the algorithm by Carraghan and Pardalos from the
@@ -274,6 +323,14 @@ def ostergard(graph):
         Algorithm for the Maximum Clique Problem" by Ostergard. Experimental
         evidence suggests that this algorithm is superior to the Pardalos
         algorithm for graphs with low edge density.
+
+    Examples:
+        >>> G = coprime_pairs_graph(10)
+        >>> ostergard(G)
+        (5, [1, 5, 7, 9, 8])
+        >>> G = random_graph(30, 0.5)
+        >>> ostergard(G)
+        (6, [0, 11, 20, 23, 26, 28])
     """
     neighbors = {}
     for v in graph:
@@ -366,6 +423,14 @@ def maximum_clique(graph, algorithm='ostergard'):
 
             * clique: list
                 Vertices of a maximum clique of graph.
+
+    Examples:
+        >>> G = coprime_pairs_graph(10, algorithm='ostergard')
+        >>> maximum_clique(G)
+        (5, [1, 5, 7, 9, 8])
+        >>> G = random_graph(30, 0.5)
+        >>> maximum_clique(G, algorithm='pardalos')
+        (6, [0, 11, 20, 23, 26, 28])
     """
     if algorithm == 'ostergard':
         return ostergard(graph)
@@ -397,6 +462,14 @@ def maximum_weight_clique(graph, weight_map=None):
 
             * clique: list
                 Vertices of a maximum weight clique of graph.
+
+    Examples:
+        >>> G = coprime_pairs_graph(30)
+        >>> maximum_weight_clique(G)
+        (193, [28, 27, 25, 13, 11, 29, 23, 19, 17, 1])
+        >>> G = coprime_pairs_graph(500)
+        >>> maximum_weight_clique(G)[0]
+        5105
 
     Details:
         The algorithm used in this function is from the paper "A New Algorithm
@@ -463,8 +536,3 @@ def maximum_weight_clique(graph, weight_map=None):
         largest[i] = max_clique[0]
 
     return tuple(max_clique)
-
-
-################################################################################
-# Algorithms for finding large cliques
-################################################################################

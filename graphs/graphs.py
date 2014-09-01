@@ -137,7 +137,7 @@ class Graph(object):
             vertex_list = []
 
             while len(vertex_list) < num_vertices:
-                vertex = new_graph.min_degree_vertex()
+                vertex = new_graph.minimum_degree_vertex()
                 vertex_list.append(vertex)
                 new_graph.delete_vertex(vertex)
 
