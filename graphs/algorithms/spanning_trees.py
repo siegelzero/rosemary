@@ -1,5 +1,7 @@
-from heapq import heappush, heappop, heapify, merge
+from heapq import heappush, heappop, heapify
+from random import choice
 from rosemary.data_structures.unionfind import UnionFind
+from rosemary.data_structures.leftist_tree import LBTree
 
 
 ###############################################################################
@@ -173,30 +175,68 @@ def kruskal(graph):
 
 
 def cheriton_tarjan(graph):
-    import random
+    """
+    Returns the edge list of a minimum spanning tree of the given graph.
+
+    Given a connected weighted graph, this method returns a minimum spanning
+    tree of the graph. In the case that the graph is not connected, it returns a
+    list of the edges of a minimum spanning tree for each connected component.
+
+    Input:
+        * graph: Graph
+
+    Output:
+        * (weight, edges): tuple
+            * weight: number
+                Weight of the minimum spanning tree.
+
+            * edges: list
+                A list of the edges in the minimum spanning tree.
+
+    Examples:
+        >>> G = Graph()
+        >>> G.add_edges([('a', 'b', 5), ('a', 'c', 6), ('a', 'd', 4),
+                         ('b', 'c', 1), ('b', 'd', 2), ('c', 'd', 2),
+                         ('c', 'e', 5), ('c', 'f', 3), ('d', 'f', 4),
+                         ('e', 'f', 4)])
+        >>> cheriton_tarjan(G)
+        (14, [('a', 'd'), ('b', 'c'), ('b', 'd'), ('c', 'f'), ('e', 'f')])
+
+    Details:
+        This method uses the algorithm due to Cheriton and Tarjan, based on the
+        exposition in "Graphs, Algorithms, and Optimization" by Kocay and
+        Kreher. The Cheriton-Tarjan algorithm finds a minimum spanning tree in
+        O(|E| log log |V|) time, although in practice, it is beaten by simpler
+        algorithms such as the method by Kruskal. See "Algorithms from P to NP"
+        by Moret and Shapiro for advanced implementation details, and the paper
+        "How to Find a Minimum Spanning Tree in Practice", also by Moret and
+        Shapiro for informations.
+    """
     vertices = graph.vertices()
+    num_vertices = len(vertices)
+
     X = UnionFind(vertices)
     find = X.find
     union = X.union
     PQ = {}
 
-    edges = []
+    tree_edges = []
+    num_edges = 0
 
     for u in vertices:
-        Q = []
+        triples = []
         for v in graph[u]:
-            w = graph[u][v]
-            Q.append((w, u, v))
-        heapify(Q)
-        PQ[u] = Q
+            weight = graph[u][v]
+            triples.append((weight, u, v))
+        PQ[u] = LBTree()
+        PQ[u].insert_values(triples)
 
-    t = 0
-    while t < len(vertices) - 1:
-        u = random.choice(vertices)
+    while num_edges < num_vertices - 1:
+        u = choice(PQ.keys())
         Tu = find(u)
 
         while True:
-            (_, x, y) = heappop(PQ[Tu])
+            (_, x, y) = PQ[Tu].extract()
             Tx = find(x)
             Ty = find(y)
 
@@ -207,26 +247,23 @@ def cheriton_tarjan(graph):
                 Tv = Ty
             else:
                 Tv = Tx
-
             break
 
         union(Tu, Tv)
         u = find(Tu)
 
-        Q = list(merge(PQ[Tu], PQ[Tv]))
-        heapify(Q)
+        if u != Tu:
+            Tu, Tv = u, Tu
+
+        PQ[Tu].merge(PQ[Tv])
 
         del PQ[Tv]
-        del PQ[Tu]
+        tree_edges.append((min(x, y), max(x, y)))
 
-        PQ[u] = Q
-
-        edges.append((min(x, y), max(x, y)))
-
-        t += 1
+        num_edges += 1
 
     total = 0
-    for (u, v) in edges:
+    for (u, v) in tree_edges:
         total += graph[u][v]
 
-    return total, sorted(edges)
+    return total, sorted(tree_edges)
