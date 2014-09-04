@@ -228,8 +228,7 @@ def cheriton_tarjan(graph):
         for v in graph[u]:
             weight = graph[u][v]
             triples.append((weight, u, v))
-        PQ[u] = LeftistHeap()
-        PQ[u].insert_values(triples)
+        PQ[u] = LeftistHeap(triples)
 
     while num_edges < num_vertices - 1:
         u = choice(PQ.keys())

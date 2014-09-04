@@ -3,7 +3,7 @@ from collections import deque
 
 class _LeftistHeapNode(object):
     """
-    Leftist tree node object.
+    Leftist heap node object.
 
     Each node has the following attributes:
 
@@ -96,22 +96,11 @@ class LeftistHeap(object):
     """
     __slots__ = 'root'
 
-    def __init__(self):
+    def __init__(self, values):
         """
-        Initialize a new LeftistHeap object.
-        """
-        self.root = None
-
-    def heapify(self, values):
-        """
-        Creates a heap from the given values.
-
-        Given a list of values, this inserts each value into the heap, modifying
-        self. This should only be used to create new heaps.
+        Creates a new leftist heap contining the given values.
 
         Input:
-            * self: LeftistHeap object
-
             * values: iterable (list, set, tuple)
                 A list of values to insert into the heap.
 
@@ -138,8 +127,6 @@ class LeftistHeap(object):
         Inserts the value into the heap, modifying self.
 
         Input:
-            * self: LeftistHeap object
-
             * value: value to insert
 
         Details:
@@ -158,9 +145,6 @@ class LeftistHeap(object):
         """
         Returns the minimum value of the heap, without modifying self.
 
-        Input:
-            * self: LeftistHeap object
-
         Output:
             * value: minimum value in the heap.
 
@@ -173,9 +157,6 @@ class LeftistHeap(object):
     def delete_min(self):
         """
         Removes the minimum value from the heap and returns it, modifying self.
-
-        Input:
-            self: LeftistHeap object
 
         Output:
             value: minimum value in the heap.
@@ -196,9 +177,6 @@ class LeftistHeap(object):
     def merge(self, other):
         """
         Merges the two leftist heaps, modifying self.
-
-        Input:
-            * self: LeftistHeap object
 
             * other: LeftistHeap object
 
