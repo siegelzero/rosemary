@@ -1,7 +1,7 @@
 from heapq import heappush, heappop, heapify
 from random import choice
 from rosemary.data_structures.unionfind import UnionFind
-from rosemary.data_structures.leftist_tree import LBTree
+from rosemary.data_structures.heaps import LeftistHeap
 
 
 ###############################################################################
@@ -228,7 +228,7 @@ def cheriton_tarjan(graph):
         for v in graph[u]:
             weight = graph[u][v]
             triples.append((weight, u, v))
-        PQ[u] = LBTree()
+        PQ[u] = LeftistHeap()
         PQ[u].insert_values(triples)
 
     while num_edges < num_vertices - 1:
@@ -236,7 +236,7 @@ def cheriton_tarjan(graph):
         Tu = find(u)
 
         while True:
-            (_, x, y) = PQ[Tu].extract()
+            (_, x, y) = PQ[Tu].delete_min()
             Tx = find(x)
             Ty = find(y)
 
