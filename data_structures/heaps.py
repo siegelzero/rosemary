@@ -1,6 +1,11 @@
 from collections import deque
 
 
+################################################################################
+# Leftist heaps
+################################################################################
+
+
 class _LeftistHeapNode(object):
     """
     Leftist heap node object.
@@ -30,18 +35,9 @@ def _leftist_heap_merge(nodeA, nodeB):
     """
     Merges the two leftist heaps with given root nodes.
 
-    Leftist heaps allow for efficient O(log n) merging of two trees. Suppose we
-    want to merge two leftist trees A and B into a new tree T. We take the
-    smaller of the roots of A and B to be the root of T. WLOG, assume that A is
-    the smaller. Removing this element from A splits A into two subtrees, L and
-    R. We need to make these three subtrees B, L, and R into two subtrees of T.
-    We do this by merging R and B into a new tree C, and then take C and L to be
-    the left and right subtrees of T, placing the one with the smaller rank on
-    the right.
-
     Our implementation follows that given in Section 4.4.4 of "Graphs,
     Algorithms, and Optimization" by Kocay and Kreher. See also "Data Structures
-    and Network Algorithms" by Tarjan for more detailed implementations notes.
+    and Network Algorithms" by Tarjan for more detailed implementation notes.
     """
     if nodeA is None:
         return nodeB
@@ -52,7 +48,7 @@ def _leftist_heap_merge(nodeA, nodeB):
     if nodeA.value > nodeB.value:
         nodeA, nodeB = nodeB, nodeA
 
-    # If nodeA has no right child, we simply attach nodeC.
+    # If nodeA has no right child, we simply attach nodeB.
     if nodeA.right is None:
         nodeC = nodeB
     else:
@@ -94,7 +90,7 @@ class LeftistHeap(object):
     and Network Algorithms" by Tarjan and "Data Structures and Algorithm
     Analysis" by Weiss.
     """
-    __slots__ = 'root'
+    __slots__ = ('root', 'size')
 
     def __init__(self, values):
         """
@@ -112,15 +108,33 @@ class LeftistHeap(object):
             end of the queue. We repeat this until the queue contains only one
             heap, which we return.
         """
+        num_values = len(values)
+        size = 0
         nodes = deque([_LeftistHeapNode(val) for val in values])
 
-        while len(nodes) > 1:
+        while num_values > 1:
             nodeA = nodes.popleft()
             nodeB = nodes.popleft()
             nodeA = _leftist_heap_merge(nodeA, nodeB)
             nodes.append(nodeA)
+            num_values -= 1
+            size += 1
 
         self.root = nodeA
+        self.size = size + 1
+
+    def __repr__(self):
+        return "Leftist heap of size {}.".format(self.size)
+
+    def __len__(self):
+        return self.size
+
+    def __iter__(self):
+        size = self.size
+        while size:
+            value = self.delete_min()
+            size -= 1
+            yield value
 
     def insert(self, value):
         """
@@ -135,6 +149,7 @@ class LeftistHeap(object):
             time.
         """
         nodeA = _LeftistHeapNode(value)
+        self.size += 1
 
         if self.root is None:
             self.root = nodeA
@@ -172,6 +187,7 @@ class LeftistHeap(object):
         else:
             value = self.root.value
             self.root = _leftist_heap_merge(self.root.left, self.root.right)
+            self.size -= 1
         return value
 
     def merge(self, other):
@@ -192,3 +208,4 @@ class LeftistHeap(object):
             right.
         """
         self.root = _leftist_heap_merge(self.root, other.root)
+        self.size += other.size
