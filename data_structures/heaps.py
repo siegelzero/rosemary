@@ -209,3 +209,80 @@ class LeftistHeap(object):
         """
         self.root = _leftist_heap_merge(self.root, other.root)
         self.size += other.size
+
+
+class _LazyLeftistHeapNode(object):
+    __slots__ = ('value', 'rank', 'left', 'right', 'deleted')
+
+    def __init__(self, value):
+        self.value = value
+        self.rank = 0
+        self.left = None
+        self.right = None
+        self.deleted = False
+
+
+def _purge(nodeA):
+    if nodeA is None:
+        return []
+
+    if not nodeA.deleted:
+        return [nodeA]
+    else:
+        return _purge(nodeA.left) + _purge(nodeA.right)
+
+
+def _heapify(nodes):
+    num_nodes = len(nodes)
+
+    while num_nodes > 1:
+        nodeA = nodes.popleft()
+        nodeB = nodes.popleft()
+        nodeA = _leftist_heap_merge(nodeA, nodeB)
+        nodes.append(nodeA)
+        num_nodes -= 1
+
+    if nodes:
+        return nodes.pop()
+    else:
+        return None
+
+
+class LazyLeftistHeap(object):
+    __slots__ = 'root'
+
+    def __init__(self, values):
+        nodes = deque([_LazyLeftistHeapNode(val) for val in values])
+        self.root = _heapify(nodes)
+
+    def find_min(self):
+        if self.root.deleted:
+            cleaned = _purge(self.root)
+            print cleaned
+            new = _heapify(deque(cleaned))
+            self.root = new
+        return self.root.value
+
+    def delete_min(self):
+        self.root.deleted = True
+
+    def merge(self, other):
+        if self is None:
+            return other
+        if other is None:
+            return self
+
+        nodeA = _LazyLeftistHeapNode(-1)
+        nodeA.deleted = True
+
+        h1 = self.root
+        h2 = other.root
+
+        if h1.rank < h2.rank:
+            h1, h2 = h2, h1
+
+        nodeA.left = h1
+        nodeA.right = h2
+        nodeA.rank = h2.rank + 1
+
+        self.root = nodeA
