@@ -13,9 +13,6 @@ class NamedUnionFind(object):
             self.father[u] = None
             self.root[u] = u
 
-    def __getitem__(self, u):
-        return self.find(u)
-
     def find(self, u):
         """
         Returns the name of the set containing u.
@@ -43,55 +40,83 @@ class NamedUnionFind(object):
 
 
 class UnionFind(object):
-    def __init__(self, node_list):
+    """
+    Implementation of a disjoint set data structure.
+
+    This data structure solves the problem of maintaining a collection of
+    disjoint sets under the operation of union. To determine if two elements
+    live in the same set, we implement a find operation which returns the name
+    of the set containing the given element.
+
+    Our implementation follows Chapter 2 of "Data Structures and Network
+    Algorithms" by Tarjan. We implement both the union by rank and the path
+    compression heuristics for fast amortized runtime.
+    """
+    def __init__(self, elements):
         """
-        Initialize a new UnionFind object containing nodes in node_list.
+        Initialize a new UnionFind object containing the given elements.
+
+        Given a list of elements, we initialize the data structure by putting
+        each element into its own set. We represent each set by a rooted tree.
+        The nodes of the tree are the elements of the set, and the
+        representative of each set is the tree root. For each node x, we keep
+        track of its parent node. By convention, we make the root element its
+        own parent.
         """
         rank = {}
-        father = {}
+        parent = {}
 
-        for u in node_list:
+        for u in elements:
             rank[u] = 0
-            father[u] = u
+            parent[u] = u
 
         self.rank = rank
-        self.father = father
-
-    def __getitem__(self, u):
-        return self.find(u)
+        self.parent = parent
 
     def find(self, x):
         """
-        Returns the name of the set containing x.
-        """
-        father = self.father
-        path = []
-        while x != father[x]:
-            path.append(x)
-            x = father[x]
+        Returns the name of the set containing the element x.
 
+        Here, we use the path compression heuristic. This changes the structure
+        of the tree during a find by moving nodes closer to the root. When
+        carrying out find(x), after locating the root r of the tree containing
+        x, we make every node on the path from x to r point directly to r. This
+        heuristic increases the time of a single find by a constant factor, but
+        saves enough time in later finds to more than pay for itself.
+        """
+        # We follow parent pointers from x to the root of the tree containing x.
+        parent = self.parent
+        path = []
+        append = path.append
+        while x != parent[x]:
+            append(x)
+            x = parent[x]
+
+        # Make every node on the path from x to the root point directly to the
+        # root.
         for v in path:
-            father[v] = x
+            parent[v] = x
 
         return x
 
     def union(self, x, y):
         """
         Combines the sets named x and y.
+
+        Here, we use the union by rank heuristic to keep the trees shallow.
+        With each node x, we store a nonnegative integer rank that is an upper
+        bound on the height of x.
         """
-        father = self.father
+        parent = self.parent
         rank = self.rank
 
-        fx = father[x]
-        fy = father[y]
+        px = parent[x]
+        py = parent[y]
 
-        if fx == fy:
-            return
+        if rank[px] > rank[py]:
+            x, y = y, x
 
-        if rank[fx] > rank[fy]:
-            father[fy] = fx
-        else:
-            father[fx] = fy
+        if rank[px] == rank[py]:
+            rank[py] += 1
 
-            if rank[fx] == rank[fy]:
-                rank[fy] += 1
+        parent[px] = py
