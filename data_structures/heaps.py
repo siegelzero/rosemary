@@ -248,41 +248,124 @@ def _heapify(nodes):
         return None
 
 
-class LazyLeftistHeap(object):
-    __slots__ = 'root'
+class _PairingHeapNode(object):
+    def __init__(self, key, value=None):
+        self.key = key
+        self.value = value if value else key
+        self.nextSibling = None
+        self.leftChild = None
+        self.prev = None
 
-    def __init__(self, values):
-        nodes = deque([_LazyLeftistHeapNode(val) for val in values])
-        self.root = _heapify(nodes)
 
-    def find_min(self):
-        if self.root.deleted:
-            cleaned = _purge(self.root)
-            print cleaned
-            new = _heapify(deque(cleaned))
-            self.root = new
-        return self.root.value
+def _link_nodes(nodeA, nodeB):
+    if nodeA is None:
+        return nodeB
+    if nodeB is None:
+        return nodeA
+
+    if nodeB.key < nodeA.key:
+        nodeB.prev = nodeA.prev
+        nodeA.prev = nodeB
+        nodeA.nextSibling = nodeB.leftChild
+
+        if nodeA.nextSibling is not None:
+            nodeA.nextSibling.prev = nodeA
+
+        nodeB.leftChild = nodeA
+
+        return nodeB
+
+    else:
+        nodeB.prev = nodeA
+        nodeA.nextSibling = nodeB.nextSibling
+
+        if nodeA.nextSibling is not None:
+            nodeA.nextSibling.prev = nodeA
+
+        nodeB.nextSibling = nodeA.leftChild
+
+        if nodeB.nextSibling is not None:
+            nodeB.nextSibling.prev = nodeB
+
+        nodeA.leftChild = nodeB
+
+        return nodeA
+
+
+def _combine_siblings(firstSibling):
+    if firstSibling.nextSibling is None:
+        return firstSibling
+
+    node = firstSibling
+    treeArray = []
+    count = 0
+    while node is not None:
+        treeArray.append(node)
+        count += 1
+        node.prev.nextSibling = None
+        node = node.nextSibling
+
+    paired = []
+    while len(treeArray) > 1:
+        first = treeArray.pop()
+        second = treeArray.pop()
+        paired.append(_link_nodes(first, second))
+
+    if treeArray:
+        last = treeArray.pop()
+    else:
+        last = paired.pop()
+
+    for tree in reversed(paired):
+        last = _link_nodes(last, tree)
+
+    return last
+
+
+class PairingHeap(object):
+    def __init__(self, node=None):
+        self.root = node
+        self.lookup = {}
+
+    def insert(self, node):
+        if self.root is None:
+            self.root = node
+        else:
+            self.root = _link_nodes(self.root, node)
+
+    def insert_values(self, values):
+        for val in values:
+            node = _PairingHeapNode(val)
+            self.lookup[node.value] = node
+            self.insert(node)
+
+    def decrease_key(self, value, key):
+        node = self.lookup[value]
+        node.key = key
+
+        if node != self.root:
+            if node.nextSibling is not None:
+                node.nextSibling.prev = node.prev
+
+            if node.prev.leftChild == node:
+                node.prev.leftChild = node.nextSibling
+            else:
+                node.prev.nextSibling = node.nextSibling
+
+            node.nextSibling = None
+
+            self.root = _link_nodes(self.root, node)
 
     def delete_min(self):
-        self.root.deleted = True
+        root = self.root
 
-    def merge(self, other):
-        if self is None:
-            return other
-        if other is None:
-            return self
+        if root is None:
+            return root
 
-        nodeA = _LazyLeftistHeapNode(-1)
-        nodeA.deleted = True
+        if root.leftChild is None:
+            self.root = None
+        else:
+            self.root = _combine_siblings(root.leftChild)
 
-        h1 = self.root
-        h2 = other.root
-
-        if h1.rank < h2.rank:
-            h1, h2 = h2, h1
-
-        nodeA.left = h1
-        nodeA.right = h2
-        nodeA.rank = h2.rank + 1
-
-        self.root = nodeA
+        del self.lookup[root.value]
+        return root
