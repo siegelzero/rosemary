@@ -77,3 +77,48 @@ def dijkstra2(graph, s, t=None):
         t = previous[t]
 
     return path[::-1]
+
+
+def dijkstra3(graph, s, t=None):
+    graph_dict = graph.graph_dict
+    inf = float('inf')
+
+    estimate = {v: inf for v in graph_dict}
+    estimate[s] = 0
+
+    previous = {s: None}
+    heap = PairingHeap()
+    heap.insert(0, s)
+
+    delete_min = heap.delete_min
+    decrease_key = heap.decrease_key
+    insert = heap.insert
+    lookup = heap.lookup
+
+    while True:
+        node = delete_min()
+        if node is None:
+            break
+
+        u = node.value
+        w = node.key
+
+        if u == t:
+            break
+
+        for v in graph_dict[u]:
+            d = w + graph_dict[u][v]
+            if d < estimate[v]:
+                estimate[v] = d
+                previous[v] = u
+                if v in lookup:
+                    decrease_key(v, d)
+                else:
+                    insert(d, v)
+
+    path = []
+    while t is not None:
+        path.append(t)
+        t = previous[t]
+
+    return path[::-1]

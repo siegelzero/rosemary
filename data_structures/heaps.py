@@ -288,6 +288,8 @@ def _combine_siblings(firstSibling):
 
 
 class PairingHeap(object):
+    __slots__ = ('root', 'lookup')
+
     def __init__(self, node=None):
         self.root = node
         self.lookup = {}
