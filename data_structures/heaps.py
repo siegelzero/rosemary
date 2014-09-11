@@ -211,43 +211,6 @@ class LeftistHeap(object):
         self.size += other.size
 
 
-class _LazyLeftistHeapNode(object):
-    __slots__ = ('value', 'rank', 'left', 'right', 'deleted')
-
-    def __init__(self, value):
-        self.value = value
-        self.rank = 0
-        self.left = None
-        self.right = None
-        self.deleted = False
-
-
-def _purge(nodeA):
-    if nodeA is None:
-        return []
-
-    if not nodeA.deleted:
-        return [nodeA]
-    else:
-        return _purge(nodeA.left) + _purge(nodeA.right)
-
-
-def _heapify(nodes):
-    num_nodes = len(nodes)
-
-    while num_nodes > 1:
-        nodeA = nodes.popleft()
-        nodeB = nodes.popleft()
-        nodeA = _leftist_heap_merge(nodeA, nodeB)
-        nodes.append(nodeA)
-        num_nodes -= 1
-
-    if nodes:
-        return nodes.pop()
-    else:
-        return None
-
-
 class _PairingHeapNode(object):
     def __init__(self, key, value=None):
         self.key = key
