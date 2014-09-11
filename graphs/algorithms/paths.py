@@ -1,4 +1,5 @@
 from heapq import heappush, heappop
+from rosemary.data_structures.heaps import PairingHeap
 
 
 def dijkstra(graph, s, t=None):
@@ -25,39 +26,54 @@ def dijkstra(graph, s, t=None):
             if d < estimate[v]:
                 estimate[v] = d
                 previous[v] = u
-            heappush(to_visit, (estimate[v], v))
+                heappush(to_visit, (d, v))
 
-    return estimate, previous
+    path = []
+    while t is not None:
+        path.append(t)
+        t = previous[t]
+
+    return path[::-1]
 
 
-def boroujerdi(graph, s, bad=None):
-    if bad is None:
-        bad = []
+def dijkstra2(graph, s, t=None):
+    graph_dict = graph.graph_dict
+    inf = float('inf')
 
-    estimate = {u: float('inf') for u in graph}
-    previous = {u: None for u in graph}
+    estimate = {s: 0}
+    previous = {s: None}
+    heap = PairingHeap()
 
-    to_visit = [(0, s)]
-    visited = set()
-    estimate[s] = 0
+    for v in graph_dict:
+        if v != s:
+            estimate[v] = inf
+            previous[v] = None
+        heap.insert(estimate[v], v)
 
-    while to_visit:
-        (_, vj) = heappop(to_visit)
+    delete_min = heap.delete_min
+    decrease_key = heap.decrease_key
 
-        if vj in visited:
-            continue
-        visited.add(vj)
+    while True:
+        node = delete_min()
+        if node is None:
+            break
 
-        vi = previous[vj]
+        u = node.value
+        w = node.key
 
-        for vk in graph[vj]:
-            if (vi, vj, vk) in bad:
-                continue
+        if u == t:
+            break
 
-            d = estimate[vj] + graph[vj][vk]
-            if d < estimate[vk]:
-                estimate[vk] = d
-                previous[vk] = vj
-            heappush(to_visit, (estimate[vk], vk))
+        for v in graph_dict[u]:
+            d = w + graph_dict[u][v]
+            if d < estimate[v]:
+                estimate[v] = d
+                previous[v] = u
+                decrease_key(v, d)
 
-    return estimate, previous
+    path = []
+    while t is not None:
+        path.append(t)
+        t = previous[t]
+
+    return path[::-1]

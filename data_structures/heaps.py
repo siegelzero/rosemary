@@ -212,9 +212,11 @@ class LeftistHeap(object):
 
 
 class _PairingHeapNode(object):
-    def __init__(self, key, value=None):
+    __slots__ = ('key', 'value', 'nextSibling', 'leftChild', 'prev')
+
+    def __init__(self, key, value):
         self.key = key
-        self.value = value if value else key
+        self.value = value
         self.nextSibling = None
         self.leftChild = None
         self.prev = None
@@ -290,17 +292,20 @@ class PairingHeap(object):
         self.root = node
         self.lookup = {}
 
-    def insert(self, node):
+    def insert(self, key, value):
+        node = _PairingHeapNode(key, value)
+        self.lookup[node.value] = node
+        self.insert_node(node)
+
+    def insert_node(self, node):
         if self.root is None:
             self.root = node
         else:
             self.root = _link_nodes(self.root, node)
 
     def insert_values(self, values):
-        for val in values:
-            node = _PairingHeapNode(val)
-            self.lookup[node.value] = node
-            self.insert(node)
+        for (key, value) in values:
+            self.insert(key, value)
 
     def decrease_key(self, value, key):
         node = self.lookup[value]
@@ -332,3 +337,11 @@ class PairingHeap(object):
 
         del self.lookup[root.value]
         return root
+
+    def list_elements(self):
+        L = []
+        for v in self.lookup:
+            n = self.lookup[v]
+            k = n.key
+            L.append((k, v))
+        return L
