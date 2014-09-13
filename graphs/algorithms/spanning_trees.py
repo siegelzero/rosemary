@@ -61,32 +61,38 @@ def prim(graph, root=None, edge_list=True):
         then repeatedly grows the tree by adding the lightest edge between a
         vertex in the tree and a vertex outside of the tree. Using Python heaps,
         this algorithm runs in time O((|V| + |E|)*log(|V|)). Our implementation
-        is based on the exposition in the book "Python Algorithms" by Lie
-        Hetland. Another standard reference is the book "Algorithms" by
+        is based on the exposition in the book "Introduction to Algorithms" by
+        Cormen, et al. Another standard reference is the book "Algorithms" by
         Dasgupta, et al. See "Network Flows: Theory, Algorithms, and
-        Applications" by Ahuja, et al for detailed overview of minimum spanning
-        tree algorithms.
+        Applications" by Ahuja, et al. for a detailed overview of minimum
+        spanning tree algorithms.
     """
     # Choose a root vertex if none is given
     if root is None:
         root = graph.graph_dict.keys()[0]
 
-    previous = {}
-    heap = [(0, None, root)]
+    inf = float('inf')
+
+    previous = {u: None for u in graph}
+    cost = {u: inf for u in graph}
+    cost[root] = 0
+
+    heap = [(0, root)]
+    visited = set()
+    add = visited.add
 
     while heap:
-        (_, p, u) = heappop(heap)
+        (_, u) = heappop(heap)
 
-        if u in previous:
+        if u in visited:
             continue
+        add(u)
 
-        previous[u] = p
-
-        # Note that in typical implementations of Prim's algorithm, we relax
-        # before we push to the heap. Here, we use the heap property to get
-        # around this.
         for (v, w) in graph[u].iteritems():
-            heappush(heap, (w, u, v))
+            if v not in visited and w < cost[v]:
+                cost[v] = w
+                previous[v] = u
+                heappush(heap, (w, v))
 
     # We have the predecessor dict. Now we compute the edges in the tree.
     edges = []
@@ -144,8 +150,8 @@ def kruskal(graph):
         a disjoint-set data structure for cycle detection. Our version of
         Kruskal's algorithm runs in time O(|E| log(|V|)). See "Algorithms" by
         Dasgupta, et al for details. See "Network Flows: Theory, Algorithms, and
-        Applications" by Ahuja, et al for detailed overview of minimum spanning
-        tree algorithms.
+        Applications" by Ahuja, et al for a detailed overview of minimum
+        spanning tree algorithms.
     """
     vertices = graph.vertex_set()
     num_vertices = len(vertices)
@@ -207,10 +213,9 @@ def cheriton_tarjan(graph):
         exposition in "Graphs, Algorithms, and Optimization" by Kocay and
         Kreher. The Cheriton-Tarjan algorithm finds a minimum spanning tree in
         O(|E| log log |V|) time, although in practice, it is beaten by simpler
-        algorithms such as the method by Kruskal. See "Algorithms from P to NP"
-        by Moret and Shapiro for advanced implementation details, and the paper
-        "How to Find a Minimum Spanning Tree in Practice", also by Moret and
-        Shapiro for informations.
+        algorithms such as Prim's. See the book "Data Structures and Network
+        Algorithms" by Tarjan for detailed information. For another exposition,
+        see the book "Algorithms from P to NP" by Moret and Shapiro.
     """
     vertices = graph.vertices()
     num_vertices = len(vertices)
