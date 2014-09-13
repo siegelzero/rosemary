@@ -37,6 +37,46 @@ def breadth_first_search(graph, start, max_depth=None):
                 yield v
 
 
+def breadth_first_search_tree(graph, start):
+    """
+    Returns the breadth-first search tree of the graph.
+
+    Given a graph and a starting vertex, this method returns the breadth-first
+    search tree of graph, rooted at the vertex start.
+
+    Input:
+        * graph: Graph
+
+        * start: vertex of graph
+
+    Output:
+        * previous: dict
+            Predecessor dict of the search tree.
+
+    Details:
+        >>> graph = Graph()
+        >>> graph.add_edges([('a', 'b'), ('a', 's'), ('b', 'c'), ('c', 's'),
+                             ('d', 'e'), ('d', 's'), ('e', 'd'), ('e', 's')])
+        >>> breadth_first_search_tree(graph)
+        {'a': 's', 'b': 'a', 'c': 's', 'd': 's', 'e': 's', 's': None}
+    """
+    graph_dict = graph.graph_dict
+    stack = deque([start])
+    pop = stack.popleft
+    append = stack.append
+    previous = {start: None}
+
+    while stack:
+        u = pop()
+        for v in graph_dict[u]:
+            if v in previous:
+                continue
+            previous[v] = u
+            append(v)
+
+    return previous
+
+
 def depth_first_search(graph, start, max_depth=None):
     """
     Returns an iterator over the vertices of graph in a depth-first ordering.

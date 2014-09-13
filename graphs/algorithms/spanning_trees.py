@@ -1,7 +1,11 @@
 from heapq import heappush, heappop, heapify
 from random import choice
-from rosemary.data_structures.unionfind import UnionFind
+
+from rosemary.data_structures.unionfind import UnionFind, NamedUnionFind
 from rosemary.data_structures.heaps import LeftistHeap
+
+from rosemary.graphs.algorithms.traversal import breadth_first_search_tree
+from rosemary.graphs.graphs import Graph
 
 
 ###############################################################################
@@ -271,3 +275,112 @@ def cheriton_tarjan(graph):
         total += graph[u][v]
 
     return total, sorted(tree_edges)
+
+
+################################################################################
+# Algorithms for generating all spanning trees of a graph
+################################################################################
+
+
+def spanning_trees_ordered(graph, k=None):
+    def find_exchange(father, included, excluded):
+        X = NamedUnionFind(vertices)
+        find = X.find
+        union = X.union
+
+        (min_weight, e, f) = (inf, None, None)
+
+        for (x, y) in included:
+            # Make it so that y = father[x]
+            if y != father[x]:
+                x, y = y, x
+            y = find(y)
+            union(x, y, y)
+
+        for edge in excluded:
+            mark(edge)
+
+        for (x, y) in edges:
+            if (x, y) in marked or (y, x) in marked:
+                unmark((x, y))
+                unmark((y, x))
+
+            elif father[x] != y and father[y] != x:
+                a = find(x)
+                ancestors = set()
+                while a not in ancestors:
+                    ancestors.add(a)
+                    a = find(father[a])
+
+                a = find(y)
+                while a not in ancestors:
+                    a = find(father[a])
+
+                for u in [x, y]:
+                    v = find(u)
+                    while v != a:
+                        fv = father[v]
+                        exchange_weight = weight[x, y] - weight[v, fv]
+                        if exchange_weight < min_weight:
+                            min_weight = exchange_weight
+                            e = (v, fv)
+                            f = (x, y)
+                        w = find(fv)
+                        union(v, w, w)
+                        v = w
+
+        return (min_weight, e, f)
+
+    inf = float('inf')
+    if k is None:
+        k = inf
+
+    weight = {(u, v): graph[u][v] for u in graph for v in graph[u]}
+
+    marked = set()
+    mark = marked.add
+    unmark = marked.discard
+
+    edges = sorted(graph.edge_set(), key=lambda (u, v): weight[(u, v)])
+    vertices = graph.vertices()
+
+    # arbitrary root vertex
+    root = vertices[0]
+    tree_weight, father = prim(graph, root, edge_list=False)
+    father[root] = root
+
+    (exchange_weight, e, f) = find_exchange(father, [], [])
+    heap = [(tree_weight + exchange_weight, e, f, father, [], [])]
+
+    tree_edges = sorted([(min(x, y), max(x, y)) for (x, y) in father.items() if x != y])
+    yield tree_weight, tree_edges
+
+    j = 1
+    while j < k:
+        (tree_weight, e, f, father, included, excluded) = heappop(heap)
+
+        if tree_weight == inf:
+            return
+
+        new_graph = Graph()
+        new_graph.add_edges(father.items())
+        new_graph.delete_edge(e)
+        new_graph.add_edge(f)
+
+        new_father = breadth_first_search_tree(new_graph, root)
+        new_father[root] = root
+
+        tree_edges = sorted([(min(x, y), max(x, y)) for (x, y) in new_father.items() if x != y])
+        yield tree_weight, tree_edges
+
+        new_tree_weight = tree_weight - weight[f] + weight[e]
+
+        included_i = included + [e]
+        excluded_j = excluded + [e]
+
+        (exchange_weight, e, f) = find_exchange(father, included_i, excluded)
+        heappush(heap, (new_tree_weight + exchange_weight, e, f, father, included_i, excluded))
+
+        (exchange_weight, e, f) = find_exchange(new_father, included, excluded_j)
+        heappush(heap, (tree_weight + exchange_weight, e, f, new_father, included, excluded_j))
+        j += 1

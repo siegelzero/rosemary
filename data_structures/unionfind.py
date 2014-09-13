@@ -3,26 +3,37 @@ class NamedUnionFind(object):
         """
         Initialize a new NamedUnionFind object containing nodes in node_list.
         """
-        self.count = {}
-        self.name = {}
-        self.father = {}
-        self.root = {}
+        count = {}
+        name = {}
+        father = {}
+        root = {}
+
         for u in node_list:
-            self.count[u] = 1
-            self.name[u] = u
-            self.father[u] = None
-            self.root[u] = u
+            count[u] = 1
+            name[u] = u
+            father[u] = None
+            root[u] = u
+
+        self.count = count
+        self.name = name
+        self.father = father
+        self.root = root
 
     def find(self, u):
         """
         Returns the name of the set containing u.
         """
+        father = self.father
         path = []
-        while self.father[u] is not None:
-            path.append(u)
-            u = self.father[u]
+        append = path.append
+
+        while father[u] is not None:
+            append(u)
+            u = father[u]
+
         for v in path:
-            self.father[v] = u
+            father[v] = u
+
         return self.name[u]
 
     def union(self, u, v, w):
@@ -88,6 +99,7 @@ class UnionFind(object):
         parent = self.parent
         path = []
         append = path.append
+
         while x != parent[x]:
             append(x)
             x = parent[x]
