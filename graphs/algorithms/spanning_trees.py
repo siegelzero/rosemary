@@ -282,7 +282,7 @@ def cheriton_tarjan(graph):
 ################################################################################
 
 
-def spanning_trees_ordered(graph, k=None):
+def gabow(graph, k=None):
     def find_exchange(father, included, excluded):
         X = NamedUnionFind(vertices)
         find = X.find
