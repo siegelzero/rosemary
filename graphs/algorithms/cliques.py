@@ -317,13 +317,6 @@ def ostergard(graph):
 
             * clique: list
                 Vertices of a maximum clique of graph.
-
-    Details:
-        This function follows the algorithm outlined in the paper "A Fast
-        Algorithm for the Maximum Clique Problem" by Ostergard. Experimental
-        evidence suggests that this algorithm is superior to the Pardalos
-        algorithm for graphs with low edge density.
-
     Examples:
         >>> G = coprime_pairs_graph(10)
         >>> ostergard(G)
@@ -331,6 +324,12 @@ def ostergard(graph):
         >>> G = random_graph(30, 0.5)
         >>> ostergard(G)
         (6, [0, 11, 20, 23, 26, 28])
+
+    Details:
+        This function follows the algorithm outlined in the paper "A Fast
+        Algorithm for the Maximum Clique Problem" by Ostergard. Experimental
+        evidence suggests that this algorithm is superior to the Pardalos
+        algorithm for graphs with low edge density.
     """
     neighbors = {}
     for v in graph:
