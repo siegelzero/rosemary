@@ -1,4 +1,4 @@
-from rosemary.graphs.algorithms.traversal import depth_first_search
+from rosemary.graphs.algorithms.traversal import breadth_first_search
 
 
 def connected_components(graph):
@@ -15,20 +15,26 @@ def connected_components(graph):
         * components: list
 
     Examples:
-        >>> G = random_graph(10, 0.4)
+        >>> G = Graph()
+        >>> G.add_vertices(['a', 'b', 'c', 'd', 'e', 'f',
+                            'g', 'h', 'i', 'j', 'k', 'l'])
+        >>> G.add_edges([('a', 'b'), ('a', 'e'), ('e', 'i'), ('e', 'j'),
+                         ('i', 'j'), ('c', 'd'), ('c', 'g'), ('c', 'h'),
+                         ('d', 'h'), ('g', 'h'), ('g', 'k'), ('h', 'k'),
+                         ('h', 'l')])
         >>> connected_components(G)
-        [[0, 1, 2, 9, 6], [3, 8, 7], [4], [5]]
+        [['a', 'b', 'e', 'i', 'j'], ['c', 'h', 'd', 'g', 'k', 'l'], ['f']]
 
     Details:
-        This method uses a standard depth-first-search approach to finding the
+        This method uses a breadth-first-search approach to finding the
         connected components of the given graph. We begin at a start vertex, and
-        use DFS to visit all vertices connected to the start vertex, storing
-        each vertex along the way. Once the search is complete, we have a
-        connected component of the graph. We then proceed to find an unvisited
-        vertex, and start the DFS again from this new start, repeating this
-        until all vertices are visited. Since this algorithm is basically a
-        depth-first-search of the entire graph, we see that the runtime of this
-        method is O(|V| + |E|).
+        use visit all vertices connected to the start vertex, storing each
+        vertex along the way. Once the search is complete, we have a connected
+        component of the graph. We then proceed to find an unvisited vertex, and
+        start the search again from this new start, repeating this until all
+        vertices are visited. Since this algorithm is basically a
+        breadth-first-search of the entire graph, we see that the runtime of
+        this method is O(|V| + |E|).
     """
     visited = set()
     components = []
@@ -36,7 +42,7 @@ def connected_components(graph):
     for u in graph.graph_dict:
         if u in visited:
             continue
-        neighbors = list(depth_first_search(graph, u))
+        neighbors = list(breadth_first_search(graph, u))
         components.append(neighbors)
         visited.update(neighbors)
 
@@ -50,6 +56,7 @@ def connected_component(graph, u):
 
     Input:
         * graph: Graph
+
         * u: vertex of graph
 
     Output:
@@ -57,17 +64,21 @@ def connected_component(graph, u):
             A list of vertices of graph.
 
     Examples:
-        >>> G = random_graph(10, 0.4)
-        >>> connected_components(G)
-        [[0, 1, 2, 9, 6], [3, 8, 7], [4], [5]]
-        >>> connected_component(G, 0)
-        [0, 1, 2, 9, 6]
+        >>> G = Graph()
+        >>> G.add_vertices(['a', 'b', 'c', 'd', 'e', 'f',
+                            'g', 'h', 'i', 'j', 'k', 'l'])
+        >>> G.add_edges([('a', 'b'), ('a', 'e'), ('e', 'i'), ('e', 'j'),
+                         ('i', 'j'), ('c', 'd'), ('c', 'g'), ('c', 'h'),
+                         ('d', 'h'), ('g', 'h'), ('g', 'k'), ('h', 'k'),
+                         ('h', 'l')])
+        >>> connected_component(G, 'a')
+        ['a', 'b', 'e', 'i', 'j']
 
     Details:
-        This method uses performs a depth-first-search beginning at vertex u to
-        visit all vertices connected to u. We return a list of these vertices.
-        Since we are performing a DFS on the graph, the complexity of this
-        algorithm is O(|V| + |E|).
+        This method uses performs a breadth-first-search beginning at vertex u
+        to visit all vertices connected to u. We return a list of these
+        vertices.  Since we are performing a BFS on the graph, the complexity of
+        this algorithm is O(|V| + |E|).
     """
-    connected_vertices = list(depth_first_search(graph, u))
+    connected_vertices = list(breadth_first_search(graph, u))
     return connected_vertices

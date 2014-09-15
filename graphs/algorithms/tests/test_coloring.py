@@ -33,7 +33,7 @@ class TestColoring(unittest.TestCase):
         self.assertTrue(is_valid_color_classes(self.coprime_graph30, classes))
 
         for i in xrange(10):
-            graph = random_graph(30, 0.5)
+            graph = random_graph(10, 0.8)
             _, classes = branch_and_bound(graph)
             self.assertTrue(is_valid_color_classes(graph, classes))
 
@@ -48,7 +48,7 @@ class TestColoring(unittest.TestCase):
         self.assertTrue(is_valid_color_classes(self.coprime_graph30, classes))
 
         for i in xrange(10):
-            graph = random_graph(30, 0.5)
+            graph = random_graph(10, 0.8)
             _, classes = branch_and_bound(graph)
             self.assertTrue(is_valid_color_classes(graph, classes))
 
@@ -63,26 +63,26 @@ class TestColoring(unittest.TestCase):
         self.assertTrue(is_valid_color_classes(self.coprime_graph30, classes))
 
         for i in xrange(10):
-            graph = random_graph(30, 0.5)
+            graph = random_graph(10, 0.8)
             _, classes = branch_and_bound(graph)
             self.assertTrue(is_valid_color_classes(graph, classes))
 
     def test_maxis(self):
         print "Testing MAXIS coloring algorithm"
-        graph = random_graph(100, 0.5)
+        graph = random_graph(50, 0.5)
         (num_colors, classes) = maxis(graph, color_limit=30)
         self.assertTrue(is_valid_color_classes(graph, classes))
 
-        graph = random_graph(100, 0.5)
-        (num_colors, classes) = maxis(graph, mis_limit=100, color_limit=30)
+        graph = random_graph(50, 0.5)
+        (num_colors, classes) = maxis(graph, mis_limit=50, color_limit=30)
         self.assertTrue(is_valid_color_classes(graph, classes))
 
-        graph = random_graph(100, 0.5)
+        graph = random_graph(50, 0.5)
         (num_colors, classes) = maxis(graph, greedy=True, color_limit=30)
         self.assertTrue(is_valid_color_classes(graph, classes))
 
         for i in xrange(10):
-            graph = random_graph(30, 0.5)
+            graph = random_graph(10, 0.8)
             _, classes = maxis(graph)
             self.assertTrue(is_valid_color_classes(graph, classes))
 
