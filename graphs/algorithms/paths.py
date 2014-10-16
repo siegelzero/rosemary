@@ -1,6 +1,7 @@
 from heapq import heappush, heappop
 from rosemary.data_structures.heaps import PairingHeap
-from collections import deque
+from collections import deque, defaultdict
+from itertools import cycle, count
 
 
 ################################################################################
@@ -82,7 +83,7 @@ def dijkstra(graph, s):
     return estimate, previous
 
 
-def dijkstra2(graph, s, t=None):
+def dijkstra2(graph, s):
     """
     Returns a shortest path tree of graph.
 
@@ -142,9 +143,6 @@ def dijkstra2(graph, s, t=None):
 
         u = node.value
         w = node.key
-
-        if u == t:
-            break
 
         for v in graph_dict[u]:
             d = w + graph_dict[u][v]
@@ -246,3 +244,120 @@ def bellman_ford(graph, s):
                     add(v)
 
     return cost, previous
+
+
+################################################################################
+# Algorithms for the single-pair shortest path problem.
+################################################################################
+
+
+def dijkstra_iterator(graph, s):
+    graph_dict = graph.graph_dict
+
+    to_visit = [(0, s, [0])]
+    visited = set()
+    add_to_visited = visited.add
+    inf = float('inf')
+
+    estimate = {u: inf for u in graph_dict}
+    estimate[s] = 0
+
+    while to_visit:
+        (w, u, path) = heappop(to_visit)
+
+        if u in visited:
+            continue
+        add_to_visited(u)
+
+        yield u, w, path
+
+        for v in graph_dict[u]:
+            new_estimate = w + graph_dict[u][v]
+            if new_estimate < estimate[v]:
+                estimate[v] = new_estimate
+                heappush(to_visit, (new_estimate, v, path + [v]))
+
+
+def dijkstra_bidirectional(graph, s, t):
+    inf = float('inf')
+
+    forward_search = dijkstra_iterator(graph, s)
+    forward_estimate = {}
+    forward_path = {}
+
+    backward_search = dijkstra_iterator(graph, t)
+    backward_estimate = {}
+    backward_path = {}
+
+    directions = (
+        (forward_estimate, backward_estimate, forward_path, forward_search),
+        (backward_estimate, forward_estimate, backward_path, backward_search),
+    )
+
+    try:
+        for estimate, other, path, search in cycle(directions):
+            v, d, p = next(search)
+            estimate[v] = d
+            path[v] = p
+
+            if v in other:
+                break
+
+    except StopIteration:
+        return inf
+
+    best_len = inf
+    best_path = []
+
+    for u in forward_estimate:
+        for v in graph[u]:
+            if v not in backward_estimate:
+                continue
+
+            d = forward_estimate[u] + graph[u][v] + backward_estimate[v]
+            if d < best_len:
+                best_len = d
+                best_path = forward_path[u] + backward_path[v][1:][::-1] + [t]
+
+    return best_len, best_path
+
+
+def dijkstra_buckets(graph, s):
+    buckets = defaultdict(list)
+    buckets[0] = [s]
+
+    graph_dict = graph.graph_dict
+    inf = float('inf')
+
+    estimate = {v: inf for v in graph_dict}
+    estimate[s] = 0
+
+    previous = {s: None}
+    min_weight = 0
+
+    visited = set()
+    add_to_visited = visited.add
+
+    while buckets:
+        for w in count(min_weight):
+            if w in buckets:
+                min_weight = w
+                break
+
+        vertices = buckets[min_weight]
+
+        for u in vertices:
+            if u in visited:
+                continue
+            add_to_visited(u)
+
+            for v in graph_dict[u]:
+                d = min_weight + graph_dict[u][v]
+                if d < estimate[v]:
+                    estimate[v] = d
+                    previous[v] = u
+                    buckets[d] += [v]
+
+        del buckets[min_weight]
+
+    return estimate, previous
