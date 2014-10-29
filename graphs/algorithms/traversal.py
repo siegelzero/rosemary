@@ -29,6 +29,7 @@ def breadth_first_search(graph, start, max_depth=None):
     stack = deque([(start, 0)])
     pop = stack.popleft
     append = stack.append
+    graph_dict = graph.graph_dict
 
     visited = set([start])
     add = visited.add
@@ -38,7 +39,7 @@ def breadth_first_search(graph, start, max_depth=None):
     while stack:
         (u, depth) = pop()
         if max_depth is None or depth < max_depth:
-            for v in graph.graph_dict[u]:
+            for v in graph_dict[u]:
                 if v in visited:
                     continue
                 append((v, depth + 1))
