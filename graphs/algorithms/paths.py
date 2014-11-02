@@ -54,7 +54,8 @@ def dijkstra(graph, s):
         total sum of edge lengths.
     """
     graph_dict = graph.graph_dict
-    estimate = {u: float('inf') for u in graph_dict}
+    inf = float('inf')
+    estimate = {u: inf for u in graph_dict}
     previous = {u: None for u in graph_dict}
 
     to_visit = [(0, s)]
@@ -123,11 +124,10 @@ def dijkstra2(graph, s):
     """
     graph_dict = graph.graph_dict
     inf = float('inf')
-
     estimate = {v: inf for v in graph_dict}
-    estimate[s] = 0
-
     previous = {s: None}
+
+    estimate[s] = 0
     heap = PairingHeap()
     heap.insert(0, s)
 
@@ -207,15 +207,15 @@ def bellman_ford(graph, s):
         NP-Completeness" by Mehlhorn. See also "Data Structures and Network
         Algorithms" by Tarjan for more details.
     """
-    inf = float('inf')
     graph_dict = graph.graph_dict
     n = len(graph_dict)
 
+    inf = float('inf')
+    count = {v: 0 for v in graph_dict}
+    previous = {v: None for v in graph_dict}
+
     cost = {v: inf for v in graph_dict}
     cost[s] = 0
-
-    previous = {v: None for v in graph_dict}
-    count = {v: 0 for v in graph_dict}
 
     stack = deque([s])
     pop = stack.popleft
@@ -230,7 +230,7 @@ def bellman_ford(graph, s):
         count[u] += 1
 
         if count[u] >= n + 1:
-            raise ValueError('bellman_ford: negative cycle detected.')
+            raise ValueError('bellman_ford: Negative cycle detected.')
 
         pop()
         discard(u)
@@ -253,14 +253,13 @@ def bellman_ford(graph, s):
 
 def dijkstra_iterator(graph, s):
     graph_dict = graph.graph_dict
+    inf = float('inf')
+    estimate = {u: inf for u in graph_dict}
+    estimate[s] = 0
 
     to_visit = [(0, s, [0])]
     visited = set()
     add_to_visited = visited.add
-    inf = float('inf')
-
-    estimate = {u: inf for u in graph_dict}
-    estimate[s] = 0
 
     while to_visit:
         (w, u, path) = heappop(to_visit)
@@ -323,9 +322,6 @@ def dijkstra_bidirectional(graph, s, t):
 
 
 def dijkstra_buckets(graph, s):
-    buckets = defaultdict(list)
-    buckets[0] = [s]
-
     graph_dict = graph.graph_dict
     inf = float('inf')
 
@@ -333,8 +329,10 @@ def dijkstra_buckets(graph, s):
     estimate[s] = 0
 
     previous = {s: None}
-    min_weight = 0
+    buckets = defaultdict(list)
+    buckets[0] = [s]
 
+    min_weight = 0
     visited = set()
     add_to_visited = visited.add
 
@@ -352,6 +350,8 @@ def dijkstra_buckets(graph, s):
             add_to_visited(u)
 
             for v in graph_dict[u]:
+                if not graph_dict[u][v].is_integer():
+                    raise ValueError("dijkstra_buckets: Weights must be integral.")
                 d = min_weight + graph_dict[u][v]
                 if d < estimate[v]:
                     estimate[v] = d
