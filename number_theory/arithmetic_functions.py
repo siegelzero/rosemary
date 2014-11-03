@@ -273,7 +273,7 @@ def factorial(n):
         >>> factorial(10)
         3628800
         >>> factorial(40)
-        815915283247897734345611269596115894272000000000
+        815915283247897734345611269596115894272000000000L
 
     Details:
         The algorithm used is a binary splitting method. See Section 10.2.3 of

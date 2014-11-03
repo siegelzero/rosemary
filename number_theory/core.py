@@ -4,14 +4,13 @@
 
 
 def gcd(x, y):
-    """
-    Returns the greatest common divisor of x and y.
+    """Returns the greatest common divisor of x and y.
 
     Input:
         * x: int
         * y: int
 
-    Output:
+    Returns:
         * d: int
             The integer d = gcd(x, y).
 
@@ -40,14 +39,13 @@ def gcd(x, y):
 
 
 def gcd_list(L):
-    """
-    Returns the greatest common divisor of the elements of L.
+    """Returns the greatest common divisor of the elements of L.
 
     Input:
         * L: list
             A list of integers.
 
-    Output:
+    Returns:
         * d: int
             The integer d = gcd(L[0], L[1], ..., L[n - 1]), where len(L) = n.
 
@@ -70,8 +68,7 @@ def gcd_list(L):
 
 
 def ext_gcd(x, y):
-    """
-    Returns the extended gcd of x and y.
+    """Returns the extended gcd of x and y.
 
     For integers x, y, this algorithm returns the extended gcd of x and y; i.e.
     the integer triple (a, b, d) such that a*x + b*y = d = gcd(x, y).
@@ -80,7 +77,7 @@ def ext_gcd(x, y):
         * x: int
         * y: int
 
-    Output:
+    Returns:
         * (a, b, d): tuple
             A tuple of integers such that a*x + b*y = d = gcd(x, y).
 
@@ -113,6 +110,7 @@ def ext_gcd(x, y):
     y = abs(y)
 
     (a, b, d, u, v, w) = (1, 0, x, 0, 1, y)
+
     while w:
         q = d//w
         (a, b, d, u, v, w) = (u, v, w, a - q*u, b - q*v, d - q*w)
@@ -120,18 +118,18 @@ def ext_gcd(x, y):
     if switch:
         a, b = b, a
         sign_x, sign_y = sign_y, sign_x
+
     return (sign_x*a, sign_y*b, d)
 
 
 def lcm(x, y):
-    """
-    Returns the least common multiple of x and y.
+    """Returns the least common multiple of x and y.
 
     Input:
         * x: int
         * y: int
 
-    Output:
+    Returns:
         * m: int
             Integer such that m = lcm(x, y).
 
@@ -149,14 +147,13 @@ def lcm(x, y):
 
 
 def lcm_list(L):
-    """
-    Returns the least common multiple of the elements of L.
+    """Returns the least common multiple of the elements of L.
 
     Input:
         * L: list
             A list of integers.
 
-    Output:
+    Returns:
         * l: int
             The integer l = gcd(L[0], L[1], ..., L[n - 1]), where len(L) = n.
 
@@ -179,8 +176,7 @@ def lcm_list(L):
 
 
 def power_mod(a, k, m):
-    """
-    Returns a^k (mod m).
+    """Returns a^k (mod m).
 
     Given a nonnegative integers a, k and a positive integers m, this returns
     a^k (mod m).
@@ -190,7 +186,7 @@ def power_mod(a, k, m):
         * k: int (k >= 0)
         * m: int (m >= 1)
 
-    Output:
+    Returns:
         * r: int
             r is the integer in [0, m) with r = a^k (mod m)
 
@@ -232,8 +228,7 @@ def power_mod(a, k, m):
 
 
 def inverse_mod(a, m):
-    """
-    Returns the inverse of a modulo m.
+    """Returns the inverse of a modulo m.
 
     For integers a, m with gcd(a, m) = 1, this algorithm returns the inverse of
     a modulo m; i.e. returns b such that a*b = 1 (mod m).
@@ -242,7 +237,7 @@ def inverse_mod(a, m):
         * a: int (a >= 1)
         * m: int (m >= 2)
 
-    Output:
+    Returns:
         * b: int
             An integer such that a*b = 1 (mod m).
 
@@ -266,8 +261,7 @@ def inverse_mod(a, m):
 
 
 def bit_count(n):
-    """
-    Returns the number of set bits.
+    """Returns the number of set bits.
 
     Given an integer n, this function returns the number of set bits in the
     binary expansion of n; i.e. the number of 1s appearing in the binary
@@ -276,12 +270,14 @@ def bit_count(n):
     Input:
         * n: int
 
-    Output:
-        * d: int
+    Returns:
+        * count: int
             The number of set bits of n.
 
     Examples:
         >>> bit_count(5)
+        2
+        >>> bit_count(-5)
         2
         >>> bin(5)
         '0b101'
@@ -289,6 +285,10 @@ def bit_count(n):
         8
         >>> bin(2**8 - 1)
         '0b11111111'
+        >>> bit_count(1729)
+        5
+        >>> bin(1729).count('1')
+        5
 
     Details:
         This function repeatedly replaces n with n & (n - 1). Each iteration of
@@ -304,11 +304,10 @@ def bit_count(n):
 
 
 def integer_log(b, n):
-    """
-    Returns the base-b integer logarithm of n.
+    """Returns the base-b integer logarithm of n.
 
-    Given a positive integers n and base b, this function returns the integer k
-    such that b**k <= a < b**(k + 1).
+    Given a positive integers n and b, this function returns the integer k such
+    that b**k <= a < b**(k + 1).
 
     Input:
         * b: int (b >= 2)
@@ -317,15 +316,26 @@ def integer_log(b, n):
         * n: int (n >= 1)
             The argument of the logarithm.
 
-    Output:
+    Returns:
         * k: int
             The integer such that b**k <= a <= b**(k + 1).
+
+    Raises:
+        * ValueError: If base b <= 1 or n <= 0.
 
     Examples:
         >>> integer_log(2, 100)
         6
         >>> integer_log(5, 30)
         2
+        >>> integer_log(1, 40)
+        Traceback (most recent call last):
+        ...
+        ValueError: integer_log: Must have b >= 2.
+        >>> integer_log(2, 0)
+        Traceback (most recent call last):
+        ...
+        ValueError: integer_log: Must have n >= 1.
 
     Details:
         This function computes powers b, b**2, b**4, b**8, b**16, ..., and then
@@ -342,71 +352,85 @@ def integer_log(b, n):
 
     p = b
     hi = 1
+
     # Look at b, b^2, b^4, b^8,... to find in which interval a lives
     while p <= n:
         p = p**2
         lo = hi
         hi *= 2
+
     # Now we know that b^lo <= a <= b^hi perform a binary search on this
-    # interval to find the exact value n so that b^n <= a < b^(n + 1)
+    # interval to find the exact value k so that b^k <= a < b^(k + 1)
     while hi - lo > 1:
         mid = (lo + hi) // 2
         if b**mid > n:
             hi = mid
         else:
             lo = mid
+
     return lo
 
 
-def integer_nth_root(k, n):
-    """
-    Returns the integer part of the kth root of n
+def integer_nth_root(n, m):
+    """Returns the integer part of the nth root of m
 
-    Given positive integers k and n, this returns the integer part of the kth
-    root of n. This is the number r such that r**k <= n < r**(k + 1)
+    Given positive integers n and m, this returns the integer part of the nth
+    root of m. This is the integer r such that r**n <= m < r**(n + 1)
 
     Input:
-        * k: int (k >= 1)
-        * n: int (n >= 0)
+        * n: int (n >= 1)
+        * m: int (m >= 0)
 
-    Output:
+    Returns:
         * r: int
-            The positive integer such that r**k <= n < r**(k + 1).
+            The positive integer such that r**n <= m < r**(n + 1).
+
+    Raises:
+        * ValueError: If n < 1 or m < 0.
 
     Examples:
         >>> integer_nth_root(2, 10)
         3
         >>> integer_nth_root(10, 2**10)
         2
+        >>> integer_nth_root(0, 10)
+        Traceback (most recent call last):
+        ...
+        ValueError: integer_nth_root: Must have n >= 1
+        >>> integer_nth_root(4, -1)
+        Traceback (most recent call last):
+        ...
+        ValueError: integer_nth_root: Must have m >= 0
 
     Details:
         This algorithm is based off of Newton's Method.
     """
-    if n < 0:
-        raise ValueError("integer_nth_root: Must have n >= 0")
-    if k < 1:
-        raise ValueError("integer_nth_root: Must have k >= 1")
+    if m < 0:
+        raise ValueError("integer_nth_root: Must have m >= 0")
+    if n < 1:
+        raise ValueError("integer_nth_root: Must have n >= 1")
 
-    if k == 0:
+    if n == 0:
         return 1
-    if k == 1:
+    if n == 1:
         return n
-    if n in (0, 1):
-        return n
+    if m in (0, 1):
+        return m
 
-    bn = integer_log(k, n) + 1
-    x = 2**(bn//2 + 1)
+    bn = integer_log(n, m) + 1
+    x = n**(bn//n + 1)
 
     while True:
-        y = ((k - 1)*x + n//(x**(k - 1)))//k
+        y = ((n - 1)*x + m//(x**(n - 1)))//n
         if y >= x:
-            return x
+            break
         x = y
+
+    return x
 
 
 def integer_sqrt(n):
-    """
-    Returns the integer part of the square root of n.,
+    """Returns the integer part of the square root of n.,
 
     Given a positive integer n, this returns the integer part of the square root
     of k; i.e. the integer r with r**2 <= n < (r + 1)**2.
@@ -414,7 +438,7 @@ def integer_sqrt(n):
     Input:
         * n: int (n >= 0)
 
-    Output:
+    Returns:
         * r: int
             The positive integer r such that r**2 <= n < (r + 1)**2.
 
@@ -452,8 +476,7 @@ def integer_sqrt(n):
 
 
 def is_power(n, k=None):
-    """
-    Determines if n is a perfect power.
+    """Determines if n is a perfect power.
 
     If n is a perfect power, this returns (b, k) where n = b^k with k maximal.
     If the optional parameter k is given, this returns (b, k) if n = b^k for
@@ -566,8 +589,7 @@ def is_power(n, k=None):
 
 
 def is_square(n):
-    """
-    Determines if n is a perfect square.
+    """Determines if n is a perfect square.
 
     Given a nonnegative integer n, this returns False if n is not a perfect
     square, and returns the square root of n otherwise.
@@ -618,48 +640,62 @@ def is_square(n):
         return False
 
 
-def chinese(L):
-    """
-    Returns a solution to the congruences given in L.
+def chinese(congruences):
+    """Returns a solution to the given congruences.
 
     Given a list of congruences as (residue, modulus) pairs, where all moduli
     are pairwise coprime, this returns the unique solution n in [0, M) to the
     congruences, where M is the product of the moduli.
 
     Input:
-        * L: list
-            L is a list of congruences of the form (residue, modulus).
+        * congruences: list
+            A list of congruences, each of the form (residue, modulus).
 
-    Output:
+    Returns:
         * x: int
-            x is the least positive integer satisfying all of the congruences.
+            The least positive integer satisfying all of the congruences.
+
+    Raises:
+        * ValueError: If the moduli are not coprime.
 
     Examples:
         >>> chinese([(0, 4), (1, 25)])
         76
+        >>> 76 % 4
+        0
+        >>> 76 % 25
+        1
+        >>> chinese([(3, 8), (5, 10)])
+        Traceback (most recent call last):
+        ...
+        ValueError: chinese: Moduli must be coprime.
 
     Details:
         This algorithm is based on the standard constructive proof of the
         Chinese Remainder Theorem. For a single CRT application, this is the
         function to use. If solving multiple systems of congruences with the
-        same set of moduli, the function 'chinese_preconditioned' should be
-        used.
+        same set of moduli, the function `chinese_preconditioned` should be
+        used. For details, see section 1.3.3 of "A Course in Computational
+        Algebraic Number Theory" by Cohen.
     """
-    (x, m) = L[0]
-    rest = L[1:]
+    (x, m) = congruences[0]
+    rest = congruences[1:]
+
     for (xi, mi) in rest:
         (u, v, d) = ext_gcd(m, mi)
+
         if d != 1:
             raise ValueError('chinese: Moduli must be coprime.')
+
         x = u*m*xi + v*mi*x
         m *= mi
         x = x % m
+
     return x
 
 
 def crt_preconditioning_data(moduli):
-    """
-    Returns the preconditioning data for the set of moduli.
+    """Returns the preconditioning data for the set of moduli.
 
     Given a set of moduli, this computes the preconditioning data necessary for
     the chinese_preconditioned function.
@@ -668,14 +704,32 @@ def crt_preconditioning_data(moduli):
         * moduli: list
             A list of pairwise coprime positive integers.
 
-    Output:
-        * data: tuple
-            This is a tuple containing:
-                * r: int
-                * moduli: list
-                * partial_products: list
-                * inverse_list: list
-                * product: int
+    Returns:
+        * data = (r, moduli, partial_products, inverse_list, product): tuple
+            * r: int
+                Number of moduli
+
+            * moduli: list
+                Original list of moduli passed in.
+
+            * partial_products: list
+                Partial products of the moduli. The kth component of this list
+                is the product of the k - 1 previous moduli.
+
+            * inverse_list: list
+                The kth component of this list is the inverse of the kth partial
+                product, modulo the kth modulus.
+
+            * product: int
+                Product of the moduli.
+
+    Example:
+        >>> crt_preconditioning_data([3, 5, 7])
+        (3, [3, 5, 7], [1, 3, 15], [1, 2, 1], 105)
+
+    Details:
+        This method is based on part of Algorithm 2.1.7 in "Prime Numbers: A
+        Computational Perspective" by Crandall and Pomerance.
     """
     r = len(moduli)
     partial_products = [1]*r
@@ -690,47 +744,52 @@ def crt_preconditioning_data(moduli):
     return data
 
 
-def chinese_preconditioned(L, preconditioning_data):
-    """
-    Returns a solution to the congruences given in L.
+def chinese_preconditioned(congruences, preconditioning_data):
+    """Returns a solution to the given congruences.
 
-    Given a list of congruenes as (residue, modulus) pairs, where all moduli are
-    pairwise coprime, this returns the unique solution n in [0, M) to the
+    Given a list of congruences as (residue, modulus) pairs, where all moduli
+    are pairwise coprime, this returns the unique solution n in [0, M) to the
     congruences, where M is the product of the moduli.
 
     Input:
-        * L: list
-            L is a list of congruences of the form (residue, modulus).
+        * congruences: list
+            A list of congruences, each of the form (residue, modulus).
 
         * preconditioning_data: tuple
             This is a tuple containing the preconditioning data for this set of
             moduli. This should be the output of the function
             crt_preconditioning_data.
 
-    Output:
+    Returns
         * x: int
-            x is the least positive integer satisfying all of the congruences.
+            The least positive integer satisfying all of the congruences.
 
     Examples:
-        >>> chinese([(0, 4), (1, 25)])
-        76
+        >>> moduli = [3, 5, 7]
+        >>> data = crt_preconditioning_data(moduli)
+        >>> chinese_preconditioned([(2, 3), (3, 5), (2, 7)], data)
+        23
+        >>> chinese([(2, 3), (3, 5), (2, 7)])
+        23
+        >>> chinese_preconditioned([(1, 3), (2, 5), (4, 7)], data)
+        67
 
     Details:
-        This algorithm is due to Garner. See Algorithm 2.1.7 in "Prime Numbers -
-        A Computational Perspective" by Crandall and Pomerance for details.
-
         If multiple systems of congruences are to be solved, where each system
         has the same set of moduli as the other, then this method is much faster
-        than the function "chinese", as long as the preconditioning data is only
+        than the function `chinese`, as long as the preconditioning data is only
         computed once.
 
         A typical use of this function is in combining solutions of some
         polynomial congruence modulo prime powers to find the solutions modulo
         the product of these prime-power moduli. In this case, you will have a
         fixed set of moduli, but multiple residues for each modulus.
+
+        This algorithm is due to Garner. See Algorithm 2.1.7 in "Prime Numbers -
+        A Computational Perspective" by Crandall and Pomerance for details.
     """
     (r, moduli, partial_products, inverse_list, product) = preconditioning_data
-    residues = [a for (a, _) in L]
+    residues = [a for (a, _) in congruences]
     x = residues[0]
 
     for i in xrange(1, r):
@@ -740,8 +799,7 @@ def chinese_preconditioned(L, preconditioning_data):
 
 
 def jacobi_symbol(a, m):
-    """
-    Returns the Jacobi symbol (a|m).
+    """Returns the Jacobi symbol (a|m).
 
     Given positive integers a and m with m odd, this algorithm returns the
     Jacobi symbol (a|m), which for m an odd prime is also the Legendre symbol.
@@ -750,7 +808,7 @@ def jacobi_symbol(a, m):
         * a: int (a > 0)
         * m: int (m > 0) (odd)
 
-    Output:
+    Returns:
         * t: int
             The integer t = (a|m).
 
@@ -797,14 +855,13 @@ def jacobi_symbol(a, m):
 
 
 def valuation(p, n):
-    """
-    Returns the highest power of p dividing n.
+    """Returns the highest power of p dividing n.
 
     Input:
         * p: int
         * n: int
 
-    Output:
+    Returns:
         * k: int
             The largest integer k >= 0 such that p^k divides n.
 
