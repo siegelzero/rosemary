@@ -102,7 +102,7 @@ class TestCore(unittest.TestCase):
         self.assertRaisesRegexp(ValueError, "integer_nth_root: Must have n >= 1", integer_nth_root, 0, 10)
         self.assertRaisesRegexp(ValueError, "integer_nth_root: Must have m >= 0", integer_nth_root, 3, -1)
 
-        for i in xrange(10):
+        for i in xrange(100):
             a = random.randint(100, 1000)
             b = random.randint(100, 1000)
             m = a**b
@@ -112,6 +112,83 @@ class TestCore(unittest.TestCase):
             r = integer_nth_root(n, m)
             self.assertTrue(r**n <= m < (r + 1)**n)
 
+    def test_integer_sqrt(self):
+        self.assertRaisesRegexp(ValueError, "integer_sqrt: Must have n >= 0.", integer_sqrt, -1)
+
+        for i in xrange(100):
+            a = random.randint(100, 1000)
+            b = random.randint(100, 1000)
+            n = a**b
+            r = integer_sqrt(n)
+
+            self.assertTrue(r**2 <= n < (r + 1)**2)
+
+    def test_inverse_mod(self):
+        self.assertRaisesRegexp(ValueError, "inverse_mod: Integers must be relatively prime.", inverse_mod, 2, 4)
+        self.assertRaisesRegexp(ValueError, "inverse_mod: Must have m >= 2.", inverse_mod, 10, 1)
+
+        self.assertEqual(inverse_mod(5, 17), 7)
+        self.assertEqual(inverse_mod(2, 9), 5)
+
+        for k in xrange(1, 101):
+            a = inverse_mod(k, 101)
+            self.assertEqual(a*k % 101, 1)
+
+    def test_is_power(self):
+        self.assertRaisesRegexp(ValueError, "is_power: Must have k >= 1.", is_power, 10, 0)
+        self.assertRaisesRegexp(ValueError, "is_power: Must have n >= 2.", is_power, 1, 3)
+
+        for k in [2, 3, 5, 7, 11]:
+            self.assertEqual(is_power(k), False)
+
+        for k in xrange(10):
+            a = random.randint(10, 100)
+            b = random.randint(10, 100)
+            n = a**b
+            x, y = is_power(n)
+
+            self.assertTrue(x**y == n)
+
+        for k in xrange(10):
+            a = random.randint(10, 100)
+            b = random.randint(10, 100)
+            n = a**b
+            x, y = is_power(n, b)
+
+            self.assertTrue(x**y == n)
+
+        self.assertEqual(is_power([(2, 4), (3, 2)]), (12, 2))
+        self.assertEqual(is_power([(2, 4), (3, 3)]), False)
+
+        self.assertEqual(is_power([(3, 4), (5, 4)]), (15, 4))
+        self.assertEqual(is_power([(3, 4), (5, 4)], 2), (225, 2))
+
+    def test_is_square(self):
+        self.assertRaisesRegexp(ValueError, "is_square: Must have n >= 0.", is_square, -2)
+
+        for k in [2, 3, 5, 7, 11]:
+            self.assertEqual(is_square(k), False)
+
+        for (k, r) in [(9, 3), (16, 4), (289, 17), (130321, 361)]:
+            self.assertEqual(is_square(k), r)
+
+        self.assertEqual(is_square([(2, 4), (5, 2)]), 20)
+        self.assertEqual(is_square([(2, 4), (5, 3)]), False)
+
+    def test_jacobi_symbol(self):
+        return
+
+    def test_lcm(self):
+        return
+
+    def test_lcm_list(self):
+        return
+
+    def test_power_mod(self):
+        return
+
+    def test_valuation(self):
+        return
 
 if __name__ == "__main__":
     unittest.main()

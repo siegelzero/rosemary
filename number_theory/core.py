@@ -241,11 +241,23 @@ def inverse_mod(a, m):
         * b: int
             An integer such that a*b = 1 (mod m).
 
+    Raises:
+        * ValueError: if gcd(a, m) != 1 or m < 2.
+
     Examples:
         >>> inverse_mod(5, 17)
         7
         >>> 5*7 % 17
         1
+        >>> inverse_mod(2, 4)
+        Traceback (most recent call last):
+        ...
+        ValueError: inverse_mod: Integers must be relatively prime.
+        >>> inverse_mod(18, 1)
+        Traceback (most recent call last):
+        ...
+        ValueError: inverse_mod: Must have m >= 2.
+
 
     Details:
         This function computes the modular inverse using the extended Euclidean
@@ -255,8 +267,10 @@ def inverse_mod(a, m):
         raise ValueError("inverse_mod: Must have m >= 2.")
 
     (x, y, d) = ext_gcd(a, m)
+
     if d != 1:
         raise ValueError("inverse_mod: Integers must be relatively prime.")
+
     return x % m
 
 
@@ -362,7 +376,7 @@ def integer_log(b, n):
     # Now we know that b^lo <= a <= b^hi perform a binary search on this
     # interval to find the exact value k so that b^k <= a < b^(k + 1)
     while hi - lo > 1:
-        mid = (lo + hi) // 2
+        mid = (lo + hi)//2
         if b**mid > n:
             hi = mid
         else:
@@ -391,8 +405,8 @@ def integer_nth_root(n, m):
     Examples:
         >>> integer_nth_root(2, 10)
         3
-        >>> integer_nth_root(10, 2**10)
-        2
+        >>> integer_nth_root(32, 2**32)
+        2L
         >>> integer_nth_root(0, 10)
         Traceback (most recent call last):
         ...
@@ -403,7 +417,8 @@ def integer_nth_root(n, m):
         ValueError: integer_nth_root: Must have m >= 0
 
     Details:
-        This algorithm is based off of Newton's Method.
+        This algorithm uses Halley's iteration for computing nth roots, modified
+        for finding integer nth roots.
     """
     if m < 0:
         raise ValueError("integer_nth_root: Must have m >= 0")
@@ -417,11 +432,14 @@ def integer_nth_root(n, m):
     if m in (0, 1):
         return m
 
-    bn = integer_log(n, m) + 1
-    x = n**(bn//n + 1)
+    bits = m.bit_length()
+    x = 1 << (bits//n + 1)
 
     while True:
-        y = ((n - 1)*x + m//(x**(n - 1)))//n
+        xn = x**n
+        num = (n - 1)*xn + (n + 1)*m
+        den = num + 2*xn - 2*m
+        y = (x*num)//den
         if y >= x:
             break
         x = y
@@ -442,14 +460,21 @@ def integer_sqrt(n):
         * r: int
             The positive integer r such that r**2 <= n < (r + 1)**2.
 
+    Raises:
+        * ValueError: If n < 0.
+
     Examples:
         >>> integer_sqrt(10)
         3
         >>> integer_sqrt(59649589127497217)
         244232653
+        >>> integer_sqrt(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: integer_sqrt: Must have n >= 0.
 
     Details:
-        The algorithm used is based on Newton's Method. See Algorithm 1.7.1 in
+        The algorithm used is based on Newton's method. See Algorithm 1.7.1 in
         'A Course in Computational Algebraic Number Theory' by Cohen for
         details.
     """
@@ -463,16 +488,17 @@ def integer_sqrt(n):
     if n <= 2**60:
         return int(n**(0.5))
 
-    # Here, bn is the number of bits in the binary representation of n.
-    bn = n.bit_length()
-    x = 2**(bn//2 + 1)
+    bits = n.bit_length()
+    x = 1 << (bits//2 + 1)
 
     # This is just Newton's method using integer division.
     while True:
         y = (x + n//x)//2
         if y >= x:
-            return x
+            break
         x = y
+
+    return x
 
 
 def is_power(n, k=None):
@@ -488,11 +514,14 @@ def is_power(n, k=None):
 
         * k: int (k >= 1) (default=None)
 
-    Output cases:
+    Returns:
         * (b, k): tuple of ints
             Values such that n = b^k if such values exist.
 
         * Returns False if no such values exist.
+
+    Raises:
+        * ValueError: If n <= 1 or k <= 0.
 
     Examples:
         >>> is_power(36)
@@ -509,14 +538,20 @@ def is_power(n, k=None):
         (100, 2)
         >>> is_power([(2, 3), (5, 2)])
         False
+        >>> is_power(17, 0)
+        Traceback (most recent call last):
+        ...
+        ValueError: is_power: Must have k >= 1.
+        >>> is_power(1)
+        Traceback (most recent call last):
+        ...
+        ValueError: is_power: Must have n >= 2.
 
     Details:
         If n is given as an int and a value of k is given, then this function
         computes the integer kth root r of n and checks if r^k = n. In the case
-        where no such k is given, this looks at each k >= 2, and performs a
-        binary search for values b such that n = b^k. Details for this case can
-        be found in "Primality Testing in Polynomial Time" by Dietzfelbinger. In
-        particular, see Algorithm 2.3.5.
+        where no such k is given, this looks at each k >= 2, extracts the
+        integer kth root of n, and uses this to determine if n is a kth power.
 
         If n is given as a factorization and a value of k is given, this
         function checks if each exponent in the prime factorization of n is
@@ -561,30 +596,19 @@ def is_power(n, k=None):
                 return (root, k)
             return False
 
-        k = 2
-        while 2**k <= n:
-            lo = 1
-            hi = n
-            while hi - lo > 1:
-                mid = (lo + hi)//2
-                power = mid**k
-                if power == n:
-                    # Here, we've found that n is a perfect power. However, at this
-                    # point, b is the smallest exponent. We want the largest.
-                    exponent = k
-                    base = mid
-                    while True:
-                        next_step = is_power(base)
-                        if next_step:
-                            base = next_step[0]
-                            exponent *= next_step[1]
-                        else:
-                            return (base, exponent)
-                elif power < n:
-                    lo = mid
-                else:
-                    hi = mid
-            k += 1
+        for k in xrange(2, n.bit_length() + 1):
+            base = integer_nth_root(k, n)
+            if base**k == n:
+                exponent = k
+
+                while True:
+                    next_step = is_power(base)
+                    if next_step:
+                        base = next_step[0]
+                        exponent *= next_step[1]
+                    else:
+                        return (base, exponent)
+
         return False
 
 
@@ -598,11 +622,14 @@ def is_square(n):
         * n: int or list (n >= 0)
             The value of n can be an int or a factorization.
 
-    Output Cases:
+    Returns:
         * sqrt: int
             If n is a perfect square, the square root of n is returned.
 
         * False if n is not a perfect square.
+
+    Raises:
+        * ValueError: If n < 0.
 
     Examples:
         >>> is_square(16)
@@ -613,6 +640,10 @@ def is_square(n):
         10
         >>> is_square([(2, 3), (5, 2)])
         False
+        >>> is_square(-2)
+        Traceback (most recent call last):
+        ...
+        ValueError: is_square: Must have n >= 0.
 
     Details:
         If n is a nonnegative integer, the function computes the integer square
