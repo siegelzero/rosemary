@@ -417,8 +417,13 @@ def integer_nth_root(n, m):
         ValueError: integer_nth_root: Must have m >= 0
 
     Details:
-        This algorithm uses Halley's iteration for computing nth roots, modified
-        for finding integer nth roots.
+        This algorithm uses Halley's method for computing nth roots, modified
+        for finding integer nth roots. Halley's method exhibits cubic
+        convergence, which means that
+
+            |x_{n + 1} - a| <= K*|x_n - a|^3
+
+        for some K > 0, where a is the desired root, and x_i is the ith iterate.
     """
     if m < 0:
         raise ValueError("integer_nth_root: Must have m >= 0")
@@ -427,12 +432,19 @@ def integer_nth_root(n, m):
 
     if n == 0:
         return 1
-    if n == 1:
+    elif n == 1:
         return n
+    elif n == 2:
+        return integer_sqrt(m)
+
     if m in (0, 1):
         return m
 
     bits = m.bit_length()
+
+    if n >= bits:
+        return 1
+
     x = 1 << (bits//n + 1)
 
     while True:
@@ -474,9 +486,14 @@ def integer_sqrt(n):
         ValueError: integer_sqrt: Must have n >= 0.
 
     Details:
-        The algorithm used is based on Newton's method. See Algorithm 1.7.1 in
-        'A Course in Computational Algebraic Number Theory' by Cohen for
-        details.
+        The algorithm used is based on Newton's method. Newton's method exhibits
+        quadratic convergence, meaning that
+
+            |x_{n + 1} - a| <= K*|x_n - a|^2
+
+        for some K > 0, where a is the desired root, and x_i is the ith iterate.
+        See Algorithm 1.7.1 in "A Course in Computational Algebraic Number
+        Theory" by Cohen for details.
     """
     if n < 0:
         raise ValueError("integer_sqrt: Must have n >= 0.")
