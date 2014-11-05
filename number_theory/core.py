@@ -38,6 +38,30 @@ def gcd(x, y):
     return x
 
 
+def binary_gcd(u, v):
+    g = 1
+
+    while u & 1 == v & 1 == 0:
+        u >>= 1
+        v >>= 1
+        g <<= 1
+
+    while u:
+        if u & 1 == 0:
+            u >>= 1
+        elif v & 1 == 0:
+            v >>= 1
+        else:
+            if u >= v:
+                u -= v
+                u >>= 1
+            else:
+                v -= u
+                v >>= 1
+
+    return g*v
+
+
 def gcd_list(L):
     """Returns the greatest common divisor of the elements of L.
 
@@ -219,11 +243,14 @@ def power_mod(a, k, m):
 
     a = a % m
     t = 1
+
     while k:
-        if k % 2:
+        if k & 1:
             t = a*t % m
-        k = k//2
+
+        k >>= 1
         a = a*a % m
+
     return t
 
 
@@ -311,9 +338,11 @@ def bit_count(n):
     """
     n = abs(n)
     count = 0
+
     while n:
         n = n & (n - 1)
         count += 1
+
     return count
 
 
@@ -364,23 +393,30 @@ def integer_log(b, n):
     if n < b:
         return 0
 
+    if b == 2:
+        return n.bit_length() - 1
+
     p = b
     hi = 1
 
     # Look at b, b^2, b^4, b^8,... to find in which interval a lives
     while p <= n:
-        p = p**2
+        p *= p
         lo = hi
-        hi *= 2
+        hi <<= 1
 
     # Now we know that b^lo <= a <= b^hi perform a binary search on this
     # interval to find the exact value k so that b^k <= a < b^(k + 1)
     while hi - lo > 1:
-        mid = (lo + hi)//2
-        if b**mid > n:
+        mid = (lo + hi) >> 1
+        power = b**mid
+
+        if power > n:
             hi = mid
-        else:
+        elif power < n:
             lo = mid
+        else:
+            return mid
 
     return lo
 
@@ -883,22 +919,27 @@ def jacobi_symbol(a, m):
         and Shallit. Also, see Chapter 12 of "A Computational Introduction to
         Number Theory and Algebra" by Shoup for details.
     """
-    if m % 2 == 0:
+    if m & 1 == 0:
         raise ValueError('jacobi_symbol: Must have m odd.')
 
     a = a % m
     t = 1
+
     while a:
-        while a % 2 == 0:
-            a = a//2
-            if m % 8 in (3, 5):
+        while a & 1 == 0:
+            a >>= 1
+            if m & 7 in (3, 5):
                 t = -t
+
         a, m = m, a
-        if a % 4 == 3 and m % 4 == 3:
+        if a & 3 == 3 and m & 3 == 3:
             t = -t
+
         a = a % m
+
     if m == 1:
         return t
+
     return 0
 
 
@@ -931,18 +972,21 @@ def valuation(p, n):
     n = abs(n)
     pk = p
     hi = 1
+
     # Look at b, b^2, b^4, b^8,... to find in which interval a lives
     while n % pk == 0:
-        pk = pk**2
+        pk *= pk
         lo = hi
-        hi *= 2
+        hi <<= 1
 
     # Now we know that b^lo <= a <= b^hi perform a binary search on this
     # interval to find the exact value n so that b^n <= a < b^(n + 1)
     while hi - lo > 1:
-        mid = (lo + hi)//2
+        mid = (lo + hi) >> 1
+
         if n % (p**mid) == 0:
             lo = mid
         else:
             hi = mid
+
     return lo
