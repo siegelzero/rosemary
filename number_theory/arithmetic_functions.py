@@ -18,15 +18,17 @@ import rosemary.number_theory.sieves
 
 
 def euler_phi(n):
-    """
-    Returns the number of positive integers <= n that are coprime to n.
+    """Returns the number of positive integers <= n that are coprime to n.
 
     Input:
         * n: int or list (n > 0)
             The value of n can be an int or a factorization.
 
-    Output:
+    Returns:
         * r: int
+
+    Raises:
+        * ValueError: if n <= 0 or n is not an int or factorization.
 
     Examples:
         >>> euler_phi(100)
@@ -35,13 +37,18 @@ def euler_phi(n):
         40
         >>> euler_phi(11213)
         11212
+        >>> euler_phi(0)
+        Traceback (most recent call last):
+        ...
+        ValueError: euler_phi: Must have n > 0.
 
     Details:
-        The Euler phi function is a multiplicative function satisfying phi(p^k)
-        = (p - 1)*p^(k - 1) for prime powers p^k. For positive integers n, this
-        method computes the factorization of n, and then uses this product
+        The Euler phi function is a multiplicative function satisfying phi(p**k)
+        = (p - 1)*p**(k - 1) for prime powers p**k. For positive integers n,
+        this method computes the factorization of n, and then uses this product
         definition. If instead a factorization of n is given, then the product
-        formula is used directly.
+        formula is used directly. See "Fundamental Number Theory with
+        Applications" by Mollin for details.
     """
     if isinstance(n, (int, long)):
         if n == 1:
@@ -61,15 +68,17 @@ def euler_phi(n):
 
 
 def moebius(n):
-    """
-    Returns the value of the Moebius function mu(n).
+    """Returns the value of the Moebius function mu(n).
 
     Input:
         * n: int or list (n > 0)
             The value of n can be an int or a factorization.
 
-    Output:
+    Returns:
         * mu: int
+
+    Raises:
+        * ValueError: If n <= 0 or n is not an int or factorization.
 
     Examples:
         >>> moebius(35)
@@ -80,6 +89,10 @@ def moebius(n):
         0
         >>> moebius(2)
         -1
+        >>> moebius(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: moebius: Must have n > 0.
 
     Details:
         The Moebius mu function is a multiplicative function satisfying
@@ -214,16 +227,18 @@ def tau(n):
 
 
 def carmichael_lambda(n):
-    """
-    Returns the smallest positive integer m such that a^m = 1 (mod n) for all
-    integers a coprime to n.
+    """Returns the smallest positive integer m such that a**m = 1 (mod n) for
+    all integers a coprime to n.
 
     Input:
-        n: int or list (n > 1)
-            The value of n can be an int or a factorization.
+        * n: int or list (n > 1)
+            The modulus. This value can be an int or a factorization.
 
-    Output:
-        m: int
+    Returns:
+        * m: int
+
+    Raises:
+        * ValueError: If n <= 0 or n is not an integer or factorization.
 
     Examples:
         >>> carmichael_lambda(100)
@@ -232,6 +247,18 @@ def carmichael_lambda(n):
         20
         >>> carmichael_lambda(113)
         112
+        >>> carmichael_lambda(0)
+        Traceback (most recent call last):
+        ...
+        ValueError: carmichael_lambda: Must have n > 0.
+
+    Details:
+        The Carmichael lambda function gives the exponent of the multiplicative
+        group of integers modulo n. For each n, lambda(n) divides euler_phi(n).
+        This method uses the standard definition of the Carmichael lambda
+        function. In particular, lambda(n) is the least common multiple of the
+        values of lambda(p**e) for each prime power in the factorization of n.
+        See "Fundamental Number Theory with Applications" by Mollin for details.
     """
     if isinstance(n, (int, long)):
         if n == 1:
@@ -249,10 +276,10 @@ def carmichael_lambda(n):
         if p != 2:
             term = p**(e - 1)*(p - 1)
         else:
-            if e == 2:
-                term = 2
-            elif e >= 3:
-                term = 2**(e - 2)
+            if e <= 2:
+                term = 1 << (e - 1)
+            else:
+                term = 1 << (e - 2)
         terms.append(term)
 
     value = lcm_list(terms)
@@ -260,20 +287,26 @@ def carmichael_lambda(n):
 
 
 def factorial(n):
-    """
-    Returns the factorial of n.
+    """Returns the factorial of n.
 
     Input:
         * n: int (n >= 0)
 
-    Output:
+    Returns:
         * prod: int
+
+    Raises:
+        * ValueError: If n < 0.
 
     Examples:
         >>> factorial(10)
         3628800
         >>> factorial(40)
         815915283247897734345611269596115894272000000000L
+        >>> factorial(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: factorial: Must have n >= 0.
 
     Details:
         The algorithm used is a binary splitting method. See Section 10.2.3 of
@@ -302,20 +335,30 @@ def factorial(n):
 
 
 def primorial(n):
-    """
-    Returns the product of the first n primes p1, p2, ..., pn.
+    """Returns the product of the first n primes p1, p2, ..., pn.
 
     Input:
         * n: int (n > 0)
 
-    Output:
+    Returns:
         * prod: int
+
+    Raises:
+        * ValueError: If n < 1 or n >= 78498.
 
     Examples:
         >>> primorial(3)
         30
         >>> primorial(10)
         6469693230
+        >>> primorial(0)
+        Traceback (most recent call last):
+        ...
+        ValueError: primorial: Must have n >= 1.
+        >>> primorial(10000000)
+        Traceback (most recent call last):
+        ...
+        ValueError: primorial: Must have n < 78498.
 
     Details:
         The current implementation uses the precomputed list of primes in the
@@ -343,25 +386,32 @@ def primorial(n):
 
 
 def euler_phi_list(n):
-    """
-    Returns a list of values of euler_phi(k) for 1 <= k <= n.
+    """Returns a list of values of euler_phi(k) for 1 <= k <= n.
 
     Input:
         * n: int (n > 0)
 
-    Output:
-        * L: list
+    Returns:
+        * values: list
             This is a list of values of euler_phi(k) for 1 <= k <= n. The list
             begins with 0, so that L[k] holds the value of euler_phi(k).
+
+    Raises:
+        * ValueError: If n <= 0.
+
     Examples:
         >>> euler_phi_list(10)
         [0, 1, 1, 2, 2, 4, 2, 6, 4, 6, 4]
         >>> [0] + [euler_phi(k) for k in xrange(1, 11)]
         [0, 1, 1, 2, 2, 4, 2, 6, 4, 6, 4]
+        >>> euler_phi_list(0)
+        Traceback (most recent call last):
+        ...
+        ValueError: euler_phi_list: Must have n > 0.
 
     Details:
-        This function creates a list of (n + 1) elements, and fills the list by
-        sieving and using the product definition of euler_phi(n).
+        This function initially creates a list of (n + 1) zeros, and fills the
+        list by sieving, using the product definition of euler_phi(n).
     """
     if n <= 0:
         raise ValueError("euler_phi_list: Must have n > 0.")
@@ -386,21 +436,28 @@ totient_list = euler_phi_list
 
 
 def moebius_list(n):
-    """
-    Return a list of the values of moebius(k) for 1 <= k <= n.
+    """Return a list of the values of moebius(k) for 1 <= k <= n.
 
     Input:
         * n: int (n > 0)
 
-    Output:
+    Returns:
         * L: list
             This is a list of values of moebius(k) for 1 <= k <= n. The list
             begins with 0, so that L[k] holds the value of moebius(k).
+
+    Raises:
+        * ValueError: If n <= 0.
+
     Examples:
         >>> moebius_list(10)
         [0, 1, -1, -1, 0, -1, 1, -1, 0, 0, 1]
         >>> [0] + [moebius(k) for k in xrange(1, 11)]
         [0, 1, -1, -1, 0, -1, 1, -1, 0, 0, 1]
+        >>> moebius_list(0)
+        Traceback (most recent call last):
+        ...
+        ValueError: moebius_list: Must have n > 0.
 
     Details:
         This function creates a list of (n + 1) elements, and fills the list by
@@ -526,25 +583,38 @@ def tau_list(n):
 
 
 def euler_phi_sum(n):
-    """
-    Returns the value of the sum of euler_phi(k) for k = 1, 2, ..., n.
+    """Returns the value of the sum of euler_phi(k) for k = 1, 2, ..., n.
 
     Input:
         * n: int (n > 0)
 
-    Output:
+    Returns:
         * s: int
+
+    Raises:
+        * ValueError: If n <= 0.
 
     Examples:
         >>> euler_phi_sum(10)
         32
         >>> sum(euler_phi_list(10))
         32
+        >>> euler_phi_sum(10**5)
+        3039650754
+        >>> euler_phi_sum(0)
+        Traceback (most recent call last):
+        ...
+        ValueError: euler_phi_sum: Must have n > 0.
 
     Details:
         Let S(n) = \sum_{k = 1}^{n} \phi(k). We use the identity
-        S(n) = n*(n + 1)/2 - \sum_{d = 2}^{n} S(n/d) to compute the value in
-        sublinear time by memoizing the recursion.
+        S(n) = n*(n + 1)/2 - \sum_{d = 2}^{n} S(n/d) to compute the value. By
+        applying a variant of Dirichlet's Hyperbola Method, we are able to cut
+        the limits of summation, and by memoizing the recursion, we are able to
+        achieve a sublinear runtime. See Section 4.2 of "The Prime Numbers and
+        Their Distribution" by Mendes, et al for the Hyperbola Method. See
+        section 4.9 equation 4.60 in "Concrete Mathematics" by Graham, et al for
+        a proof of the identity for S(n).
     """
     if n <= 0:
         raise ValueError("euler_phi_sum: Must have n > 0.")
@@ -560,10 +630,13 @@ def euler_phi_sum(n):
     def S(n):
         if n in cache:
             return cache[n]
+
         sqrt_n = int(n**(0.5))
         value = n - sqrt_n*cache[sqrt_n]
+
         for d in xrange(2, sqrt_n + 1):
             value += (S(n//d) + phi_list[d]*(n//d))
+
         cache[n] = n*(n + 1)//2 - value
         return cache[n]
 
@@ -574,20 +647,26 @@ totient_sum = euler_phi_sum
 
 
 def euler_phi_weighted_sum(n):
-    """
-    Returns the value of the sum of k*euler_phi(k) for k = 1, 2, ..., n.
+    """Returns the value of the sum of k*euler_phi(k) for k = 1, 2, ..., n.
 
     Input:
         * n: int (n > 0)
 
-    Output:
+    Returns:
         * s: int
+
+    Raises:
+        * ValueError: If n <= 0.
 
     Examples:
         >>> euler_phi_weighted_sum(100)
         203085
         >>> sum(k*euler_phi(k) for k in xrange(1, 101))
         203085
+        >>> euler_phi_weighted_sum(0)
+        Traceback (most recent call last):
+        ...
+        ValueError: euler_phi_weighted_sum: Must have n > 0.
 
     Details:
         Let T(n) = \sum_{k = 1}^{n} k*euler_phi(k). We use the relationship
@@ -622,20 +701,26 @@ def euler_phi_weighted_sum(n):
 
 
 def moebius_sum(n):
-    """
-    Returns the value of the sum of moebius(k) for k = 1, 2, ..., n.
+    """Returns the value of the sum of moebius(k) for k = 1, 2, ..., n.
 
     Input:
         * n: int (n > 0)
 
-    Output:
+    Returns:
         * s: int
+
+    Raises:
+        * ValueError: If n <= 0.
 
     Examples:
         >>> moebius_sum(10)
         -1
         >>> sum(moebius_list(10))
         -1
+        >>> moebius_sum(0)
+        Traceback (most recent call last):
+        ...
+        ValueError: moebius_sum: Must have n > 0.
 
     Details:
         The formula used here is based on the relationship
@@ -714,15 +799,17 @@ def sigma_sum(n):
 
 
 def euler_phi_inverse(n):
-    """
-    Returns a sorted list of all positive integers k such that euler_phi(k) = n.
+    """Returns a sorted list of all positive integers k such that euler_phi(k) = n.
 
     Input:
         * n: int or list (n > 0)
             The value of n can be an int or a factorization.
 
-    Output:
-        * L: list
+    Returns:
+        * values: list
+
+    Raises:
+        * ValueError: If n <= 0 or n is not an int or factorization.
 
     Examples:
         >>> euler_phi_inverse(40)
@@ -733,10 +820,15 @@ def euler_phi_inverse(n):
         [101, 125, 202, 250]
         >>> euler_phi_inverse(103)
         []
+        >>> euler_phi_inverse(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: euler_phi_inverse: Must have n > 0.
 
     Details:
         This uses the algorithm outlined in "Discovering Mathematics with Magma"
-        by Bosma and Cannon.
+        by Bosma and Cannon. For a different method, see the paper "Euler's
+        Totient Function and its Inverse" by Gupta.
     """
     if isinstance(n, (int, long)):
         if n == 1:

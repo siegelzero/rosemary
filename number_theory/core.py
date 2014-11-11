@@ -38,30 +38,6 @@ def gcd(x, y):
     return x
 
 
-def binary_gcd(u, v):
-    g = 1
-
-    while u & 1 == v & 1 == 0:
-        u >>= 1
-        v >>= 1
-        g <<= 1
-
-    while u:
-        if u & 1 == 0:
-            u >>= 1
-        elif v & 1 == 0:
-            v >>= 1
-        else:
-            if u >= v:
-                u -= v
-                u >>= 1
-            else:
-                v -= u
-                v >>= 1
-
-    return g*v
-
-
 def gcd_list(L):
     """Returns the greatest common divisor of the elements of L.
 
@@ -160,13 +136,23 @@ def lcm(x, y):
     Examples:
         >>> lcm(2, 5)
         10
+        >>> lcm(0, 10)
+        0
+        >>> lcm(0, 0)
+        0
+        >>> lcm(-2, -4)
+        4
 
     Details:
         This function uses the identity x*y  = gcd(x, y)*lcm(x, y).
     """
+    if x*y == 0:
+        return 0
+
     x = abs(x)
     y = abs(y)
     m = (x*y)//gcd(x, y)
+
     return m
 
 
@@ -214,6 +200,9 @@ def power_mod(a, k, m):
         * r: int
             r is the integer in [0, m) with r = a^k (mod m)
 
+    Raises:
+        * ValueError: If a < 0 or k < 0 or m < 1.
+
     Examples:
         >>> power_mod(2, 45, 17)
         15
@@ -221,7 +210,7 @@ def power_mod(a, k, m):
         1
 
     Details:
-        This computes a^k using a binary exponentiation method, reducing modulo
+        This computes a**k using a binary exponentiation method, reducing modulo
         m at each step along the way. Note that the builtin python function pow
         behaves exactly the same as this, and is typically faster, so its usage
         is preferred. See Algorithm 1.2.1 in "A Course in Computational
@@ -361,7 +350,7 @@ def integer_log(b, n):
 
     Returns:
         * k: int
-            The integer such that b**k <= a <= b**(k + 1).
+            The integer such that b**k <= a < b**(k + 1).
 
     Raises:
         * ValueError: If base b <= 1 or n <= 0.
@@ -562,7 +551,7 @@ def is_power(n, k=None):
     some b. Otherwise, returns False.
 
     Input:
-        * n: int or list (n >= 2)
+        * n: int or list (n >= 1)
             The value of n can be an int or a factorization.
 
         * k: int (k >= 1) (default=None)
@@ -574,7 +563,7 @@ def is_power(n, k=None):
         * Returns False if no such values exist.
 
     Raises:
-        * ValueError: If n <= 1 or k <= 0.
+        * ValueError: If n <= 0 or k <= 0.
 
     Examples:
         >>> is_power(36)
@@ -595,10 +584,10 @@ def is_power(n, k=None):
         Traceback (most recent call last):
         ...
         ValueError: is_power: Must have k >= 1.
-        >>> is_power(1)
+        >>> is_power(0)
         Traceback (most recent call last):
         ...
-        ValueError: is_power: Must have n >= 2.
+        ValueError: is_power: Must have n >= 1.
 
     Details:
         If n is given as an int and a value of k is given, then this function
@@ -638,8 +627,8 @@ def is_power(n, k=None):
                     kth_root *= p**(e//d)
                 return (kth_root, d)
     else:
-        if n < 2:
-            raise ValueError("is_power: Must have n >= 2.")
+        if n < 1:
+            raise ValueError("is_power: Must have n >= 1.")
 
         if k is not None:
             if k == 1:
@@ -896,6 +885,9 @@ def jacobi_symbol(a, m):
         * t: int
             The integer t = (a|m).
 
+    Raises:
+        * ValueError: If m is even.
+
     Examples:
         >>> jacobi_symbol(6477, 11213)
         1
@@ -905,6 +897,11 @@ def jacobi_symbol(a, m):
         -1
         >>> jacobi_symbol(7, 77)
         0
+        >>> jacobi_symbol(19, 4)
+        Traceback (most recent call last):
+        ...
+        ValueError: jacobi_symbol: Must have m odd.
+
 
     Details:
         For m an odd prime, this is the Legendre symbol. In this case, we have
