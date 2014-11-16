@@ -57,7 +57,7 @@ def euler_phi(n):
             raise ValueError("euler_phi: Must have n > 0.")
         n_factorization = rosemary.number_theory.factorization.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n[:]
+        n_factorization = n
     else:
         raise ValueError("euler_phi: Input must be a positive integer or a factorization.")
 
@@ -108,7 +108,7 @@ def moebius(n):
             raise ValueError("moebius: Must have n > 0.")
         n_factorization = rosemary.number_theory.factorization.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n[:]
+        n_factorization = n
     else:
         raise ValueError("moebius: Input must be a positive integer or a factorization.")
 
@@ -120,8 +120,7 @@ def moebius(n):
 
 
 def sigma(n, k=1):
-    """
-    Returns the sum of the kth powers of the divisors of n.
+    """Returns the sum of the kth powers of the divisors of n.
 
     Input:
         * n: int or list (n > 0)
@@ -129,8 +128,11 @@ def sigma(n, k=1):
 
         * k: int (k >= 0) (default=1)
 
-    Output:
+    Returns:
         * s: int
+
+    Raises:
+        * ValueError: If n <= 0 or k < 0.
 
     Examples:
         >>> sigma(9)
@@ -145,15 +147,21 @@ def sigma(n, k=1):
         130
         >>> sigma(10, 0)
         4
-        >>> tau(10)
-        4
+        >>> sigma(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: sigma: Must have n > 0.
+        >>> sigma(10, -1)
+        Traceback (most recent call last):
+        ...
+        ValueError: sigma: Must have k >= 0.
 
     Details:
         The divisor sigma function is a multiplicative function satisfying
-        sigma(p^e, k) = 1 + p^k + p^(2*k) + ... + p^(e*k) for prime powers p^e.
-        For positive integers n, this method computes the factorization of n,
-        and then uses this product definition. If instead a factorization of n
-        is given, then the product formula is used directly.
+        sigma(p**e, k) = 1 + p**k + p**(2*k) + ... + p**(e*k) for prime powers
+        p**e. For positive integers n, this method computes the factorization of
+        n, and then uses this product definition. If instead a factorization
+        of n is given, then the product formula is used directly.
     """
     if k < 0:
         raise ValueError("sigma: Must have k >= 0.")
@@ -167,27 +175,31 @@ def sigma(n, k=1):
             raise ValueError("sigma: Must have n > 0.")
         n_factorization = rosemary.number_theory.factorization.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n[:]
+        n_factorization = n
     else:
-        raise ValueError("sigma: Input must be a positive integer or a factorization")
+        raise ValueError("sigma: Input must be a positive integer or a factorization.")
 
     prod = 1
+
     for (p, e) in n_factorization:
         pk = p**k
         prod *= (pk**(e + 1) - 1)//(pk - 1)
+
     return prod
 
 
 def tau(n):
-    """
-    Returns the number of divisors of n.
+    """Returns the number of divisors of n.
 
     Input:
         * n: int (n > 0)
             The value of n can be an int or a factorization.
 
-    Output:
+    Returns:
         * s: int
+
+    Raises:
+        * ValueError: If n <= 0 or if n is not an int or factorization.
 
     Examples:
         >>> tau(9)
@@ -196,10 +208,19 @@ def tau(n):
         9
         >>> tau(100)
         9
+        >>> tau('cat')
+        Traceback (most recent call last):
+        ...
+        ValueError: tau: Input must be a positive integer or a factorization.
+
+        >>> tau(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: tau: Must have n > 0.
 
     Details:
         The divisor tau function is a multiplicative function satisfying
-        tau(p^k) = 1 + k for prime powers p^k. For positive integers n, this
+        tau(p**k) = 1 + k for prime powers p**k. For positive integers n, this
         method computes the factorization of n, and then uses this product
         definition. If instead a factorization of n is given, then the product
         formula is used directly.
@@ -211,9 +232,9 @@ def tau(n):
             raise ValueError("tau: Must have n > 0.")
         n_factorization = rosemary.number_theory.factorization.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n[:]
+        n_factorization = n
     else:
-        raise ValueError("tau: Input must be a positive integer or a factorization")
+        raise ValueError("tau: Input must be a positive integer or a factorization.")
 
     prod = 1
     for (p, e) in n_factorization:
@@ -267,7 +288,7 @@ def carmichael_lambda(n):
             raise ValueError("carmichael_lambda: Must have n > 0.")
         n_factorization = rosemary.number_theory.factorization.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n[:]
+        n_factorization = n
     else:
         raise ValueError("carmichael_lambda: Input must be a positive integer or a factorization.")
 
@@ -489,17 +510,20 @@ def moebius_list(n):
 
 
 def sigma_list(n, k=1):
-    """
-    Return a list of the values of sigma(i, k) for 1 <= i <= n.
+    """Return a list of the values of sigma(i, k) for 1 <= i <= n.
 
     Input:
         * n: int (n > 0)
         * k: int (k > 0) (default=1)
 
-    Output:
+    Returns:
         * L: list
             This is a list of values of sigma(i, k) for 1 <= i <= n. The list
             begins with 0, so that L[i] holds the value of sigma(i, k).
+
+    Raises:
+        * ValueError: If n <= 1 or k < 0.
+
     Examples:
         >>> sigma_list(10)
         [0, 1, 3, 4, 7, 6, 12, 8, 15, 13, 18]
@@ -509,10 +533,21 @@ def sigma_list(n, k=1):
         [0, 1, 5, 10, 21, 26, 50, 50, 85, 91, 130]
         >>> [0] + [sigma(k, 2) for k in xrange(1, 11)]
         [0, 1, 5, 10, 21, 26, 50, 50, 85, 91, 130]
+        >>> sigma_list(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: sigma_list: Must have n > 0.
+        >>> sigma_list(10, -1)
+        Traceback (most recent call last):
+        ...
+        ValueError: sigma_list: Must have k >= 0.
 
     Details:
         This function creates a list of (n + 1) elements, and fills the list by
-        sieving and using the product definition of sigma(n, k).
+        sieving and using the product definition of sigma(n, k). For k == 1 and
+        small values of n, a simpler but faster algorithm is used. See Section
+        9.8 in "Algorithmic Number Theory - Efficient Algorithms" by Bach and
+        Shallit for details.
     """
     if n <= 0:
         raise ValueError("sigma_list: Must have n > 0.")
@@ -522,43 +557,60 @@ def sigma_list(n, k=1):
     elif k < 0:
         raise ValueError("sigma_list: Must have k >= 0.")
 
-    block = [1]*(n + 1)
-    block[0] = 0
-    prime_list = rosemary.number_theory.sieves.primes(n)
+    # Use a special algorithm when k == 1 for small values of n.
+    if k == 1 and n <= 10**4:
+        block = [0]*(n + 1)
+        sqrt = int(n**(0.5))
 
-    for p in prime_list:
-        pk = p
-        mul = p**k
-        term = mul**2
-        last = mul
-        while pk <= n:
-            for idx in xrange(pk, n + 1, pk):
-                block[idx] *= (term - 1)
-                block[idx] /= (last - 1)
-            pk *= p
-            last = term
-            term *= mul
+        for j in xrange(1, sqrt + 1):
+            block[j*j] += j
+            for k in xrange(j + 1, n//j + 1):
+                block[k*j] += j + k
+
+    else:
+        block = [1]*(n + 1)
+        block[0] = 0
+        prime_list = rosemary.number_theory.sieves.primes(n)
+
+        for p in prime_list:
+            pk = p
+            mul = p**k
+            term = mul**2
+            last = mul
+            while pk <= n:
+                for idx in xrange(pk, n + 1, pk):
+                    block[idx] *= (term - 1)
+                    block[idx] /= (last - 1)
+                pk *= p
+                last = term
+                term *= mul
 
     return block
 
 
 def tau_list(n):
-    """
-    Returns a list of the values of tau(i), for 1 <= i <= n.
+    """Returns a list of the values of tau(i), for 1 <= i <= n.
 
     Input:
         * n: int (n > 0)
 
-    Output:
+    Returns:
         * L: list
             This is a list of values of tau(k) for 1 <= k <= n. The list begins
             with 0, so that L[k] holds the value of tau(k).
+
+    Raises:
+        * ValueError: If n <= 0.
 
     Examples:
         >>> tau_list(10)
         [0, 1, 2, 2, 3, 2, 4, 2, 4, 3, 4]
         >>> [0] + [tau(k) for k in xrange(1, 11)]
         [0, 1, 2, 2, 3, 2, 4, 2, 4, 3, 4]
+        >>> tau_list(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: tau_list: Must have n > 0.
 
     Details:
         The algorithm used here comes from Section 9.8 in "Algorithmic Number
@@ -758,20 +810,26 @@ mertens = moebius_sum
 
 
 def sigma_sum(n):
-    """
-    Returns the value of the sum of sigma(k) for k = 1, 2, ..., n.
+    """Returns the value of the sum of sigma(k) for k = 1, 2, ..., n.
 
     Input:
         * n: int (n > 0)
 
-    Output:
+    Returns:
         * sum: int
+
+    Raises:
+        * ValueError: If n <= 0.
 
     Examples:
         >>> sigma_sum(100)
         8299
         >>> sum(sigma_list(100))
         8299
+        >>> sigma_sum(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: sigma_sum: Must have n > 0.
 
     Details:
         The formula used is obtained by interchanging the order of summation and
@@ -840,7 +898,7 @@ def euler_phi_inverse(n):
             raise ValueError("euler_phi_inverse: Must have n > 0.")
         n_factorization = rosemary.number_theory.factorization.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n[:]
+        n_factorization = n
         n = rosemary.number_theory.factorization.factor_back(n_factorization)
     else:
         raise ValueError("euler_phi_inverse: Input must be a positive integer or a factorization.")
