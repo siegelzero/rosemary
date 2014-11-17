@@ -3,6 +3,7 @@
 from rosemary.number_theory.core import integer_sqrt
 from bisect import bisect_left
 
+
 ################################################################################
 # Sieves for generating primes
 ################################################################################
@@ -155,6 +156,7 @@ def prime_xrange(a, b=None):
             # Otherwise, we use our segmented sieve function.
             for p in sieve_interval(a, b, sqrt, prime_list[1:]):
                 yield p
+
 
 ################################################################################
 # Sieves for generating values of arithmetical functions
