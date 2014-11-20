@@ -1,5 +1,9 @@
 import rosemary.number_theory.sieves
 
+from rosemary.number_theory.tables import lookup
+
+import sys
+
 
 def legendre(n):
     """
@@ -71,7 +75,6 @@ def meissel(n):
 
 
 def meissel2(n):
-    print "Sieving..."
     root = int(n**(2.0/3.0))
     primes = rosemary.number_theory.sieves.primes(root)
 
@@ -89,30 +92,91 @@ def meissel2(n):
 
     value = (b + c - 2)*(b - c + 1)//2
     value -= sum(pi[n//primes[i]] for i in xrange(c, b))
-    cache = {}
 
-    print "Recursing..."
+    cutoff = 5
+    cache = {}
+    mk = {}
+    phi_mk = {}
+
+    for k in xrange(2, cutoff + 1):
+        mk[k], phi_mk[k], cache[k] = lookup[k]
 
     def phi(x, a):
-        if (x, a) in cache:
-            return cache[x, a]
-
-        if x == 0:
-            val = 0
-        elif a == 1:
-            val = (x + 1)//2
+        # if a == 1:
+        #     return (x + 1)//2
+        if x < primes[a - 1]:
+            return 1
+        elif a <= cutoff:
+            return phi_mk[a]*(x//mk[a]) + cache[a][x % mk[a]]
         else:
-            val = phi(x, a - 1) - phi(x//primes[a - 1], a - 1)
+            if a in cache:
+                if x in cache[a]:
+                    return cache[a][x]
+            else:
+                cache[a] = {}
 
-        cache[x, a] = val
-        return val
+            cache[a][x] = phi(x, a - 1) - phi(x//primes[a - 1], a - 1)
+            return cache[a][x]
 
     value += phi(n, c)
-    print "Done. Cache size: {}".format(len(cache))
+
     return value
 
 
-def meissel_lehmer(n):
+def meissel_lehmer_nonrec(n):
+    root = int(n**(2.0/3.0))
+    primes = rosemary.number_theory.sieves.primes(root)
+
+    c = sum(1 for p in primes if p*p*p <= n)
+    b = sum(1 for p in primes if p*p <= n)
+
+    pi = [0]*root
+    prime_set = set(primes)
+    count = 0
+
+    for k in xrange(root):
+        if k in prime_set:
+            count += 1
+        pi[k] = count
+
+    value = (b + c - 2)*(b - c + 1)//2
+    value -= sum(pi[n//primes[i]] for i in xrange(c, b))
+
+    cutoff = 5
+    cache = {}
+    mk = {}
+    phi_mk = {}
+
+    for k in xrange(2, cutoff + 1):
+        mk[k], phi_mk[k], cache[k] = lookup[k]
+
+    stack = [(n, c, 1)]
+    push = stack.append
+    pop = stack.pop
+
+    while stack:
+        (x, a, sign) = pop()
+
+        if a == 1:
+            if sign > 0:
+                value += (x + 1)//2
+            else:
+                value -= (x + 1)//2
+        elif a <= cutoff:
+            if sign > 0:
+                value += phi_mk[a]*(x//mk[a]) + cache[a][x % mk[a]]
+            else:
+                value -= phi_mk[a]*(x//mk[a]) + cache[a][x % mk[a]]
+        else:
+            push((x, a - 1, sign))
+
+            if primes[a - 1] <= x:
+                push((x//primes[a - 1], a - 1, -sign))
+
+    return value
+
+
+def meissel3(n):
     root = int(n**(2.0/3.0))
     primes = rosemary.number_theory.sieves.primes(root)
 
@@ -137,48 +201,16 @@ def meissel_lehmer(n):
             return cache[x, a]
 
         if x == 0:
-            val = 0
+            return 0
         elif a == 1:
-            val = (x + 1)//2
+            return (x + 1)//2
         else:
-            val = phi(x, a - 1) - phi(x//primes[a - 1], a - 1)
+            cache[x, a] = phi(x, a - 1) - phi(x//primes[a - 1], a - 1)
+            return cache[x, a]
 
-        cache[x, a] = val
-        return val
+    value += phi(n, c)
 
-    phi_table = {}
-    cutoff = 7
-    for k in xrange(3, cutoff):
-        print k
-        mk = 1
-        for i in xrange(k):
-            mk *= primes[i]
-
-        mk2 = mk//2
-        block = [1]*(mk2 + 1)
-        block[0] = 0
-
-        p = 2
-        count = 1
-        while count <= k:
-            for i in xrange(p, mk2, p):
-                block[i] = 0
-
-            p += 1
-            while block[p] == 0:
-                p += 1
-            count += 1
-
-        table = []
-        count = 0
-        for i in xrange(1, mk2):
-            if block[i] == 1:
-                count += 1
-                table.append((i, count))
-
-        phi_table[k] = table
-
-    return phi_table
+    return value
 
 
 def phi_table(k):
@@ -187,14 +219,13 @@ def phi_table(k):
     for i in xrange(k):
         mk *= primes[i]
 
-    mk2 = mk//2
-    block = [1]*mk2
+    block = [1]*mk
     block[0] = 0
 
     p = 2
     count = 1
     while count <= k:
-        for i in xrange(p, mk2, p):
+        for i in xrange(p, mk, p):
             block[i] = 0
 
         p += 1
@@ -202,11 +233,18 @@ def phi_table(k):
             p += 1
         count += 1
 
-    table = []
+    table = [0]*mk
     count = 0
-    for i in xrange(1, mk2):
+
+    for i in xrange(1, mk):
         if block[i] == 1:
             count += 1
-            table.append((i, count))
+        table[i] = count
 
     return table
+
+
+if __name__ == "__main__":
+    n = int(sys.argv[1])
+    sys.setrecursionlimit(1500)
+    print meissel2(n)

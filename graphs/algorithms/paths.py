@@ -361,3 +361,55 @@ def dijkstra_buckets(graph, s):
         del buckets[min_weight]
 
     return estimate, previous
+
+
+def dijkstra_kbest(graph, s, t, k):
+    graph_dict = graph.graph_dict
+
+    count = {u: 0 for u in graph_dict}
+    paths = []
+    heap = [(0, s, (s,))]
+
+    while heap and count[t] < k:
+        (c, u, pu) = heappop(heap)
+        count[u] += 1
+
+        if u == t and len(pu) == len(set(pu)):
+            paths.append(pu)
+
+        if count[u] <= k:
+            for v in graph_dict[u]:
+                pv = pu + (v,)
+                cv = c + graph_dict[u][v]
+                heappush(heap, (cv, v, pv))
+
+    return paths
+
+
+def best_kpaths_yen(graph, root, destinations, k):
+    count = {u: 0 for u in graph}
+    paths = {u: [] for u in graph}
+    heap = [(0, root, (root,))]
+
+    while heap and any(count[u] < k for u in destinations):
+        (cost, u, node_path) = heappop(heap)
+
+        if count[u] >= k:
+            continue
+
+        if len(node_path) == len(set(node_path)):
+            count[u] += 1
+            paths[u].append({
+                'cost': cost,
+                'npath': node_path,
+            })
+
+        for v in graph[u]:
+            entry = (
+                cost + graph[u][v],
+                v,
+                node_path + (v,),
+            )
+            heappush(heap, entry)
+
+    return {u: paths[u] for u in destinations}
