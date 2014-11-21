@@ -1,6 +1,10 @@
 import rosemary.number_theory.sieves
+from rosemary.number_theory.tables import lookup
+import bisect
 
 from collections import defaultdict
+
+import sys
 
 
 def legendre(n):
@@ -57,13 +61,23 @@ def meissel_lehmer(n):
         if (x, a) in cache:
             return cache[x, a]
 
-        if a == 1:
-            val = (x + 1)//2
+        if a <= 4:
+            if a == 4:
+                return ((x + 1)//2 - (x + 3)//6 - (x + 5)//10 + (x + 15)//30 - (x + 7)//14 + (x + 21)//42 + (x + 35)//70
+                        - (x + 105)//210)
+            elif a == 3:
+                return (x + 1)//2 - (x + 3)//6 - (x + 5)//10 + (x + 15)//30
+            elif a == 2:
+                return (x + 1)//2 - (x + 3)//6
+            elif a == 1:
+                return (x + 1)//2
         else:
-            val = phi(x, a - 1) - phi(x//primes[a - 1], a - 1)
+            val = phi(x, a - 1)
+            if x >= primes[a - 1]:
+                val -= phi(x//primes[a - 1], a - 1)
 
-        cache[x, a] = val
-        return val
+            cache[x, a] = val
+            return val
 
     value += phi(n, c)
     return value
@@ -71,84 +85,70 @@ def meissel_lehmer(n):
 
 def lmo(x):
     root = int(x**(2.0/3.0))
+
+    # print "sieving"
+
     primes = rosemary.number_theory.sieves.primes(root)
+    t = x**(0.33333333333333)
 
-    c = sum(1 for p in primes if p*p*p <= x)
-    b = sum(1 for p in primes if p*p <= x)
-
-    pi = [0]*root
-    prime_set = set(primes)
-    count = 0
-
-    for k in xrange(root):
-        if k in prime_set:
-            count += 1
-        pi[k] = count
+    c = bisect.bisect(primes, t)
+    b = bisect.bisect(primes, x**(0.5))
 
     value = (b + c - 2)*(b - c + 1)//2
-    value -= sum(pi[x//primes[i]] for i in xrange(c, b))
 
-    special = []
+    for i in xrange(c, b):
+        idx = bisect.bisect(primes, x//primes[i])
+        value -= idx
+
+    # special = []
+    # special_append = special.append
+    special = defaultdict(list)
 
     stack = [(1, c, 1)]
     push = stack.append
     pop = stack.pop
 
+    # print "recursing"
+
     while stack:
         (n, a, sign) = pop()
 
-        if a == 1 and n*n*n <= x:
+        if a == 1 and n <= t:
             if sign > 0:
                 value += (x//n + 1)//2
             else:
                 value -= (x//n + 1)//2
-        elif n*n*n > x:
-            special.append((n, a, sign))
+        elif n > t:
+            special[a].append((x//n, sign))
         else:
             push((n, a - 1, sign))
             push((n*primes[a - 1], a - 1, -sign))
 
-    grouped = defaultdict(list)
-    while special:
-        (n, a, sign) = special.pop()
-        grouped[a].append((x//n, sign))
-
-    for a in grouped:
-        grouped[a].sort(reverse=True)
-
-    groups = grouped.items()
-    groups.sort(reverse=True)
+    # print "processing"
 
     block = [1]*(root + 1)
     block[0] = 0
 
-    while groups:
-        (a, values) = groups.pop()
+    for a in sorted(special):
         p = primes[a - 1]
 
         block[p::p] = [0]*(root//p)
-        count = 0
-        v, sign = values.pop()
+        last_v = 0
+        last_s = 0
 
-        for i in xrange(1, root + 1):
-            if block[i]:
-                count += 1
+        for v, sign in sorted(special[a]):
+            last_s += sum(block[last_v:v + 1])
+            last_v = v + 1
 
-            if i == v:
-                if sign > 0:
-                    value += count
-                else:
-                    value -= count
-
-                if values:
-                    v, sign = values.pop()
-                else:
-                    break
+            if sign > 0:
+                value += last_s
+            else:
+                value -= last_s
 
     return value
 
 
-def lmo2(x):
+def meissel_lehmer_lookup(x):
     root = int(x**(2.0/3.0))
     primes = rosemary.number_theory.sieves.primes(root)
 
@@ -167,54 +167,34 @@ def lmo2(x):
     value = (b + c - 2)*(b - c + 1)//2
     value -= sum(pi[x//primes[i]] for i in xrange(c, b))
 
-    special = []
-
-    stack = [(1, c, 1)]
-    push = stack.append
-    pop = stack.pop
-
-    while stack:
-        (n, a, sign) = pop()
-
-        if a == 1 and n*n*n <= x:
-            if sign > 0:
-                value += (x//n + 1)//2
-            else:
-                value -= (x//n + 1)//2
-        elif n*n*n > x:
-            special.append((n, a, sign))
-        else:
-            push((n, a - 1, sign))
-            push((n*primes[a - 1], a - 1, -sign))
-
+    cutoff = 5
     cache = {}
+    mk = {}
+    phi_mk = {}
 
-    def phi(n, a):
-        if a <= 4:
-            if a == 4:
-                return ((n + 1)//2 - (n + 3)//6 - (n + 5)//10 + (n + 15)//30 - (n + 7)//14 + (n + 21)//42 + (n + 35)//70
-                        - (n + 105)//210)
-            elif a == 3:
-                return (n + 1)//2 - (n + 3)//6 - (n + 5)//10 + (n + 15)//30
-            elif a == 2:
-                return (n + 1)//2 - (n + 3)//6
-            elif a == 1:
-                return (n + 1)//2
+    for k in xrange(2, cutoff + 1):
+        mk[k], phi_mk[k], cache[k] = lookup[k]
+
+    def phi(x, a):
+        if x < primes[a - 1]:
+            return 1
+        elif a <= cutoff:
+            return phi_mk[a]*(x//mk[a]) + cache[a][x % mk[a]]
         else:
-            if (n, a) in cache:
-                return cache[n, a]
+            if a in cache:
+                if x in cache[a]:
+                    return cache[a][x]
+            else:
+                cache[a] = {}
 
-            val = phi(n, a - 1) - phi(n//primes[a - 1], a - 1)
+            cache[a][x] = phi(x, a - 1) - phi(x//primes[a - 1], a - 1)
+            return cache[a][x]
 
-            cache[n, a] = val
-            return val
-
-    special.sort(key=lambda (n, a, s): a)
-
-    for (n, a, s) in special:
-        if s > 0:
-            value += phi(x//n, a)
-        else:
-            value -= phi(x//n, a)
+    value += phi(x, c)
 
     return value
+
+
+if __name__ == "__main__":
+    n = int(sys.argv[1])
+    print lmo(n)
