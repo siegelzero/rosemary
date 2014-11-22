@@ -1,5 +1,6 @@
 import rosemary.number_theory.sieves
 from rosemary.number_theory.tables import lookup
+from rosemary.data_structures import bit_sieve
 import bisect
 
 from collections import defaultdict
@@ -144,6 +145,67 @@ def lmo(x):
                 value += last_s
             else:
                 value -= last_s
+
+    return value
+
+
+def lmo_bit(x):
+    root = int(x**(2.0/3.0))
+
+    # print "sieving"
+
+    primes = rosemary.number_theory.sieves.primes(root)
+    t = x**(0.33333333333333)
+
+    c = bisect.bisect(primes, t)
+    b = bisect.bisect(primes, x**(0.5))
+
+    value = (b + c - 2)*(b - c + 1)//2
+
+    for i in xrange(c, b):
+        idx = bisect.bisect(primes, x//primes[i])
+        value -= idx
+
+    # special = []
+    # special_append = special.append
+    special = defaultdict(list)
+
+    stack = [(1, c, 1)]
+    push = stack.append
+    pop = stack.pop
+
+    # print "recursing"
+
+    while stack:
+        (n, a, sign) = pop()
+
+        if a == 1 and n <= t:
+            if sign > 0:
+                value += (x//n + 1)//2
+            else:
+                value -= (x//n + 1)//2
+        elif n > t:
+            special[a].append((x//n, sign))
+        else:
+            push((n, a - 1, sign))
+            push((n*primes[a - 1], a - 1, -sign))
+
+    # print "processing"
+
+    block = bit_sieve.BITSieve(root)
+    mark = block.mark_multiples
+    total = block.partial_sum
+
+    for a in sorted(special):
+        p = primes[a - 1]
+
+        mark(p)
+
+        for v, sign in sorted(special[a]):
+            if sign > 0:
+                value += total(v)
+            else:
+                value -= total(v)
 
     return value
 
