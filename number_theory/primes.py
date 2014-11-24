@@ -1,8 +1,8 @@
 import rosemary.number_theory.sieves
 from rosemary.number_theory.tables import lookup
-import bisect
 
 from collections import defaultdict
+from bisect import bisect
 
 import sys
 
@@ -37,24 +37,100 @@ def legendre(n):
     return value
 
 
+def mapes(n):
+    root = int(n**(2.0/3.0))
+    primes = rosemary.number_theory.sieves.primes(root)
+    t = n**(0.33333333333333)
+
+    c = bisect(primes, t)
+    b = bisect(primes, n**(0.5))
+
+    value = (b + c - 2)*(b - c + 1)//2
+
+    for i in xrange(c, b):
+        idx = bisect(primes, n//primes[i])
+        value -= idx
+
+    def P2(x, a):
+        #total = 0
+        #for i in xrange(a, len(primes)):
+        #    for j in xrange(i, len(primes)):
+        #        pp = primes[i - 1]*primes[j - 1]
+        #        if pp <= x:
+        #            total += 1
+
+        #return total
+        value = 0
+        for i in xrange(a, len(primes)):
+            p = primes[i - 1]
+
+            if p*p > x:
+                break
+
+            pi = bisect(primes, x//p)
+            pip = bisect(primes, p)
+            value += (pi - pip + 1)
+
+        return value
+
+    def phi(x, a, cache={}):
+        if (x, a) in cache:
+            return cache[x, a]
+
+        if a <= 5:
+            if a == 1:
+                value = x - x//2
+
+            elif a == 2:
+                value = x - x//2 - x//3 + x//6
+
+            elif a == 3:
+                value = x - x//2 - x//3 - x//5 + x//6 + x//10 + x//15 - x//30
+
+            elif a == 4:
+                value = (x - x//2 - x//3 - x//5 - x//7 +
+                         x//6 + x//10 + x//14 + x//15 + x//21 + x//35 -
+                         x//30 - x//42 - x//70 - x//105 +
+                         x//210)
+            elif a == 5:
+                value = (x - x//2 - x//3 - x//5 - x//7 - x//11 +
+                         x//6 + x//10 + x//14 + x//22 + x//15 + x//21 + x//33 + x//35 + x//55 + x//77 -
+                         x//30 - x//42 - x//66 - x//70 - x//110 - x//154 - x//105 - x//165 - x//231 - x//385 +
+                         x//210 + x//330 + x//462 + x//770 + x//1155 -
+                         x//2310)
+
+        elif a >= bisect(primes, x**(0.5)):
+            pi = bisect(primes, x)
+            value = pi - a + 1
+
+        else:
+            value = (x + 1)//2
+            for i in xrange(1, a):
+                if primes[i] > x:
+                    break
+                value -= phi(x//primes[i], i)
+
+        cache[x, a] = value
+        return value
+
+    value += phi(n, c)
+    return value
+
+
 def meissel_lehmer(n):
     root = int(n**(2.0/3.0))
     primes = rosemary.number_theory.sieves.primes(root)
+    t = n**(0.33333333333333)
 
-    c = sum(1 for p in primes if p*p*p <= n)
-    b = sum(1 for p in primes if p*p <= n)
-
-    pi = [0]*root
-    prime_set = set(primes)
-    count = 0
-
-    for k in xrange(root):
-        if k in prime_set:
-            count += 1
-        pi[k] = count
+    c = bisect(primes, t)
+    b = bisect(primes, n**(0.5))
 
     value = (b + c - 2)*(b - c + 1)//2
-    value -= sum(pi[n//primes[i]] for i in xrange(c, b))
+
+    for i in xrange(c, b):
+        idx = bisect(primes, n//primes[i])
+        value -= idx
+
     cache = {}
 
     def phi(x, a):
@@ -91,13 +167,13 @@ def lmo(x):
     primes = rosemary.number_theory.sieves.primes(root)
     t = x**(0.33333333333333)
 
-    c = bisect.bisect(primes, t)
-    b = bisect.bisect(primes, x**(0.5))
+    c = bisect(primes, t)
+    b = bisect(primes, x**(0.5))
 
     value = (b + c - 2)*(b - c + 1)//2
 
     for i in xrange(c, b):
-        idx = bisect.bisect(primes, x//primes[i])
+        idx = bisect(primes, x//primes[i])
         value -= idx
 
     # special = []
@@ -148,24 +224,19 @@ def lmo(x):
     return value
 
 
-def meissel_lehmer_lookup(x):
-    root = int(x**(2.0/3.0))
+def mapes2(n):
+    root = int(n**(2.0/3.0))
     primes = rosemary.number_theory.sieves.primes(root)
+    t = n**(0.33333333333333)
 
-    c = sum(1 for p in primes if p*p*p <= x)
-    b = sum(1 for p in primes if p*p <= x)
-
-    pi = [0]*root
-    prime_set = set(primes)
-    count = 0
-
-    for k in xrange(root):
-        if k in prime_set:
-            count += 1
-        pi[k] = count
+    c = bisect(primes, t)
+    b = bisect(primes, n**(0.5))
 
     value = (b + c - 2)*(b - c + 1)//2
-    value -= sum(pi[x//primes[i]] for i in xrange(c, b))
+
+    for i in xrange(c, b):
+        idx = bisect(primes, n//primes[i])
+        value -= idx
 
     cutoff = 5
     cache = {}
@@ -178,20 +249,32 @@ def meissel_lehmer_lookup(x):
     def phi(x, a):
         if x < primes[a - 1]:
             return 1
+
         elif a <= cutoff:
-            return phi_mk[a]*(x//mk[a]) + cache[a][x % mk[a]]
-        else:
-            if a in cache:
-                if x in cache[a]:
-                    return cache[a][x]
+            if a == 1:
+                return (x + 1)//2
             else:
-                cache[a] = {}
+                return phi_mk[a]*(x//mk[a]) + cache[a][x % mk[a]]
 
-            cache[a][x] = phi(x, a - 1) - phi(x//primes[a - 1], a - 1)
-            return cache[a][x]
+        else:
+            if (x, a) in cache:
+                return cache[x, a]
 
-    value += phi(x, c)
+            elif a >= bisect(primes, x**(0.5)):
+                pi = bisect(primes, x)
+                value = pi - a + 1
 
+            else:
+                value = (x + 1)//2
+                for i in xrange(1, a):
+                    if primes[i] > x:
+                        break
+                    value -= phi(x//primes[i], i)
+
+            cache[x, a] = value
+            return value
+
+    value += phi(n, c)
     return value
 
 
