@@ -1,7 +1,7 @@
 import rosemary.number_theory.sieves
 from rosemary.number_theory.tables import lookup
 from rosemary.data_structures import bit_sieve
-import bisect
+from bisect import bisect
 
 from collections import defaultdict
 
@@ -52,33 +52,11 @@ def mapes(n):
         idx = bisect(primes, n//primes[i])
         value -= idx
 
-    def P2(x, a):
-        #total = 0
-        #for i in xrange(a, len(primes)):
-        #    for j in xrange(i, len(primes)):
-        #        pp = primes[i - 1]*primes[j - 1]
-        #        if pp <= x:
-        #            total += 1
-
-        #return total
-        value = 0
-        for i in xrange(a, len(primes)):
-            p = primes[i - 1]
-
-            if p*p > x:
-                break
-
-            pi = bisect(primes, x//p)
-            pip = bisect(primes, p)
-            value += (pi - pip + 1)
-
-        return value
-
     def phi(x, a, cache={}):
         if (x, a) in cache:
             return cache[x, a]
 
-        if a <= 5:
+        if a <= 7:
             if a == 1:
                 value = x - x//2
 
@@ -89,16 +67,33 @@ def mapes(n):
                 value = x - x//2 - x//3 - x//5 + x//6 + x//10 + x//15 - x//30
 
             elif a == 4:
-                value = (x - x//2 - x//3 - x//5 - x//7 +
-                         x//6 + x//10 + x//14 + x//15 + x//21 + x//35 -
-                         x//30 - x//42 - x//70 - x//105 +
-                         x//210)
+                value = (x - x//2 - x//3 - x//5 - x//7 + x//6 + x//10 + x//14 + x//15 + x//21 + x//35 - x//30 - x//42 -
+                         x//70 - x//105 + x//210)
             elif a == 5:
-                value = (x - x//2 - x//3 - x//5 - x//7 - x//11 +
-                         x//6 + x//10 + x//14 + x//22 + x//15 + x//21 + x//33 + x//35 + x//55 + x//77 -
-                         x//30 - x//42 - x//66 - x//70 - x//110 - x//154 - x//105 - x//165 - x//231 - x//385 +
-                         x//210 + x//330 + x//462 + x//770 + x//1155 -
-                         x//2310)
+                value = (x - x//2 - x//3 - x//5 - x//7 - x//11 + x//6 + x//10 + x//14 + x//22 + x//15 + x//21 + x//33 +
+                         x//35 + x//55 + x//77 - x//30 - x//42 - x//66 - x//70 - x//110 - x//154 - x//105 - x//165 -
+                         x//231 - x//385 + x//210 + x//330 + x//462 + x//770 + x//1155 - x//2310)
+            elif a == 6:
+                value = (x - x//2 - x//3 - x//5 - x//7 - x//11 - x//13 + x//6 + x//10 + x//14 + x//22 + x//26 + x//15 +
+                         x//21 + x//33 + x//39 + x//35 + x//55 + x//65 + x//77 + x//91 + x//143 - x//30 - x//42 - x//66
+                         - x//78 - x//70 - x//110 - x//130 - x//154 - x//182 - x//286 - x//105 - x//165 - x//195 -
+                         x//231 - x//273 - x//429 - x//385 - x//455 - x//715 - x//1001 + x//210 + x//330 + x//390 +
+                         x//462 + x//546 + x//858 + x//770 + x//910 + x//1430 + x//2002 + x//1155 + x//1365 + x//2145 +
+                         x//3003 + x//5005 - x//2310 - x//2730 - x//4290 - x//6006 - x//10010 - x//15015 + x//30030)
+            else:
+                value = (x - x//2 - x//3 - x//5 - x//7 - x//11 - x//13 - x//17 + x//6 + x//10 + x//14 + x//22 + x//26 +
+                         x//34 + x//15 + x//21 + x//33 + x//39 + x//51 + x//35 + x//55 + x//65 + x//85 + x//77 + x//91 +
+                         x//119 + x//143 + x//187 + x//221 - x//30 - x//42 - x//66 - x//78 - x//102 - x//70 - x//110 -
+                         x//130 - x//170 - x//154 - x//182 - x//238 - x//286 - x//374 - x//442 - x//105 - x//165 -
+                         x//195 - x//255 - x//231 - x//273 - x//357 - x//429 - x//561 - x//663 - x//385 - x//455 -
+                         x//595 - x//715 - x//935 - x//1105 - x//1001 - x//1309 - x//1547 - x//2431 + x//210 + x//330 +
+                         x//390 + x//510 + x//462 + x//546 + x//714 + x//858 + x//1122 + x//1326 + x//770 + x//910 +
+                         x//1190 + x//1430 + x//1870 + x//2210 + x//2002 + x//2618 + x//3094 + x//4862 + x//1155 +
+                         x//1365 + x//1785 + x//2145 + x//2805 + x//3315 + x//3003 + x//3927 + x//4641 + x//7293 +
+                         x//5005 + x//6545 + x//7735 + x//12155 + x//17017 - x//2310 - x//2730 - x//3570 - x//4290 -
+                         x//5610 - x//6630 - x//6006 - x//7854 - x//9282 - x//14586 - x//10010 - x//13090 - x//15470 -
+                         x//24310 - x//34034 - x//15015 - x//19635 - x//23205 - x//36465 - x//51051 - x//85085 +
+                         x//30030 + x//39270 + x//46410 + x//72930 + x//102102 + x//170170 + x//255255 - x//510510)
 
         elif a >= bisect(primes, x**(0.5)):
             pi = bisect(primes, x)
@@ -132,8 +127,6 @@ def meissel_lehmer(n):
         idx = bisect(primes, n//primes[i])
         value -= idx
 
-    value = (b + c - 2)*(b - c + 1)//2
-    value -= sum(pi[n//primes[i]] for i in xrange(c, b))
     cache = {}
 
     def phi(x, a):
@@ -235,13 +228,13 @@ def lmo_bit(x):
     primes = rosemary.number_theory.sieves.primes(root)
     t = x**(0.33333333333333)
 
-    c = bisect.bisect(primes, t)
-    b = bisect.bisect(primes, x**(0.5))
+    c = bisect(primes, t)
+    b = bisect(primes, x**(0.5))
 
     value = (b + c - 2)*(b - c + 1)//2
 
     for i in xrange(c, b):
-        idx = bisect.bisect(primes, x//primes[i])
+        idx = bisect(primes, x//primes[i])
         value -= idx
 
     # special = []
@@ -270,7 +263,8 @@ def lmo_bit(x):
 
     # print "processing"
 
-    block = bit_sieve.BITSieve(root)
+    #block = bit_sieve.BITSieve(root)
+    block = bit_sieve.BITSieveArray(root)
     mark = block.mark_multiples
     total = block.partial_sum
 
@@ -287,60 +281,8 @@ def lmo_bit(x):
 
     return value
 
-def mapes2(n):
-    root = int(n**(2.0/3.0))
-    primes = rosemary.number_theory.sieves.primes(root)
-    t = n**(0.33333333333333)
-
-    c = bisect(primes, t)
-    b = bisect(primes, n**(0.5))
-
-    value = (b + c - 2)*(b - c + 1)//2
-
-    for i in xrange(c, b):
-        idx = bisect(primes, n//primes[i])
-        value -= idx
-
-    cutoff = 5
-    cache = {}
-    mk = {}
-    phi_mk = {}
-
-    for k in xrange(2, cutoff + 1):
-        mk[k], phi_mk[k], cache[k] = lookup[k]
-
-    def phi(x, a):
-        if x < primes[a - 1]:
-            return 1
-
-        elif a <= cutoff:
-            if a == 1:
-                return (x + 1)//2
-            else:
-                return phi_mk[a]*(x//mk[a]) + cache[a][x % mk[a]]
-
-        else:
-            if (x, a) in cache:
-                return cache[x, a]
-
-            elif a >= bisect(primes, x**(0.5)):
-                pi = bisect(primes, x)
-                value = pi - a + 1
-
-            else:
-                value = (x + 1)//2
-                for i in xrange(1, a):
-                    if primes[i] > x:
-                        break
-                    value -= phi(x//primes[i], i)
-
-            cache[x, a] = value
-            return value
-
-    value += phi(n, c)
-    return value
-
 
 if __name__ == "__main__":
     n = int(sys.argv[1])
-    print lmo(n)
+    print lmo_bit(10**n)
+    #print mapes(10**n)
