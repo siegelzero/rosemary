@@ -1,6 +1,6 @@
 # Primality tests
 
-from rosemary.number_theory.prime_list import PRIME_LIST
+from rosemary.number_theory.prime_list import _PRIME_LIST
 
 import rosemary.number_theory.factorization
 
@@ -63,10 +63,10 @@ def is_prime(n):
     """
     if n < 2:
         return False
-    elif n <= PRIME_LIST[-1]:
+    elif n <= _PRIME_LIST[-1]:
         # check to see if the number is in our list of precomputed primes
-        index = bisect_left(PRIME_LIST, n)
-        return PRIME_LIST[index] == n
+        index = bisect_left(_PRIME_LIST, n)
+        return _PRIME_LIST[index] == n
     else:
         if not is_probable_prime(n):
             return False

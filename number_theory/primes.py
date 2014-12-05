@@ -1,11 +1,8 @@
 import rosemary.number_theory.sieves
-from rosemary.number_theory.tables import lookup
+
 from rosemary.data_structures import bit_sieve
 from bisect import bisect
-
 from collections import defaultdict
-
-import sys
 
 
 def legendre(n):
@@ -113,53 +110,8 @@ def mapes(n):
     return value
 
 
-def meissel_lehmer(n):
-    root = int(n**(2.0/3.0))
-    primes = rosemary.number_theory.sieves.primes(root)
-    t = n**(0.33333333333333)
-
-    c = bisect(primes, t)
-    b = bisect(primes, n**(0.5))
-
-    value = (b + c - 2)*(b - c + 1)//2
-
-    for i in xrange(c, b):
-        idx = bisect(primes, n//primes[i])
-        value -= idx
-
-    cache = {}
-
-    def phi(x, a):
-        if (x, a) in cache:
-            return cache[x, a]
-
-        if a <= 4:
-            if a == 4:
-                return ((x + 1)//2 - (x + 3)//6 - (x + 5)//10 + (x + 15)//30 - (x + 7)//14 + (x + 21)//42 + (x + 35)//70
-                        - (x + 105)//210)
-            elif a == 3:
-                return (x + 1)//2 - (x + 3)//6 - (x + 5)//10 + (x + 15)//30
-            elif a == 2:
-                return (x + 1)//2 - (x + 3)//6
-            elif a == 1:
-                return (x + 1)//2
-        else:
-            val = phi(x, a - 1)
-            if x >= primes[a - 1]:
-                val -= phi(x//primes[a - 1], a - 1)
-
-            cache[x, a] = val
-            return val
-
-    value += phi(n, c)
-    return value
-
-
 def lmo(x):
     root = int(x**(2.0/3.0))
-
-    # print "sieving"
-
     primes = rosemary.number_theory.sieves.primes(root)
     t = x**(0.33333333333333)
 
@@ -172,8 +124,6 @@ def lmo(x):
         idx = bisect(primes, x//primes[i])
         value -= idx
 
-    # special = []
-    # special_append = special.append
     special = defaultdict(list)
 
     stack = [(1, c, 1)]
@@ -195,8 +145,6 @@ def lmo(x):
         else:
             push((n, a - 1, sign))
             push((n*primes[a - 1], a - 1, -sign))
-
-    # print "processing"
 
     block = [1]*(root + 1)
     block[0] = 0
@@ -223,8 +171,6 @@ def lmo(x):
 def lmo_bit(x):
     root = int(x**(2.0/3.0))
 
-    # print "sieving"
-
     primes = rosemary.number_theory.sieves.primes(root)
     t = x**(0.33333333333333)
 
@@ -237,15 +183,11 @@ def lmo_bit(x):
         idx = bisect(primes, x//primes[i])
         value -= idx
 
-    # special = []
-    # special_append = special.append
     special = defaultdict(list)
 
     stack = [(1, c, 1)]
     push = stack.append
     pop = stack.pop
-
-    # print "recursing"
 
     while stack:
         (n, a, sign) = pop()
@@ -261,9 +203,6 @@ def lmo_bit(x):
             push((n, a - 1, sign))
             push((n*primes[a - 1], a - 1, -sign))
 
-    # print "processing"
-
-    #block = bit_sieve.BITSieve(root)
     block = bit_sieve.BITSieveArray(root)
     mark = block.mark_multiples
     total = block.partial_sum
@@ -280,9 +219,3 @@ def lmo_bit(x):
                 value -= total(v)
 
     return value
-
-
-if __name__ == "__main__":
-    n = int(sys.argv[1])
-    print lmo_bit(10**n)
-    #print mapes(10**n)

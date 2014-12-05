@@ -1,6 +1,6 @@
 # Arithmetic Functions
 
-from rosemary.number_theory.prime_list import PRIME_LIST
+from rosemary.number_theory.prime_list import _PRIME_LIST
 
 from rosemary.number_theory.core import (
     bit_count,
@@ -390,12 +390,12 @@ def primorial(n):
     if n <= 0:
         raise ValueError("primorial: Must have n >= 1.")
 
-    num_primes = len(PRIME_LIST)
+    num_primes = len(_PRIME_LIST)
     if n >= num_primes:
         raise ValueError("primorial: Must have n < {}.".format(num_primes))
 
     prod = 1
-    for (i, prime) in enumerate(PRIME_LIST):
+    for (i, prime) in enumerate(_PRIME_LIST):
         if i == n:
             return prod
         prod *= prime

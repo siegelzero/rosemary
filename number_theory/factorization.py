@@ -8,7 +8,7 @@ from math import exp, log, sqrt
 import rosemary.number_theory.sieves
 import rosemary.number_theory.primality
 
-from rosemary.number_theory.prime_list import PRIME_LIST
+from rosemary.number_theory.prime_list import _PRIME_LIST
 from rosemary.number_theory.core import (
     gcd,
     integer_log,
@@ -56,7 +56,7 @@ def trial_division(n, bound=None):
         bound = integer_sqrt(n) + 1
 
     # First trial divide by the primes in our stored list.
-    for d in PRIME_LIST:
+    for d in _PRIME_LIST:
         if d > bound:
             return n
         if n % d == 0:
@@ -710,7 +710,7 @@ def factor(n):
         n = -1 * n
 
     # First, strip off all small factors on n
-    for p in PRIME_LIST:
+    for p in _PRIME_LIST:
         if n == 1:
             break
         elif p*p > n:
