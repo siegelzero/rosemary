@@ -505,13 +505,13 @@ def prime_xrange(a, b=None):
         offsets = {p: -(aa + 1 + p)//2 % p for p in prime_list}
 
         for start in xrange(aa, bb, 2*block_size):
-            block = [1]*block_size
+            block = [True]*block_size
 
             for p in prime_list:
                 # offset = -((start - start % 2) + 1 + p)//2 % p
                 offset = offsets[p]
                 diff = block_size - offset
-                block[offset::p] = [0]*(diff//p + (diff % p > 0))
+                block[offset::p] = [False]*(diff//p + (diff % p > 0))
                 offsets[p] = (-diff) % p
 
             for j in xrange(block_size):
