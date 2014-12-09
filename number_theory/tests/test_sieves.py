@@ -11,6 +11,7 @@ from rosemary.number_theory.sieves import (
     prime_xrange,
     primes,
     primes_first_n,
+    pritchard,
 )
 
 
@@ -172,3 +173,16 @@ class TestCore(unittest.TestCase):
 
         values = primes_first_n(-1)
         self.assertEqual(values, [])
+
+    def test_pritchard(self):
+        values = pritchard(1000)
+        self.assertEqual(values, self.primes_to_1000)
+
+        values = primes(0)
+        self.assertEqual(values, [])
+
+        values = primes(-1)
+        self.assertEqual(values, [])
+
+        value = sum(primes(2*10**6))
+        self.assertEqual(value, self.sum_of_primes_to_2000000)

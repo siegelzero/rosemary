@@ -97,6 +97,11 @@ def eratosthenes1(n):
         Prime Numbers" by Luo for details. See the commentary "Additional Notes
         on a Practical Sieve Algorithm" by Quesada for more details and
         extensions.
+
+        All versions of the Sieve of Eratosthenes require O(n*log(log(n)))
+        operations to find the primes up to n. Using a simple wheel like this
+        cuts down on the required time, but the overall complexity is not
+        changed.
     """
     if n <= 1:
         return []
@@ -414,6 +419,55 @@ def chartres(n):
         diff = 6 - diff
 
 
+def pritchard(n):
+    """Returns a list of all primes <= n.
+
+    Input:
+        * n: int
+
+    Returns:
+        * prime_list: list
+            A list of the primes <= n.
+
+    Examples:
+        >>> pritchard(20)
+        [2, 3, 5, 7, 11, 13, 17, 19]
+        >>> len(pritchard(10**6))
+        78498
+
+    Details:
+        This method uses the linear sieve by Pritchard to find the primes up to
+        n. Our implementation is based on exposition in the paper "A
+        Space-efficient Fast Prime Number Sieve" by Dunten, Jones, and Sorenson.
+        For additional details, see the original paper "Linear Prime-Number
+        Sieves: A Family Tree" by Pritchard.
+
+        Despite asymptotically faster runtime than the Sieve of Eratosthenes,
+        this algorithm is slower in practice. See the paper "An Analysis of Two
+        Prime Number Sieves" by Sorenson for details.
+    """
+    if n <= 1:
+        return []
+
+    prime_list = primes(int(n**(0.5)))
+
+    block = [1]*(n + 1)
+    block[0] = 0
+    block[1] = 0
+
+    for f in xrange(2, n//2 + 1):
+        for p in prime_list:
+            if p*f > n:
+                break
+
+            block[p*f] = 0
+
+            if f % p == 0:
+                break
+
+    return [i for i in xrange(2, n + 1) if block[i]]
+
+
 def prime_xrange(a, b=None):
     """Returns iterator over primes in interval [a, b).
 
@@ -454,6 +508,7 @@ def prime_xrange(a, b=None):
             block = [1]*block_size
 
             for p in prime_list:
+                # offset = -((start - start % 2) + 1 + p)//2 % p
                 offset = offsets[p]
                 diff = block_size - offset
                 block[offset::p] = [0]*(diff//p + (diff % p > 0))
