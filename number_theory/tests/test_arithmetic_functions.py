@@ -166,6 +166,7 @@ class TestCore(unittest.TestCase):
 
     def test_moebius(self):
         self.assertRaisesRegexp(ValueError, "moebius: Must have n > 0.", moebius, -1)
+        self.assertRaisesRegexp(ValueError, "moebius: Input must be a positive integer or a factorization.", moebius, 'cat')
 
         values = [
             1, -1, -1, 0, -1, 1, -1, 0, 0, 1, -1, 0, -1, 1, 1, 0, -1, 0, -1, 0, 1, 1, -1, 0, 0, 1, 0, 0, -1, -1, -1, 0,
@@ -178,8 +179,18 @@ class TestCore(unittest.TestCase):
         ]
 
         computed = [moebius(k) for k in xrange(1, 201)]
-
         self.assertEqual(values, computed)
+
+        factorizations = [
+            [(2, 1), (3, 1)],
+            [(2, 1), (3, 1), (5, 1)],
+            [(2, 2), (3, 1)],
+        ]
+
+        values = [1, -1, 0]
+
+        for i in xrange(3):
+            self.assertEqual(moebius(factorizations[i]), values[i])
 
     def test_moebius_list(self):
         self.assertRaisesRegexp(ValueError, "moebius_list: Must have n > 0.", moebius_list, 0)
@@ -254,6 +265,7 @@ class TestCore(unittest.TestCase):
     def test_sigma(self):
         self.assertRaisesRegexp(ValueError, "sigma: Must have n > 0.", sigma, -1)
         self.assertRaisesRegexp(ValueError, "sigma: Must have k >= 0.", sigma, 10, -1)
+        self.assertRaisesRegexp(ValueError, "sigma: Input must be a positive integer or a factorization.", sigma, 'cat')
 
         values = [
             [1, 2, 2, 3, 2, 4, 2, 4, 3, 4, 2, 6, 2, 4, 4, 5, 2, 6, 2, 6],
@@ -281,6 +293,17 @@ class TestCore(unittest.TestCase):
         for i in xrange(11):
             computed = [sigma(n, i) for n in xrange(1, 21)]
             self.assertEqual(values[i], computed)
+
+        factorizations = [
+            [(2, 1), (3, 1)],
+            [(2, 1), (3, 1), (5, 1)],
+            [(2, 2), (3, 1)],
+        ]
+
+        values = [12, 72, 28]
+
+        for i in xrange(3):
+            self.assertEqual(sigma(factorizations[i]), values[i])
 
     def test_sigma_list(self):
         self.assertRaisesRegexp(ValueError, "sigma_list: Must have n > 0.", sigma_list, -1)

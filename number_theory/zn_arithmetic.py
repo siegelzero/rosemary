@@ -2,6 +2,7 @@
 
 import itertools
 import rosemary.number_theory.factorization
+import rosemary.number_theory.arithmetic_functions
 
 from random import randint
 from rosemary.number_theory.core import (
@@ -21,86 +22,182 @@ from rosemary.number_theory.core import (
 ################################################################################
 
 
-def is_primitive_root(a, p, prime_divisors=None):
-    """
-    Returns True if a is a primitive root mod p and False otherwise.
+def is_primitive_root(a, n, phi=None, phi_divisors=None):
+    """Returns True if a is a primitive root mod n and False otherwise.
+
+    Given an integer a and modulus n, this method determines whether or not a is
+    a primitive root modulo n.
 
     Input:
         * a: int
-        * p: int
-        * prime_divisors: list (default=None)
-            List of prime divisors of p - 1.
 
-    Output:
+        * n: int (n > 0)
+            The modulus.
+
+        * phi: int (default=None)
+            Value of euler_phi(n).
+
+        * phi_divisors: list (default=None)
+            List of prime divisors of euler_phi(n).
+
+    Returns:
         * b: bool
-            b is True if a is a primitive root mod p and False otherwise.
+            b is True if a is a primitive root mod n and False otherwise. Note
+            that b will be False when no primitive roots exist modulo n.
+
+    Raises:
+        * ValueError: if n <= 1.
 
     Examples:
         >>> is_primitive_root(2, 11)
         True
         >>> is_primitive_root(3, 11)
         False
+        >>> is_primitive_root(3, -2)
+        Traceback (most recent call last):
+        ...
+        ValueError: is_primitive_root: n must be >= 2.
 
     Details:
-        The algorithm is based on the observation that a is a primitive root
-        modulo p if and only if a^((p - 1)/q) != 1 (mod p) for all primes q
-        dividing p - 1. The primality of p is not verified.
-    """
-    p_minus_one = p - 1
-    if prime_divisors is None:
-        prime_divisors = rosemary.number_theory.factorization.prime_divisors(p_minus_one)
+        An integer a is called a primitive root mod n if a generates the
+        multiplicative group of units modulo n. Equivalently, a is a primitive
+        root modulo n if the order of a modulo m is euler_phi(n).
 
-    for pk in prime_divisors:
-        if pow(a, p_minus_one//pk, p) == 1:
+        The algorithm is based on the observation that an integer a coprime to n
+        is a primitive root modulo n if and only if a**(euler_phi(n)/d) != 1
+        (mod n) for each divisor d of euler_phi(n). See Lemma 6.4 of "Elementary
+        Number Theory" by Jones and Jones for a proof.
+
+        Primitive roots exist only for the moduli n = 1, 2, 4, p**a, and 2*p**a,
+        where p is an odd prime and a >= 1. These cases are captured in the
+        above Lemma, however some simple divisibility tests allow us to exit
+        early for certain moduli. See Chapter 6 of "Elementary Number Theory" by
+        Jones and Jones for more details. See also Chapter 10 of "Introduction
+        to Analytic Number Theory" by Apostol.
+    """
+    if n <= 1:
+        raise ValueError("is_primitive_root: n must be >= 2.")
+
+    if n > 4 and n % 4 == 0:
+        return False
+
+    if gcd(a, n) != 1:
+        return False
+
+    if phi is None:
+        phi = rosemary.number_theory.arithmetic_functions.euler_phi(n)
+
+    if phi_divisors is None:
+        phi_divisors = rosemary.number_theory.factorization.prime_divisors(phi)
+
+    for d in phi_divisors:
+        if pow(a, phi//d, n) == 1:
             return False
+
     return True
 
 
-def primitive_root_mod_p(p, prime_divisors=None):
-    """
-    Returns a primitive root modulo p.
+def primitive_root(n, n_factorization=None, phi=None, phi_divisors=None):
+    """Returns a primitive root modulo n.
+
+    Given a positive integer n of the form n = 2, 4, p**a, or 2*p**a for p an
+    odd prime and a >= 1, this function returns the least primitive root of n.
 
     Input:
-        * p: int
-            A prime number. The primality of p is not verified.
+        * n: int (n > 1)
 
-        * prime_divisors: list (default=None)
-            List of prime divisors of p - 1.
+        * n_factorization: list (default=None)
+            The prime factorization of n.
 
-    Output:
-        * a: int
-            This is a primitive root modulo p; i.e. a is a generator for the
-            multiplicative group of nonzero residues modulo p.
+        * phi: int (default=None)
+            The value of euler_phi(n).
+
+        * phi_divisors: list (default=None)
+            A list of the prime divisors of euler_phi(n).
+
+    Returns:
+        * g: int
+            The least primitive root of n.
+
+    Raises:
+        * ValueError: if primitive roots don't exist modulo n.
 
     Examples:
-        >>> primitive_root_mod_p(7)
+        >>> primitive_root(7)
         3
-        >>> primitive_root_mod_p(11)
+        >>> primitive_root(11)
         2
-    """
-    p_minus_one = p - 1
-    if prime_divisors is None:
-        prime_divisors = rosemary.number_theory.factorization.prime_divisors(p_minus_one)
+        >>> primitive_root(14)
+        3
+        >>> primitive_root(12)
+        Traceback (most recent call last):
+        ...
+        ValueError: primitive_root: No primitive root for n.
 
-    for a in xrange(2, p):
-        if is_primitive_root(a, p, prime_divisors):
-            return a
+    Details:
+        An integer a is called a primitive root mod n if a generates the
+        multiplicative group of units modulo n. Equivalently, a is a primitive
+        root modulo n if the order of a modulo m is euler_phi(n).
+
+        As noted above, primitive roots only exist for moduli of the form n = 2,
+        4, p**a, 2*p**a, where p > 2 is prime, and a >= 1. See Theorem 6.11 of
+        "Elementary Number Theory" by Jones and Jones for a proof of this fact.
+        See also Chapter 10 of "Introduction to Analytic Number Theory" by
+        Apostol.
+
+        This method uses the fact that an integer a coprime to n is a primitive
+        root if and only if a**(euler_phi(n)/p) != 1 (mod n) for each prime p
+        dividing euler_phi(n). See Lemma 6.4 in Jones and Jones for a proof of
+        this.
+
+        Note also that there is another way to construct primitive roots for
+        composite moduli. To find a primitive root modulu p**a for p an odd
+        prime and a >= 2, first compute g, a primitive root modulo p using the
+        above criteria. Next, compute g1 = g**(p - 1) (mod p**2). If g1 != 1,
+        then g is a primitive root modulo p**a for every a >= 1. Otherwise, g +
+        p is. Finally, note that when p is an odd prime, if g is a primitive
+        root modulo p**a, then either g or g + p**a (whichever is odd) is a
+        primitive root modulo 2*p**a. See Lemma 1.4.5 of "A Course in
+        Computational Algebraic Number Theory" by Cohen for more details.
+    """
+    if n_factorization is None:
+        n_factorization = rosemary.number_theory.factorization.factor(n)
+
+    if n % 4 == 0 and n != 4:
+        raise ValueError("primitive_root: No primitive root for n.")
+
+    if len(n_factorization) > 2:
+        raise ValueError("primitive_root: No primitive root for n.")
+
+    if n % 2 == 1 and len(n_factorization) > 1:
+        raise ValueError("primitive_root: No primitive root for n.")
+
+    if phi is None:
+        phi = rosemary.number_theory.arithmetic_functions.euler_phi(n_factorization)
+
+    if phi_divisors is None:
+        phi_divisors = rosemary.number_theory.factorization.prime_divisors(phi)
+
+    for g in xrange(1, n):
+        if is_primitive_root(g, n, phi=phi, phi_divisors=phi_divisors):
+            return g
+
+
+def primitive_roots(n):
+    roots = [a for a in xrange(1, n) if is_primitive_root(a, n)]
+    return roots
 
 
 def fibonacci_primitive_roots(p):
-    """
-    Returns a list of the Fibonacci primitive roots mod p.
-
-    A Fibonacci primitive root mod p is a primitive root satisfying g^2 = g + 1.
-    These can only exist for primes p = 1, 9 (mod 10).
+    """Returns a sorted list of the Fibonacci primitive roots mod p.
 
     Input:
         * p: int
             A prime number. The primality of p is not verified.
 
-    Output:
+    Returns:
         * roots: list
-            This is a list of the fibonacci primitive roots mod p. This list
+            This is a list of the Fibonacci primitive roots mod p. This list
             will contain no more than 2 elements.
 
     Examples:
@@ -110,6 +207,11 @@ def fibonacci_primitive_roots(p):
         [15]
         >>> fibonacci_primitive_roots(41)
         [7, 35]
+
+    Details:
+        A Fibonacci primitive root mod p is a primitive root satisfying g**2 = g
+        + 1. These can only exist for primes p = 1, 9 (mod 10). See the paper
+        "Fibonacci Primitive Roots" by Shanks for details.
     """
     if p % 2 == 0:
         return []
@@ -120,14 +222,15 @@ def fibonacci_primitive_roots(p):
 
     sqrts = sqrts_mod_p(5, p)
     inverse = inverse_mod(2, p)
-    roots = [(1 + root)*inverse % p for root in sqrts]
-    prime_divisors = rosemary.number_theory.factorization.prime_divisors(p - 1)
-    primitive_roots = []
+    quad_roots = [(1 + root)*inverse % p for root in sqrts]
+    phi_divisors = rosemary.number_theory.factorization.prime_divisors(p - 1)
+    roots = []
 
-    for r in roots:
-        if is_primitive_root(r, p, prime_divisors):
-            primitive_roots.append(r)
-    return primitive_roots
+    for r in quad_roots:
+        if is_primitive_root(r, p, phi=p - 1, phi_divisors=phi_divisors):
+            roots.append(r)
+
+    return sorted(roots)
 
 
 ################################################################################
@@ -136,118 +239,205 @@ def fibonacci_primitive_roots(p):
 
 
 def sqrts_mod_p(a, p):
-    """
-    Returns a solution x to x^2 = a (mod p).
+    """Returns the solutions x to x**2 = a (mod p).
 
-    Given a prime p and an integer a, this function returns all solutions to the
-    congruence x^2 = a (mod p).
+    Given a prime p and an integer a, this function returns a sorted list of all
+    solutions to the congruence x**2 = a (mod p).
 
     Input:
         * a: int
-        * p: int
 
-    Output:
+        * p: int (p >= 2)
+            The prime modulus. The primality of p is not verified.
+
+    Returns:
         * solutions: list
+            A sorted list of solutions to x**2 = a (mod p).
+
+    Raises:
+        * ValueError: if p < 2.
 
     Examples:
         >>> sqrts_mod_p(10, 13)
         [6, 7]
+        >>> sqrts_mod_p(3615, 2**16 + 1)
+        [367, 65170]
+        >>> a = 552512556430486016984082237
+        >>> sqrts_mod_p(a, 2**89 - 1)
+        [1000000000000000000L, 618970018642690137449562111L]
+        >>> sqrts_mod_p(10, 1)
+        Traceback (most recent call last):
+        ...
+        ValueError: sqrts_mod_p: Must have p >= 2 be prime.
 
     Details:
-        For odd primes p, this function uses the algorithm due to Tonelli and
-        Shanks. See Algorithm 2.3.8 in "Prime Numbers - A Computational
-        Perspective" by Crandall and Pomerance for details of the algorithm. For
-        p = 2, simple checking is done to find solutions.
+        This function uses the algorithm due to Tonelli and Shanks. One problem
+        that must be solved in this algorithm is that of finding a quadratic
+        nonresidue d (mod p). There is no known efficient deterministic
+        algorithm to do this, so we use a randomized algorithm to find such a d.
+        This gives the algorithm of Tonelli and Shanks an expected runtime of
+        O(log(p)**4).
+
+        Our implementation follows the description given as Algorithm 2.3.8 in
+        "Prime Numbers - A Computational Perspective" by Crandall and Pomerance.
+        See also Section 7.1 of "Algorithmic Number Theory - Efficient
+        Algorithms" by Bach and Shallit. For information about some of the
+        optimizations made, see Section 1.5 of "A Course in Computational
+        Algebraic Number Theory" by Cohen.
     """
+    # We don't test the primality of p, but we do some simple error detection.
+    if p < 2:
+        raise ValueError("sqrts_mod_p: Must have p >= 2 be prime.")
+
+    # The easy case is when p == 2.
     if p == 2:
         return [a % p]
 
+    # Take care of the case when p | a.
     a = a % p
     if a == 0:
         return [0]
 
+    # No solutions if a is not a square modulo p.
     if jacobi_symbol(a, p) != 1:
         return []
 
+    # Below, p is odd, so we use Tonelli-Shanks.
+    # Half of the time, there is an easy solution. Namely, for primes
+    # p = 3 (mod 4) a solution is given by x = a**((p + 1)/4) (mod p).
     if p % 8 in (3, 7):
         x = pow(a, (p + 1)//4, p)
+
+    # A slightly less trivial solution works for half of the remaining primes.
+    # For p = 5 (mod 8), one can verify that a**((p - 1)/4) = 1, -1 (mod p). In
+    # the positive case, then x = a**((p + 3)//8) (mod p) is a solution.
     elif p % 8 == 5:
         x = pow(a, (p + 3)//8, p)
         if x*x % p != a:
             x = x*pow(2, (p - 1)//4, p) % p
+
+    # The remaining case is p = 1 (mod 8).
     else:
-        # Find a quadratic nonresidue
+        # Find a quadratic nonresidue. Each choice of d will be a quadratic
+        # nonresidue with probability close to 1/2, so we expect to find one
+        # very quickly.
         d = randint(2, p - 1)
         while jacobi_symbol(d, p) != -1:
             d = randint(2, p - 1)
 
-        # Write p - 1 = 2^s * t with t odd
+        # Write p - 1 = 2**s * t with t odd
         s = valuation(2, p - 1)
         t = (p - 1) >> s
 
         A = pow(a, t, p)
         D = pow(d, t, p)
         m = 0
+
         for i in xrange(s):
             if pow(A*D**m, 2**(s - 1 - i), p) == p - 1:
                 m += 2**i
+
         x = pow(a, (t + 1)//2, p)*pow(D, m//2, p) % p
 
-    solutions = [x, p - x]
+    # We want both solutions.
+    solutions = sorted([x, p - x])
+    return solutions
+
+
+def _quadratic_lift(a, r, p, k):
+    """Lifts a solution v to the congruence r**2 = a (mod p**k) to solutions
+    modulo p**(k + 1).
+
+    Suppose that for some k >= 1 we have an integer r satisfying
+    r**2 = a (mod p**k). This function returns all solutions q satisfying
+    q**2 = a (mod p**(k + 1)).
+
+    Input:
+        * a: int
+
+        * r: int
+            The root the the congruence r**2 = a (mod p**k).
+
+        * p: int (p >= 2)
+            A prime p, the primality of which is not verified.
+
+        * k: int (k >= 1)
+            The exponent such that r**2 = a (mod p**k).
+
+    Returns:
+        * solutions: list
+            A list of all solutions c to the congruence
+            c**2 = a (mod p**(k + 1))
+
+    Raises:
+        * ValueError: if k < 1 or p < 2 or r**2 != a (mod p**k).
+
+    Examples:
+        >>> 5154**2 % 11213
+        119
+        >>> _quadratic_lift(119, 5154, 11213, 1)
+        5869553
+        >>> 5869553**2 % 11213**2
+        119
+        >>> _quadratic_lift(0, 0, 7, 1)
+        [0, 7, 14, 21, 28, 35, 42]
+
+    Details:
+        This function uses a simple form of Hensel lifting to obtain solutions
+        modulo higher powers. See Section 12.5.2 of "A Computational
+        Introduction to Number Theory and Algebra" by Shoup for details. See
+        also Section 15.1 of "Introduction to Number Theory" by Hua.
+    """
+    if k < 1:
+        raise ValueError("_quadratic_lift: Must have k >= 1.")
+
+    if p < 2:
+        raise ValueError("_quadratic_lift: Must have p >= 2.")
+
+    if (r*r - a) % p**k != 0:
+        raise ValueError("_quadratic_lift: Must have r**2 = a (mod p**k).")
+
+    solutions = []
+    if 2*r % p != 0:
+        # In this case, r lifts to a unique solution.
+        inverse = inverse_mod(2*r, p)
+        # Note that r**2 = a (mod p**k) so the division below is exact.
+        t = (-inverse*((r*r - a)//p**k)) % p
+        root = r + t*p**k
+        solutions.append(root)
+    else:
+        # Here, r lifts to p incongruent solutions modulo p**k.
+        if (r*r - a) % (p**(k + 1)) == 0:
+            for t in xrange(p):
+                root = r + t*p**k
+                solutions.append(root)
+
     solutions.sort()
     return solutions
 
 
-def sqrts_mod_pk(a, p, k):
+def _sqrts_mod_pk(a, p, k):
+    """Returns a sorted list of the solutions x to the congruence
+    x**2 = a (mod p**k).
     """
-    Returns all solutions x, 1 <= x <= n, to the congruence x^2 = a (mod n).
-
-    Given a prime p and integers a and k, this function returns all solutions to
-    the congruence x^2 = a (mod p^k).
-
-    Input:
-        * a: int
-        * p: int (p >= 2)
-        * k: int (k >= 1)
-
-    Output:
-        * roots: list
-            A list of all square roots of a modulo p^k.
-    """
-    def hensel(a, r, p, k):
-        """
-        Lifts solution r^2 = a (mod p^k) to solutions modulo p^{k + 1}.
-        """
-        solutions = []
-        if 2*r % p != 0:
-            # In this case, r lifts to a unique solution.
-            inverse = inverse_mod(2*r, p)
-            # Note that r^2 = a (mod p^k) so the division below is exact.
-            t = (-inverse*((r*r - a)//p**k)) % p
-            root = r + t*p**k
-            solutions.append(root)
-        else:
-            # Here, r lifts to p incongruent solutions modulo p^k.
-            if (r*r - a) % (p**(k + 1)) == 0:
-                for t in xrange(p):
-                    root = r + t*p**k
-                    solutions.append(root)
-        solutions.sort()
-        return solutions
-
     if k == 1:
         return sqrts_mod_p(a, p)
 
     if p == 2:
         if k == 2:
+            # For k = 2, there are two or no roots depending on whether
+            # a = 1 or 3 (mod 4).
             solutions = [e for e in xrange(4) if e*e % 4 == a % 4]
         else:
+            # For k > 2, there are four or no roots depending on whether
+            # a = 1 (mod 8) or a != 1 (mod 8). We find all solutions (mod 8),
+            # and lift to higher powers.
             solutions = [e for e in xrange(8) if e*e % 8 == a % 8]
-            if k > 3:
+            if k > 3 and solutions:
                 for e in xrange(3, k):
                     lifted_solutions = []
                     for root in solutions:
-                        lifts = hensel(a, root, p, e)
+                        lifts = _quadratic_lift(a, root, p, e)
                         lifted_solutions.extend(lifts)
                     solutions = list(lifted_solutions)
     else:
@@ -255,7 +445,7 @@ def sqrts_mod_pk(a, p, k):
         for e in xrange(1, k):
             lifted_solutions = []
             for root in solutions:
-                lifts = hensel(a, root, p, e)
+                lifts = _quadratic_lift(a, root, p, e)
                 lifted_solutions.extend(lifts)
             solutions = list(lifted_solutions)
 
@@ -264,8 +454,10 @@ def sqrts_mod_pk(a, p, k):
 
 
 def sqrts_mod_n(a, n, n_factorization=None):
-    """
-    Returns all solutions x, 1 <= x <= n, to the congruence x^2 = a (mod n).
+    """Returns the solutions x to the congruence x**2 = a (mod n).
+
+    Given integers a and n, this function returns all solutions to the
+    congruence x**2 = a (mod n).
 
     Input:
         * a: int
@@ -277,9 +469,9 @@ def sqrts_mod_n(a, n, n_factorization=None):
         * n_factorization: list (default=None)
             The factorization of n.
 
-    Output:
+    Returns:
         * roots: list
-            A list of all square roots of a modulo n.
+            A sorted list of all square roots of a modulo n.
     """
     if n_factorization is None:
         n_factorization = rosemary.number_theory.factorization.factor(n)
@@ -287,7 +479,7 @@ def sqrts_mod_n(a, n, n_factorization=None):
     congruences = []
     moduli = []
     for (p, k) in n_factorization:
-        roots = sqrts_mod_pk(a, p, k)
+        roots = _sqrts_mod_pk(a, p, k)
         pk = p**k
         pairs = [(r, pk) for r in roots]
         congruences.append(pairs)
@@ -307,11 +499,10 @@ def sqrts_mod_n(a, n, n_factorization=None):
 
 
 def nth_roots_of_unity_mod_p(n, p, g=None):
-    """
-    Returns the nth roots of unity modulo p.
+    """Returns the nth roots of unity modulo p.
 
-    Given a positive integer n and a prime p, this returns a list of the nth
-    roots of unity modulo p. The primality of p is assumed and not verified.
+    Given a positive integer n and a prime p, this returns a list of the
+    solutions to the congruence x**n = 1 (mod p).
 
     Input:
         * n: int
@@ -323,14 +514,28 @@ def nth_roots_of_unity_mod_p(n, p, g=None):
         * g: int (default=None)
             Primitive root modulo p.
 
-    Output:
+    Returns:
         * roots: list
             List of all nth roots of unity.
+
+    Examples:
+        >>> nth_roots_of_unity_mod_p(4, 101)
+        [1, 10, 91, 100]
+        >>> nth_roots_of_unity_mod_p(8, 17)
+        [1, 2, 4, 8, 9, 13, 15, 16]
+
+    Details:
+        The congruence x**n == 1 (mod p) has gcd(n, p - 1) roots. We find one
+        solution given by g**((p - 1)/d), where d = gcd(n, p - 1), and g is a
+        primitive root modulo p. Given this, we find all other solutions by
+        looking at the powers of this one solution. See Theorem 7.1 of
+        "Introduction to Number Theory" by Hua for more information.
     """
     if p == 2:
         return [1]
+
     if g is None:
-        g = primitive_root_mod_p(p)
+        g = primitive_root(p, phi=p-1)
 
     d = gcd(n, p - 1)
     # This is one solution. We find all others by looking at powers of this one.
@@ -346,11 +551,10 @@ def nth_roots_of_unity_mod_p(n, p, g=None):
 
 
 def nth_roots_of_minus1_mod_p(n, p, g=None):
-    """
-    Returns the nth roots of -1 modulo p.
+    """Returns the nth roots of -1 modulo p.
 
-    Given a positive integer n and a prime p, this returns a list of all nth
-    roots of -1 modulo p. The primality of p is not verified.
+    Given a positive integer n and a prime p, this returns a list of the
+    solutions to the congruence x**n == -1 (mod p).
 
     Input:
         * n: int
@@ -362,9 +566,23 @@ def nth_roots_of_minus1_mod_p(n, p, g=None):
         * g: int (default=None)
             Primitive root modulo p.
 
-    Output:
+    Returns:
         * roots: list
             List of all nth roots of -1 modulo p.
+
+    Examples:
+        >>> nth_roots_of_minus1_mod_p(5, 11)
+        [2, 6, 7, 8, 10]
+        >>> nth_roots_of_minus1_mod_p(2, 101)
+        [10, 91]
+
+    Details:
+        The congruence x**n == -1 (mod p) has gcd(n, p - 1) roots. We find one
+        solution to the congruence by considering g**((p - 1)/(2*d)), where d =
+        gcd(n, p - 1), and g is a primitive root modulo p. We then find all
+        other solutions by multiplying this solution by the nth roots of unity
+        modulo p. See Section 3.7 of "Introduction to Number Theory" by Hua for
+        more details.
     """
     if p == 2:
         return [1]
@@ -375,19 +593,19 @@ def nth_roots_of_minus1_mod_p(n, p, g=None):
         return []
 
     if g is None:
-        g = primitive_root_mod_p(p)
+        g = primitive_root(p, phi=p - 1)
 
     # This is one solution to x^n = -1 (mod p).
     root = pow(g, (p - 1)//(2*d), p)
     roots_of_unity = nth_roots_of_unity_mod_p(n, p, g)
     all_roots = [root*h % p for h in roots_of_unity]
     all_roots.sort()
+
     return all_roots
 
 
 def discrete_log(a, b, p):
-    """
-    Finds a positiveinteger k such that a^k = b (mod p).
+    """Finds a positive integer k such that a**k = b (mod p).
 
     Input:
         * a: int
@@ -395,18 +613,16 @@ def discrete_log(a, b, p):
             modulo p.
 
         * b: int
-            The target. Must be
+            The target.
+
         * p: int
+            The modulus. This must be a prime. The primality of p is not
+            verified.
 
-    Output:
+    Returns:
         * k: int
-            We have 0 <= k < p is an integer satisfying a^k = b (mod p).
-
-    Details:
-        The algorithm is based on the Baby-Step Giant-Step method due to Shanks.
-        Using a dictionary data type, this algoritm runs in O(sqrt(n)) time and
-        space. We are following the method as described in Algorithm 2.4.1 in
-        Number Theory for Computing by Yan.
+            A positive integer such that a**k = b (mod p). If no solution
+            exists, then None is returned.
 
     Examples:
         >>> discrete_log(2, 6, 19)
@@ -417,6 +633,19 @@ def discrete_log(a, b, p):
         11
         >>> pow(59, 11, 113)
         67
+        >>> discrete_log(5, 3, 2017)
+        1030
+        >>> pow(5, 1030, 2017)
+        3
+
+    Details:
+        The algorithm is based on the Baby-Step Giant-Step method due to Shanks.
+        Using a dictionary data type, this algoritm runs in O(sqrt(n)) time and
+        space. We follow the method as described in Algorithm 2.4.1 in Number
+        Theory for Computing by Yan. See Chapter 5 of "Prime Numbers - A
+        Computational Perspective" by Crandall and Pomerance for variants. See
+        "A Computational Introduction to Number Theory and Algebra" by Shoup for
+        more in depth analysis.
     """
     m = integer_sqrt(p) + 1
     am = pow(a, m, p)
@@ -433,6 +662,8 @@ def discrete_log(a, b, p):
             return cache[val]*m - k
         val = (val*a) % p
 
+    return None
+
 
 ################################################################################
 # solutions to congruences
@@ -440,16 +671,18 @@ def discrete_log(a, b, p):
 
 
 def linear_congruence(a, b, n):
-    """
-    Returns a list of the solutions x to the congruence a*x = b (mod n).
+    """Returns a list of the solutions x to the congruence a*x = b (mod n).
 
     Input:
         * a: int
         * b: int
         * n: int (n > 1)
 
-    Output:
+    Returns:
         * solutions: list
+
+    Raises:
+        * ValueError: if n <= 1.
 
     Examples:
         >>> linear_congruence(10, 6, 12)
@@ -458,6 +691,10 @@ def linear_congruence(a, b, n):
         [2, 7, 12]
         >>> linear_congruence(10, 3, 12)
         []
+        >>> linear_congruence(10, 3, 0)
+        Traceback (most recent call last):
+        ...
+        ValueError: linear_congruence: Must have n >= 2.
 
     Details:
         The linear congruence a*x = b (mod n) has a solution if and only if d =
@@ -483,8 +720,7 @@ def linear_congruence(a, b, n):
 
 
 def quadratic_congruence(coeff_list, n, n_factorization=None):
-    """
-    Returns the roots of the quadratic equation modulo n.
+    """Returns a list of the roots of the quadratic equation modulo n.
 
     Input:
         * coeff_list: list
@@ -496,17 +732,17 @@ def quadratic_congruence(coeff_list, n, n_factorization=None):
         * n_factorization: list (default=None)
             The factorization of the modulus n.
 
-    Output:
+    Returns:
         * roots: list
-            A list of the roots of the quadratic modulo n.
+            A sorted list of the roots of the quadratic modulo n.
 
     Details:
-        The algorithm proceeds by finding roots modulo p^k for each prime power
-        p^k in the factorization of the modulus n. These roots are then combined
-        using the Chinese Remainder Theorem.
+        The algorithm proceeds by finding roots modulo p**k for each prime power
+        p**k in the factorization of the modulus n. These roots are then
+        combined using the Chinese Remainder Theorem.
 
         The quadratic formula is used to find the roots, with the square roots
-        computed modulo p^k, for each p^k dividing n. For odd primes p, the
+        computed modulo p**k, for each p**k dividing n. For odd primes p, the
         Tonelli-Shanks algorithm is used. For p = 2, a simple search is
         performed.
 

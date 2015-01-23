@@ -4,7 +4,6 @@ from rosemary.number_theory.sieves import (
     chartres,
     eratosthenes1,
     eratosthenes2,
-    eratosthenes3,
     factored_xrange,
     luo,
     moebius_xrange,
@@ -81,20 +80,10 @@ class TestCore(unittest.TestCase):
         values = eratosthenes2(-1)
         self.assertEqual(values, [])
 
+        values = eratosthenes2(2)
+        self.assertEqual(values, [2])
+
         value = sum(eratosthenes2(2*10**5))
-        self.assertEqual(value, self.sum_of_primes_to_200000)
-
-    def test_eratosthenes3(self):
-        values = eratosthenes3(1000)
-        self.assertEqual(values, self.primes_to_1000)
-
-        values = eratosthenes3(0)
-        self.assertEqual(values, [])
-
-        values = eratosthenes3(-1)
-        self.assertEqual(values, [])
-
-        value = sum(eratosthenes3(2*10**5))
         self.assertEqual(value, self.sum_of_primes_to_200000)
 
     def test_factored_xrange(self):
@@ -165,6 +154,9 @@ class TestCore(unittest.TestCase):
         self.assertEqual(value, self.sum_of_primes_to_2000000)
 
     def test_primes_first_n(self):
+        values = primes_first_n(1000000)
+        self.assertEqual(sum(values), 7472966967499)
+
         values = primes_first_n(200)
         self.assertEqual(values, self.primes_first_200)
 
@@ -178,11 +170,11 @@ class TestCore(unittest.TestCase):
         values = pritchard(1000)
         self.assertEqual(values, self.primes_to_1000)
 
-        values = primes(0)
+        values = pritchard(0)
         self.assertEqual(values, [])
 
-        values = primes(-1)
+        values = pritchard(-1)
         self.assertEqual(values, [])
 
-        value = sum(primes(2*10**6))
+        value = sum(pritchard(2*10**6))
         self.assertEqual(value, self.sum_of_primes_to_2000000)
