@@ -25,8 +25,9 @@ class TestCore(unittest.TestCase):
     def test_carmichael_lambda(self):
         self.assertRaisesRegexp(ValueError, "carmichael_lambda: Input must be a positive integer or a factorization.",
                                 carmichael_lambda, 'cat')
-
         self.assertRaisesRegexp(ValueError, "carmichael_lambda: Must have n > 0.", carmichael_lambda, -1)
+
+        self.assertEqual(carmichael_lambda([(2, 3), (5, 2)]), 20)
 
         values = [
             1, 1, 2, 2, 4, 2, 6, 2, 6, 4, 10, 2, 12, 6, 4, 4, 16, 6, 18, 4, 6, 10, 22, 2, 20, 12, 18, 6, 28, 4, 30, 8,
@@ -63,6 +64,10 @@ class TestCore(unittest.TestCase):
         self.assertEqual(values, computed)
 
     def test_euler_phi_inverse(self):
+        self.assertRaisesRegexp(ValueError, "euler_phi_inverse: Must have n > 0.", euler_phi_inverse, -1)
+        self.assertRaisesRegexp(ValueError, "euler_phi_inverse: Input must be a positive integer or a factorization.",
+                                euler_phi_inverse, 'cat')
+        self.assertEqual(euler_phi_inverse([(2, 2), (5, 2)]), [101, 125, 202, 250])
         values = defaultdict(list)
 
         for k in xrange(1, 1001):
@@ -358,6 +363,9 @@ class TestCore(unittest.TestCase):
 
     def test_tau(self):
         self.assertRaisesRegexp(ValueError, "tau: Must have n > 0.", tau, -1)
+        self.assertRaisesRegexp(ValueError, "tau: Input must be a positive integer or a factorization.", tau, "cat")
+
+        self.assertEqual(tau([(2, 1), (5, 1)]), 4)
 
         values = [
             1, 2, 2, 3, 2, 4, 2, 4, 3, 4, 2, 6, 2, 4, 4, 5, 2, 6, 2, 6, 4, 4, 2, 8, 3, 4, 4, 6, 2, 8, 2, 6, 4, 4, 4, 9,

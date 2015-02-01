@@ -1,4 +1,4 @@
-from rosemary.number_theory.continued_fractions import quadratic_convergents
+from rosemary.number_theory.continued_fractions import QuadraticIrrational
 from rosemary.number_theory.core import integer_sqrt
 from rosemary.number_theory.zn_arithmetic import sqrts_mod_n
 
@@ -10,7 +10,7 @@ def pell_fundamental_solution(D, n=1):
     if D <= 0 or n not in (1, -1):
         raise ValueError("pell_fundamental_solution: Must have D > 0 and n in (-1, 1).")
 
-    for (x, y) in quadratic_convergents(D):
+    for (x, y) in QuadraticIrrational(D).convergents(D):
         if x*x - D*y*y == n:
             yield (x, y)
 
@@ -23,7 +23,7 @@ def _pell_general(D, N, one_solution=False):
         raise ValueError("_pell_general: Must have D > 0 and N > 0")
 
     # Find fundamental solution to Pell
-    for (t, u) in quadratic_convergents(D):
+    for (t, u) in QuadraticIrrational(D).convergents():
         if t*t - D*u*u == 1:
             break
 
