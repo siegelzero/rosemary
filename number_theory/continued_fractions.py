@@ -37,22 +37,42 @@ class QuadraticIrrational(object):
         return "Continued Fraction Expansion of {}".format(s)
 
     def _initialize_quadratic(self, d, p, q):
+        """Initializes the continued fraction expansion of (p + sqrt(d))/q, for
+        (p, q) != (0, 1).
+        """
         r = integer_sqrt(d)
 
         if r*r == d:
-            raise ValueError("d cannot be a perfect square")
+            raise ValueError("QuadraticIrrational: d cannot be a perfect square.")
 
-        Q = q
-        P = p
+        # A quadratic irrational can be written in the form (P + sqrt(D))/Q,
+        # for some integers P, Q != 0, and D not a perfect square, with
+        # (D - P*P) = 0 (mod D). If we don't have this last divisibility
+        # condition, then we modify P, Q, and D as appropriate. See Theorem 9.23
+        # of "The Theory of Numbers - A Text and Source Book of Problems" by
+        # Adler and Coury for details.
+        if (d - p*p) % q == 0:
+            Q = q
+            P = p
+            D = d
+        else:
+            abs_q = abs(q)
+            Q = abs_q*q
+            P = abs_q*p
+            D = q*q*d
+            r = integer_sqrt(D)
+
         pq_pairs = {(p, q): 0}
         partial_quotients = []
 
         for i in itertools.count(1):
-            q = (P + r)//Q
-            P = q*Q - P
-            Q = (d - P*P)//Q
-            partial_quotients.append(q)
+            a = (P + r)//Q
+            P = a*Q - P
+            Q = (D - P*P)//Q
+            partial_quotients.append(a)
 
+            # Encountering a (P, Q) pair which we have already seen means that
+            # we have started a new period, and so we can break out of the loop.
             if (P, Q) in pq_pairs:
                 j = pq_pairs[(P, Q)]
                 k = i
@@ -65,15 +85,11 @@ class QuadraticIrrational(object):
         self.fundamental_period = partial_quotients[j:]
 
     def _initialize_sqrt(self, d):
-        """If d > 0 is not a perfect square, then the continued fraction
-        expansion of sqrt(d) is periodic of the form [a0; a1, a2, ..., a2, a1,
-        2*a0], where a0 = floor(sqrt(d)), the periodic part beginning after the
-        first term. See Theorem 5.10 of "Fundamental Number Theory with
-        Applications" by Mollin for details.
+        """Initializes the continued fraction expansion of sqrt(d).
         """
         r = integer_sqrt(d)
         if r*r == d:
-            raise ValueError("d cannot be a perfect square")
+            raise ValueError("QuadraticIrrational: d cannot be a perfect square.")
 
         Q = 1
         P = 0
@@ -82,6 +98,10 @@ class QuadraticIrrational(object):
         while True:
             q = (P + r)//Q
             terms.append(q)
+            # The continued fraction expansion of sqrt(d) is periodic of the
+            # form [a0; a1, a2, ..., a2, a1, 2*a0], so we can terminate when we
+            # encounter a partial quotient equal to 2*a0. See Theorem 5.10 of
+            # "Fundamental Number with Applications" by Mollin for details.
             if q == 2*r:
                 break
             P = q*Q - P
@@ -91,8 +111,26 @@ class QuadraticIrrational(object):
         self.pre_period = [r]
         self.fundamental_period = terms[1:]
 
+    def partial_quotients(self):
+        """Returns the partial quotients of self.
+
+        Returns:
+            * X: generator
+                The values output from this generator are the partial quotients
+                in the continued fraction expansion of self.
+
+        Examples:
+            >>> X = QuadraticIrrational(13).partial_quotients()
+            >>> [X.next() for _ in xrange(10)]
+            [3, 1, 1, 1, 1, 6, 1, 1, 1, 1]
+        """
+        terms = itertools.chain(self.pre_period,
+                                itertools.cycle(self.fundamental_period))
+        for t in terms:
+            yield t
+
     def convergents(self):
-        """Returns the continued fraction convergents to self.
+        """Returns the continued fraction convergents of self.
 
         Returns:
             * X: generator
@@ -100,7 +138,8 @@ class QuadraticIrrational(object):
                 the convergents a/b to sqrt(d).
 
         Examples:
-            >>> quadratic_convergents(2, 6)
+            >>> X = QuadraticIrrational(2).convergents()
+            >>> [X.next() for _ in xrange(7)]
             [(1, 1), (3, 2), (7, 5), (17, 12), (41, 29), (99, 70), (239, 169)]
 
         Details:
@@ -110,10 +149,7 @@ class QuadraticIrrational(object):
         a0, a1 = 0, 1
         b0, b1 = 1, 0
 
-        terms = itertools.chain(self.pre_period,
-                                itertools.cycle(self.fundamental_period))
-
-        for q in terms:
+        for q in self.partial_quotients():
             a2 = q*a1 + a0
             b2 = q*b1 + b0
             a0, a1 = a1, a2
