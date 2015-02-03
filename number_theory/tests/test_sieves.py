@@ -94,12 +94,18 @@ class TestCore(unittest.TestCase):
                 prod *= p**e
             self.assertEqual(n, prod)
 
+        self.assertEqual(list(factored_xrange(0, 100)), list(factored_xrange(100)))
+        self.assertEqual(list(factored_xrange(0)), [])
+
     def test_luo(self):
         values = luo(1000)
         self.assertEqual(values, self.primes_to_1000)
 
         values = luo(0)
         self.assertEqual(values, [])
+
+        values = luo(3)
+        self.assertEqual(values, [2, 3])
 
         values = luo(-1)
         self.assertEqual(values, [])
@@ -121,6 +127,8 @@ class TestCore(unittest.TestCase):
         ]
 
         self.assertEqual(values, list(moebius_xrange(100)))
+        self.assertEqual(sum(v for n, v in moebius_xrange(1, 1000)), 2)
+        self.assertEqual(sum(v for n, v in moebius_xrange(10, 1)), 0)
 
     def test_prime_xrange(self):
         primes = [
@@ -135,10 +143,10 @@ class TestCore(unittest.TestCase):
         values = prime_xrange(10**12, 10**12 + 10**3)
         self.assertEqual(list(values), primes)
 
-        values = prime_xrange(10**3)
+        values = prime_xrange(1, 10**3)
         self.assertEqual(list(values), self.primes_to_1000)
-
         self.assertEqual(sum(prime_xrange(2*10**6)), self.sum_of_primes_to_2000000)
+        self.assertEqual(sum(prime_xrange(10**3, 2*10**7)), 12272577741925)
 
     def test_primes(self):
         values = primes(1000)
