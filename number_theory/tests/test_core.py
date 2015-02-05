@@ -112,6 +112,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(gcd_list([1, 4, 6, 8]), 1)
         self.assertEqual(gcd_list([-2, 4, 6, 8]), 2)
         self.assertEqual(gcd_list([0, 4, 6, 8]), 2)
+        self.assertEqual(gcd_list([2]), 2)
 
     def test_integer_log(self):
         self.assertRaisesRegexp(ValueError, "integer_log: Must have b >= 2.", integer_log, 1, 40)
@@ -119,6 +120,8 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(integer_log(2, 100), 6)
         self.assertEqual(integer_log(5, 30), 2)
+        self.assertEqual(integer_log(5, 2), 0)
+        self.assertEqual(integer_log(5, 125), 3)
 
         for i in xrange(20):
             b = random.randint(2, 20)
@@ -129,6 +132,9 @@ class TestCore(unittest.TestCase):
     def test_integer_nth_root(self):
         self.assertRaisesRegexp(ValueError, "integer_nth_root: Must have n >= 1", integer_nth_root, 0, 10)
         self.assertRaisesRegexp(ValueError, "integer_nth_root: Must have m >= 0", integer_nth_root, 3, -1)
+
+        self.assertEqual(integer_nth_root(1, 10), 10)
+        self.assertEqual(integer_nth_root(3, 1), 1)
 
         for i in xrange(100):
             a = random.randint(100, 1000)
@@ -165,6 +171,7 @@ class TestCore(unittest.TestCase):
     def test_is_power(self):
         self.assertRaisesRegexp(ValueError, "is_power: Must have k >= 1.", is_power, 10, 0)
         self.assertRaisesRegexp(ValueError, "is_power: Must have n >= 1.", is_power, 0, 3)
+        self.assertRaisesRegexp(ValueError, "is_power: Must have n >= 1.", is_power, [(-1, 1), (2, 2)])
 
         for k in [2, 3, 5, 7, 11]:
             self.assertEqual(is_power(k), False)
@@ -194,14 +201,19 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(values, powers)
 
+        self.assertEqual(is_power(10, 1), (10, 1))
+        self.assertEqual(is_power(125, 3), (5, 3))
+        self.assertEqual(is_power(125, 4), False)
+
+        self.assertEqual(is_power([(2, 3), (5, 2)], 3), False)
         self.assertEqual(is_power([(2, 4), (3, 2)]), (12, 2))
         self.assertEqual(is_power([(2, 4), (3, 3)]), False)
-
         self.assertEqual(is_power([(3, 4), (5, 4)]), (15, 4))
         self.assertEqual(is_power([(3, 4), (5, 4)], 2), (225, 2))
 
     def test_is_square(self):
         self.assertRaisesRegexp(ValueError, "is_square: Must have n >= 0.", is_square, -2)
+        self.assertRaisesRegexp(ValueError, "is_square: Must have n >= 0.", is_square, [(-1, 1), (2, 2)])
 
         for k in [2, 3, 5, 7, 11]:
             self.assertEqual(is_square(k), False)
@@ -222,6 +234,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(squares, values)
 
     def test_jacobi_symbol(self):
+        self.assertRaisesRegexp(ValueError, "jacobi_symbol: Must have m odd.", jacobi_symbol, 19, 4)
+
         values = [
             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, 1, 0, -1, -1, 0, 1, 1, 0, -1, -1, 1, 1, 1,
             1, 1, 1, 1, 1, 1, 1, 1, -1, 0, -1, 1, 1, -1, 0, -1, 1, 1, 0, 1, -1, 0, -1, -1, 0, -1, 1, 1, 1, -1, 0, 1, -1,
@@ -278,6 +292,11 @@ class TestCore(unittest.TestCase):
         self.assertRaisesRegexp(ValueError, "power_mod: Must have a >= 0.", power_mod, -2, 3, 10)
         self.assertRaisesRegexp(ValueError, "power_mod: Must have k >= 0.", power_mod, 2, -1, 10)
         self.assertRaisesRegexp(ValueError, "power_mod: Must have m >= 1.", power_mod, 2, 3, 0)
+
+        self.assertEqual(power_mod(2, 45, 17), 15)
+        self.assertEqual(power_mod(3, 100, 101), 1)
+        self.assertEqual(power_mod(3, 100, 3), 0)
+        self.assertEqual(power_mod(3, 0, 19), 1)
 
         for i in xrange(20):
             a = random.randint(2, 100)

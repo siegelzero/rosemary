@@ -227,8 +227,6 @@ def power_mod(a, k, m):
         return 0
     if k == 0:
         return 1
-    if a == 0:
-        return 0
 
     a = a % m
     t = 1
@@ -360,6 +358,8 @@ def integer_log(b, n):
         6
         >>> integer_log(5, 30)
         2
+        >>> integer_log(5, 2)
+        0
         >>> integer_log(1, 40)
         Traceback (most recent call last):
         ...
@@ -455,10 +455,8 @@ def integer_nth_root(n, m):
     if n < 1:
         raise ValueError("integer_nth_root: Must have n >= 1")
 
-    if n == 0:
-        return 1
-    elif n == 1:
-        return n
+    if n == 1:
+        return m
     elif n == 2:
         return integer_sqrt(m)
 
@@ -605,7 +603,7 @@ def is_power(n, k=None):
 
     if isinstance(n, list):
         if n[0][0] == -1:
-            raise ValueError("is_power: Must have n >= 2.")
+            raise ValueError("is_power: Must have n >= 1.")
         n_factorization = n[:]
 
         kth_root = 1
