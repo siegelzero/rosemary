@@ -146,7 +146,7 @@ class TestCore(unittest.TestCase):
         values = prime_xrange(1, 10**3)
         self.assertEqual(list(values), self.primes_to_1000)
         self.assertEqual(sum(prime_xrange(2*10**6)), self.sum_of_primes_to_2000000)
-        self.assertEqual(sum(prime_xrange(10**3, 2*10**7)), 12272577741925)
+        self.assertEqual(sum(prime_xrange(10**3, 10**7 + 10**3)), 3203934952888)
 
     def test_primes(self):
         values = primes(1000)

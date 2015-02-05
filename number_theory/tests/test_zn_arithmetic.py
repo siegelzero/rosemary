@@ -12,8 +12,8 @@ from rosemary.number_theory.zn_arithmetic import (
     nth_roots_of_minus1_mod_p,
     nth_roots_of_unity_mod_p,
     primitive_root,
-    primitive_roots,
     quadratic_congruence,
+    _quadratic_lift,
     sqrts_mod_n,
     sqrts_mod_p,
 )
@@ -83,6 +83,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(discrete_log(2, 6, 19), 14)
         self.assertEqual(discrete_log(59, 67, 113), 11)
         self.assertEqual(discrete_log(5, 3, 2017), 1030)
+        self.assertRaisesRegexp(ValueError, "discrete_log: No solution found.", discrete_log, 2, 77, 100)
 
     def test_fibonacci_primitive_roots(self):
         values = [
@@ -138,12 +139,20 @@ class TestCore(unittest.TestCase):
         self.assertRaisesRegexp(ValueError, 'linear_congruence: Must have n >= 2.', linear_congruence, 2, 3, 0)
 
     def test_nth_roots_of_minus1_mod_p(self):
+        self.assertEqual(nth_roots_of_minus1_mod_p(5, 11), [2, 6, 7, 8, 10])
+        self.assertEqual(nth_roots_of_minus1_mod_p(2, 101), [10, 91])
+        self.assertEqual(nth_roots_of_minus1_mod_p(1, 2), [1])
+
         for (p, n) in [(101, 4), (17, 8), (19, 2)]:
             values = [a for a in xrange(p) if a**n % p == p - 1]
             computed = nth_roots_of_minus1_mod_p(n, p)
             self.assertEqual(values, computed)
 
     def test_nth_roots_of_unity_mod_p(self):
+        self.assertEqual(nth_roots_of_unity_mod_p(4, 101), [1, 10, 91, 100])
+        self.assertEqual(nth_roots_of_unity_mod_p(8, 17), [1, 2, 4, 8, 9, 13, 15, 16])
+        self.assertEqual(nth_roots_of_unity_mod_p(1, 2), [1])
+
         for (p, n) in [(101, 4), (17, 8), (19, 2)]:
             values = [a for a in xrange(p) if a**n % p == 1]
             computed = nth_roots_of_unity_mod_p(n, p)
@@ -157,10 +166,24 @@ class TestCore(unittest.TestCase):
                 continue
             self.assertEqual(g, self.roots[n][0])
 
+    def test__qudratic_lift(self):
+        self.assertRaisesRegexp(ValueError, "_quadratic_lift: Must have k >= 1.", _quadratic_lift, 2, 18, 101, -2)
+        self.assertRaisesRegexp(ValueError, "_quadratic_lift: Must have p >= 2.", _quadratic_lift, 1, 18, 1, 2)
+        self.assertRaisesRegexp(ValueError, "_quadratic_lift: Must have r*.", _quadratic_lift, 2, 17, 101, 2)
+        self.assertEqual(_quadratic_lift(119, 5154, 11213, 1), [5869553])
+        self.assertEqual(_quadratic_lift(0, 0, 7, 1), [0, 7, 14, 21, 28, 35, 42])
+
     def test_quadratic_congruence(self):
-        return
+        self.assertEqual(quadratic_congruence([1, 3, -18], 1000), [3, 378, 619, 994])
+        self.assertEqual(quadratic_congruence([1, -31, -12], 36), [7, 15, 16, 24])
+        self.assertEqual(quadratic_congruence([7, -17, -2], 128), [77, 90])
+        self.assertEqual(quadratic_congruence([11, 5, 18], 29), [22, 25])
 
     def test_sqrts_mod_n(self):
+        self.assertEqual(sqrts_mod_n(3, 178137047), [16152263, 28026114, 150110933, 161984784])
+        self.assertEqual(sqrts_mod_n(49, 53**3*61**4), [7, 721465236980, 1339862033577, 2061327270550])
+        self.assertEqual(sqrts_mod_n(-1, 5**3*7**2), [])
+
         for n in xrange(2, 200):
             values = defaultdict(list)
             for a in xrange(n):

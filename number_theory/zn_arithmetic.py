@@ -183,11 +183,6 @@ def primitive_root(n, n_factorization=None, phi=None, phi_divisors=None):
             return g
 
 
-def primitive_roots(n):
-    roots = [a for a in xrange(1, n) if is_primitive_root(a, n)]
-    return roots
-
-
 def fibonacci_primitive_roots(p):
     """Returns a sorted list of the Fibonacci primitive roots mod p.
 
@@ -376,7 +371,7 @@ def _quadratic_lift(a, r, p, k):
         >>> 5154**2 % 11213
         119
         >>> _quadratic_lift(119, 5154, 11213, 1)
-        5869553
+        [5869553]
         >>> 5869553**2 % 11213**2
         119
         >>> _quadratic_lift(0, 0, 7, 1)
@@ -386,7 +381,8 @@ def _quadratic_lift(a, r, p, k):
         This function uses a simple form of Hensel lifting to obtain solutions
         modulo higher powers. See Section 12.5.2 of "A Computational
         Introduction to Number Theory and Algebra" by Shoup for details. See
-        also Section 15.1 of "Introduction to Number Theory" by Hua.
+        also Section 15.1 of "Introduction to Number Theory" by Hua and Theorem
+        2.24 in "Fundamental Number Theory with Applications" by Mollin.
     """
     if k < 1:
         raise ValueError("_quadratic_lift: Must have k >= 1.")
@@ -472,6 +468,14 @@ def sqrts_mod_n(a, n, n_factorization=None):
     Returns:
         * roots: list
             A sorted list of all square roots of a modulo n.
+
+    Examples:
+        >>> sqrts_mod_n(3, 11**3*23**3)
+        [16152263, 28026114, 150110933, 161984784]
+        >>> sqrts_mod_n(49, 53**3*61**4)
+        [7, 721465236980, 1339862033577, 2061327270550]
+        >>> sqrts_mod_n(-1, 5**3*7**2)
+        []
     """
     if n_factorization is None:
         n_factorization = rosemary.number_theory.factorization.factor(n)
@@ -624,6 +628,9 @@ def discrete_log(a, b, p):
             A positive integer such that a**k = b (mod p). If no solution
             exists, then None is returned.
 
+    Raises:
+        * ValueError: If no solution is found.
+
     Examples:
         >>> discrete_log(2, 6, 19)
         14
@@ -637,6 +644,12 @@ def discrete_log(a, b, p):
         1030
         >>> pow(5, 1030, 2017)
         3
+        >>> discrete_log(2, 76, 100)
+        120
+        >>> discrete_log(2, 77, 100)
+        Traceback (most recent call last):
+        ...
+        ValueError: discrete_log: No solution found.
 
     Details:
         The algorithm is based on the Baby-Step Giant-Step method due to Shanks.
@@ -657,12 +670,17 @@ def discrete_log(a, b, p):
         val = (val*am) % p
 
     val = b
+    x = 1
     for k in xrange(m + 1):
         if val in cache:
-            return cache[val]*m - k
+            x = cache[val]*m - k
+            break
         val = (val*a) % p
 
-    return None
+    if pow(a, x, p) == b % p:
+        return x
+    else:
+        raise ValueError("discrete_log: No solution found.")
 
 
 ################################################################################
@@ -736,21 +754,21 @@ def quadratic_congruence(coeff_list, n, n_factorization=None):
         * roots: list
             A sorted list of the roots of the quadratic modulo n.
 
-    Details:
-        The algorithm proceeds by finding roots modulo p**k for each prime power
-        p**k in the factorization of the modulus n. These roots are then
-        combined using the Chinese Remainder Theorem.
-
-        The quadratic formula is used to find the roots, with the square roots
-        computed modulo p**k, for each p**k dividing n. For odd primes p, the
-        Tonelli-Shanks algorithm is used. For p = 2, a simple search is
-        performed.
-
     Examples:
         >>> quadratic_congruence([1, 3, -18], 1000)
         [3, 378, 619, 994]
-    """
+        >>> quadratic_congruence([1, -31, -12], 36)
+        [7, 15, 16, 24]
+        >>> quadratic_congruence([11, 5, 18], 29)
+        [22, 25]
 
+    Details:
+        The algorithm proceeds by finding roots modulo p**k for each prime power
+        p**k in the factorization of the modulus n. These roots are then
+        combined using the Chinese Remainder Theorem. See Chapter 5 of "The
+        Theory of Numbers - A Text and Source Book of Problems" by Adler and
+        Coury for detailed information.
+    """
     if n_factorization is None:
         n_factorization = rosemary.number_theory.factorization.factor(n)
 
