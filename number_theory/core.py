@@ -652,6 +652,41 @@ def is_power(n, k=None):
         return False
 
 
+class _IsSquare(object):
+    """Class for square-detection. The algorithm here is based on the Section
+    1.7.2 in "A Course in Computational Algebraic Number Theory" by Cohen.
+    """
+    # The following tables are built when the module is imported.
+    # We keep track of the squares modulo 64 and 45045 = 11*63*65.
+    q64 = [0]*64
+    for k in xrange(32):
+        q64[k*k % 64] = 1
+
+    q45045 = [0]*45045
+    for k in xrange(22522):
+        q45045[k*k % 45045] = 1
+
+    @classmethod
+    def is_square(cls, n):
+        """Returns False if n is not a perfect square, and returns the square
+        root of n otherwise.
+        """
+        # The number of squares modulo 64, 63, 65, and 11 is 12, 16, 21, and 6,
+        # respectively. So if n is not a square, then the probability that this
+        # will no be detected in the table lookups is 12/64*16/63*21/65*6/11 =
+        # 6/715, which is less than 1 percent.
+        if cls.q64[n % 64] == 0:
+            return False
+
+        if cls.q45045[n % 45045] == 0:
+            return False
+        else:
+            q = integer_sqrt(n)
+            if q*q == n:
+                return q
+            return False
+
+
 def is_square(n):
     """Determines if n is a perfect square.
 
@@ -705,10 +740,7 @@ def is_square(n):
     else:
         if n < 0:
             raise ValueError("is_square: Must have n >= 0.")
-        sqrt = integer_sqrt(n)
-        if sqrt*sqrt == n:
-            return sqrt
-        return False
+        return _IsSquare.is_square(n)
 
 
 def chinese(congruences):

@@ -3,7 +3,7 @@
 import rosemary.number_theory.factorization
 
 from rosemary.number_theory.prime_list import _PRIME_LIST
-#from fractions import Fraction
+from fractions import Fraction
 
 
 def largest_divisor(n, b):
@@ -136,40 +136,40 @@ def maximize_divisors(B):
     return tuple(max_tau)
 
 
-#def bernoulli_list(n):
-#    """
-#    Returns a list of of Bernoulli numbers B_0, B_1, B_2, ..., B_n, with the
-#    usual convention B_1 = -1/2.
+def bernoulli_list(n):
+    """
+    Returns a list of of Bernoulli numbers B_0, B_1, B_2, ..., B_n, with the
+    usual convention B_1 = -1/2.
 
-#    Input:
-#        * n: int (n >= 0)
+    Input:
+        * n: int (n >= 0)
 
-#    Output:
-#        * L: list
-#            A list of the Bernoulli numbers.
+    Output:
+        * L: list
+            A list of the Bernoulli numbers.
 
-#    Examples:
-#        >>> bernoulli_list(10)
-#        [Fraction(1, 1), Fraction(-1, 2), Fraction(1, 6), 0, Fraction(-1, 30),
-#         0, Fraction(1, 42), 0, Fraction(-1, 30), 0, Fraction(5, 66)]
+    Examples:
+        >>> bernoulli_list(10)
+        [Fraction(1, 1), Fraction(-1, 2), Fraction(1, 6), 0, Fraction(-1, 30),
+         0, Fraction(1, 42), 0, Fraction(-1, 30), 0, Fraction(5, 66)]
 
-#    Details:
-#        The Bernoulli numbers are defined by the recursion
-#            (m + 1)*B_m = -\sum_{k = 0}^{m - 1} \binom{m + 1}{k} B_k.
-#        We use this recursion directly.
-#    """
-#    values = [0]*(n + 1)
-#    values[0] = 1
-#    values[1] = Fraction(-1, 2)
+    Details:
+        The Bernoulli numbers are defined by the recursion
+            (m + 1)*B_m = -\sum_{k = 0}^{m - 1} \binom{m + 1}{k} B_k.
+        We use this recursion directly.
+    """
+    values = [0]*(n + 1)
+    values[0] = 1
+    values[1] = Fraction(-1, 2)
 
-#    for m in xrange(2, n + 1, 2):
-#        total = 1
-#        # binom holds the value binomial(m + 1, k) below.
-#        binom = 1
-#        for k in xrange(1, m):
-#            binom *= (m + 2 - k)
-#            binom /= k
-#            if values[k]:
-#                total += binom*values[k]
-#        values[m] = -total/(m + 1)
-#    return values
+    for m in xrange(2, n + 1, 2):
+        total = 1
+        # binom holds the value binomial(m + 1, k) below.
+        binom = 1
+        for k in xrange(1, m):
+            binom *= (m + 2 - k)
+            binom /= k
+            if values[k]:
+                total += binom*values[k]
+        values[m] = -total/(m + 1)
+    return values

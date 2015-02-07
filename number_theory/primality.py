@@ -10,11 +10,11 @@ from random import randint
 
 
 def is_probable_prime(n, a=None):
-    """
-    Determines if n is a probable prime.
+    """Determines if n is a probable prime.
 
-    Given positive integers n and a, 1 < a < n - 1, this function returns True if n is a probable prime to the base a,
-    otherwise returns False. If a is omitted, then a random value is chosen.
+    Given positive integers n and a, 1 < a < n - 1, this function returns True
+    if n is a probable prime to the base a, otherwise returns False. If a is
+    omitted, then a random value is chosen.
 
     Input:
         * n: odd positive integer (n > 1)
@@ -23,13 +23,14 @@ def is_probable_prime(n, a=None):
     Output:
         * b: bool
 
-    Details:
-        The algorithm used is based on a method popularized by J. Selfridge. See algorithm 3.5.2 of "Prime Numbers: A
-        Computational Perspective" by Crandall and Pomerance for details.
-
     Examples:
         >>> is_probable_prime(17)
         True
+
+    Details:
+        The algorithm used is based on a method popularized by J. Selfridge. See
+        algorithm 3.5.2 of "Prime Numbers: A Computational Perspective" by
+        Crandall and Pomerance for details.
     """
     if a is None:
         a = randint(2, n - 2)
