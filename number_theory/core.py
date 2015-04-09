@@ -684,6 +684,7 @@ class _IsSquare(object):
             q = integer_sqrt(n)
             if q*q == n:
                 return q
+            print 'here:', n
             return False
 
 

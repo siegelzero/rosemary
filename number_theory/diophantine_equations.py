@@ -1,5 +1,5 @@
 from rosemary.number_theory.continued_fractions import QuadraticIrrational
-from rosemary.number_theory.core import integer_sqrt
+from rosemary.number_theory.core import integer_sqrt, is_square
 from rosemary.number_theory.zn_arithmetic import sqrts_mod_n
 
 import sys
@@ -7,20 +7,87 @@ import itertools
 
 
 def pell_fundamental_solution(D, n=1):
-    if D <= 0 or n not in (1, -1):
-        raise ValueError("pell_fundamental_solution: Must have D > 0 and n in (-1, 1).")
+    """Returns the fundamental solution to the Pell equation x**2 - D*y**2 == n,
+    where n in (-1, 1).
 
-    for (x, y) in QuadraticIrrational(D).convergents(D):
+    Given D > 0 not a square, and n in (-1, 1), this method returns the
+    fundamental solution to the Pell equation described above. The fundamental
+    solution (x, y) is the one with least positive value of x, and
+    correspondingly the least positive value of y.
+
+    Input:
+        * D: int (D > 0)
+
+        * n: int (n in (-1, 1)).
+
+    Returns:
+        * (x, y): tuple
+
+    Raises:
+        * ValueError: If D <= 0, D is perfect square, n not in (-1, 1), or if no
+        solutions exist.
+
+    Examples:
+        >>> pell_fundamental_solution(61)
+        (1766319049, 226153980)
+        >>> 1766319049**2 - 61*226153980**2
+        1
+        >>> pell_fundamental_solution(17, -1)
+        (4, 1)
+        >>> 4**2 - 17*1**2
+        -1
+        >>> pell_fundamental_solution(15, -1)
+        Traceback (most recent call last):
+        ...
+        ValueError: pell_fundamental_solution: Solution nonexistent.
+        >>> pell_fundamental_solution(15, -2)
+        Traceback (most recent call last):
+        ...
+        ValueError: pell_fundamental_solution: Must have D > 0 not a perfect square and n in (-1, 1).
+
+    Details:
+        For D > 0 not a perfect square, the equation x**2 - D*y**2 == 1 always
+        has solutions, while the equation x**2 - D*y**2 == -1 only has solutions
+        when the continued fraction expansion of sqrt(D) has odd period length.
+
+        See Corollary 5.7 of "Fundamental Number Theory with Applications" by
+        Mollin for details. See also the article "Simple Continued Fraction
+        Solutions for Diophantine Equations" by Mollin.
+    """
+    if D <= 0 or is_square(D) or n not in (1, -1):
+        raise ValueError("pell_fundamental_solution: Must have D > 0 not a perfect square and n in (-1, 1).")
+
+    contfrac = QuadraticIrrational(D)
+
+    # No solution for n == -1 if the period length is even.
+    if n == -1 and contfrac.period_length % 2 == 0:
+        raise ValueError("pell_fundamental_solution: Solution nonexistent.")
+
+    # Otherwise, solutions always exist for D not a perfect square.
+    for (x, y) in contfrac.convergents():
         if x*x - D*y*y == n:
-            yield (x, y)
+            return (x, y)
+
+
+def _mollin(D, N):
+    positive_roots = sqrts_mod_n(D, abs(N))
+
+    roots = []
+    print positive_roots
+    for r in positive_roots:
+        for e in [-r, r]:
+            if -abs(N) < 2*e <= abs(N):
+                roots.append(e)
+
+    return roots
 
 
 def _pell_general(D, N, one_solution=False):
     """
     test with D = 1121311213, N = 11889485036288588
     """
-    if D < 0 or N < 0:
-        raise ValueError("_pell_general: Must have D > 0 and N > 0")
+    #if D < 0 or N < 0:
+    #    raise ValueError("_pell_general: Must have D > 0 and N > 0")
 
     # Find fundamental solution to Pell
     for (t, u) in QuadraticIrrational(D).convergents():
@@ -31,6 +98,7 @@ def _pell_general(D, N, one_solution=False):
     fundamental_solutions = []
     residues = sqrts_mod_n(N, D)
     L = N*(t - 1)
+    print residues
 
     for r in residues:
         for x in itertools.count(r, D):
@@ -69,6 +137,8 @@ def _pell_general(D, N, one_solution=False):
 
     if not minimal_positive_solutions:
         return
+
+    print minimal_positive_solutions
 
     while True:
         for i in xrange(len(minimal_positive_solutions)):

@@ -215,7 +215,7 @@ class TestCore(unittest.TestCase):
         self.assertRaisesRegexp(ValueError, "is_square: Must have n >= 0.", is_square, -2)
         self.assertRaisesRegexp(ValueError, "is_square: Must have n >= 0.", is_square, [(-1, 1), (2, 2)])
 
-        for k in [2, 3, 5, 7, 11]:
+        for k in [2, 3, 5, 7, 11, 2545]:
             self.assertEqual(is_square(k), False)
 
         for (k, r) in [(9, 3), (16, 4), (289, 17), (130321, 361)]:
