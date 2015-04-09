@@ -355,7 +355,7 @@ class Graph(object):
             >>> G.degree(3)
             2
         """
-        degree = len(self.graph_dict.keys())
+        degree = len(self.graph_dict[u])
         return degree
 
     def total_degree(self, vertex_list=None):
