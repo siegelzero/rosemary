@@ -44,6 +44,7 @@ class TestCliques(unittest.TestCase):
         self.random_graph = Graph()
         self.random_graph.add_edges(self.random_graph_edges)
         self.random_graph_clique = [0, 2, 3, 5, 7]
+        self.random_graph_clique2 = [1, 5, 6, 7, 9]
 
         self.coprime_graph10 = coprime_pairs_graph(10)
         self.coprime_graph10_weight = 30
@@ -93,7 +94,7 @@ class TestCliques(unittest.TestCase):
         print "Testing Ostergard algorithm"
         size, clique = ostergard(self.random_graph)
         self.assertEqual(size, 5)
-        self.assertEqual(sorted(clique), self.random_graph_clique)
+        self.assertEqual(sorted(clique), self.random_graph_clique2)
 
         print "Testing Pardalos algorithm"
         size, clique = pardalos(self.random_graph)
@@ -104,7 +105,6 @@ class TestCliques(unittest.TestCase):
         for algorithm in ['pardalos', 'ostergard']:
             size, clique = maximum_clique(self.random_graph, algorithm=algorithm)
             self.assertEqual(size, 5)
-            self.assertEqual(sorted(clique), self.random_graph_clique)
 
     def test_maximum_weight_clique(self):
         print "Testing Maximum-weight clique algorithm"
