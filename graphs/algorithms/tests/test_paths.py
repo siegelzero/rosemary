@@ -4,7 +4,9 @@ from rosemary.graphs.graphs import Graph
 from rosemary.graphs.algorithms.paths import (
     bellman_ford,
     dijkstra,
+    dijkstra_bidirectional,
     dijkstra_buckets,
+    dijkstra_iterator,
     dijkstra_pairing_heap,
 )
 
@@ -37,8 +39,11 @@ class TestShortestPaths(unittest.TestCase):
         self.assertEqual(distance, self.distance)
         self.assertEqual(previous, self.previous)
 
-        self.graph['a']['b'] = -10
+        self.assertRaisesRegexp(ValueError,
+                                "bellman_ford: 0 is not a vertex of graph.",
+                                bellman_ford, self.graph, 0)
 
+        self.graph['a']['b'] = -10
         self.assertRaisesRegexp(ValueError,
                                 'bellman_ford: Negative cycle detected.',
                                 bellman_ford, self.graph, 'a')
@@ -52,14 +57,38 @@ class TestShortestPaths(unittest.TestCase):
         self.assertEqual(distance, self.distance)
         self.assertEqual(previous, self.previous)
 
+        self.assertRaisesRegexp(ValueError,
+                                "dijkstra: 0 is not a vertex of graph.",
+                                dijkstra, self.graph, 0)
+
         distance, previous = dijkstra(self.graph2, 'd')
         self.assertEqual(distance, self.distance2)
         self.assertEqual(previous, self.previous2)
+
+    def test_dijkstra_bidirectional(self):
+        self.assertRaisesRegexp(ValueError,
+                                "dijkstra_bidirectional: 0 is not a vertex of graph.",
+                                dijkstra_bidirectional, self.graph, 0, 'a')
+
+        self.assertRaisesRegexp(ValueError,
+                                "dijkstra_bidirectional: 2 is not a vertex of graph.",
+                                dijkstra_bidirectional, self.graph, 'a', 2)
+
+        dist, path = dijkstra_bidirectional(self.graph, 'a', 'e')
+        ddist, dprev = dijkstra(self.graph, 'a')
+        self.assertEqual(dist, ddist['e'])
+
+        self.graph.add_vertex('f')
+        self.assertEqual(dijkstra_bidirectional(self.graph, 'a', 'f'), float('inf'))
 
     def test_dijkstra_buckets(self):
         distance, previous = dijkstra_buckets(self.graph, 'a')
         self.assertEqual(distance, self.distance)
         self.assertEqual(previous, self.previous)
+
+        self.assertRaisesRegexp(ValueError,
+                                "dijkstra_buckets: 0 is not a vertex of graph.",
+                                dijkstra_buckets, self.graph, 0)
 
         distance, previous = dijkstra_buckets(self.graph2, 'd')
         self.assertEqual(distance, self.distance2)
@@ -69,6 +98,13 @@ class TestShortestPaths(unittest.TestCase):
         self.assertRaisesRegexp(ValueError,
                                 "dijkstra_buckets: Weights must be integral.",
                                 dijkstra_buckets, self.graph, 'a')
+
+    def test_dijkstra_iterator(self):
+        for graph in (self.graph, self.graph2):
+            paths = list(dijkstra_iterator(graph, 'a'))
+            ddist, dprev = dijkstra(graph, 'a')
+            for (node, dist, path) in paths:
+                self.assertEqual(dist, ddist[node])
 
     def test_dijkstra_pairing_heap(self):
         distance, previous = dijkstra_pairing_heap(self.graph, 'a')

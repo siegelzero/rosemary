@@ -575,10 +575,10 @@ def dijkstra_bidirectional(graph, s, t):
     graph_dict = graph.graph_dict
 
     if s not in graph_dict:
-        raise ValueError("dijkstra: {} is not a vertex of graph.".format(s))
+        raise ValueError("dijkstra_bidirectional: {} is not a vertex of graph.".format(s))
 
     if t not in graph_dict:
-        raise ValueError("dijkstra: {} is not a vertex of graph.".format(t))
+        raise ValueError("dijkstra_bidirectional: {} is not a vertex of graph.".format(t))
 
     # Search forward from `s`.
     forward_search = dijkstra_iterator(graph, s)
