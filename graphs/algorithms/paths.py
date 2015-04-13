@@ -591,19 +591,20 @@ def dijkstra_bidirectional(graph, s, t):
     backward_path = {}
 
     # We will alternate taking one step in each direction. If our paths
-    # cross, then we terminate. Otherwise, there is no path between the
-    # vertices.
+    # cross, then we terminate.
     directions = (
         (forward_estimate, backward_estimate, forward_path, forward_search),
         (backward_estimate, forward_estimate, backward_path, backward_search),
     )
 
     try:
+        # Cycle between forward search and backward search.
         for estimate, other, path, search in itertools.cycle(directions):
             v, d, p = next(search)
             estimate[v] = d
             path[v] = p
 
+            # Stop if we visit the same node by both searches.
             if v in other:
                 break
 
