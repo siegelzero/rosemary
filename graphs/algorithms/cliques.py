@@ -18,15 +18,15 @@ def bron_kerbosch(graph):
             Each clique is given by a list of vertices of graph.
 
     Examples:
-        >>> G = random_graph(10, 0.5)
+        >>> G = rosemary.graphs.graphs.random_graph(10, 0.5)
         >>> list(bron_kerbosch(G))
-        [[0, 8, 9], [0, 8, 3], [0, 8, 4], [0, 9, 5], [1, 9, 5], [1, 3],
-        [1, 6], [1, 7], [2, 5], [2, 6], [2, 7], [4, 8, 6], [7, 8]]
-        >>> G = coprime_pairs_graph(10)
+        [[0, 8, 9], [0, 8, 3], [0, 8, 4], [0, 9, 5], [1, 9, 5], [1, 3], [1, 6],
+         [1, 7], [2, 5], [2, 6], [2, 7], [4, 8, 6], [7, 8]]
+        >>> G = rosemary.graphs.graphs.coprime_pairs_graph(10)
         >>> list(bron_kerbosch(G))
-        [[1, 2, 9, 5, 7], [1, 2, 3, 5, 7], [1, 3, 8, 5, 7],
-        [1, 3, 10, 7], [1, 3, 4, 5, 7], [1, 4, 9, 5, 7],
-        [1, 5, 8, 9, 7], [1, 5, 6, 7], [1, 7, 9, 10]]
+        [[1, 2, 9, 5, 7], [1, 2, 3, 5, 7], [1, 3, 8, 5, 7], [1, 3, 10, 7],
+         [1, 3, 4, 5, 7], [1, 4, 9, 5, 7], [1, 5, 8, 9, 7],
+         [1, 5, 6, 7], [1, 7, 9, 10]]
 
     Details:
         This function uses the standard Bron-Kerbosch algorithm, with no

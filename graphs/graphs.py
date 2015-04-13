@@ -1,10 +1,8 @@
-import rosemary.algebra.matrices.matrices
-
-from rosemary.number_theory.core import gcd
-
 import copy
 import itertools
 import random
+
+from rosemary.algebra.matrices.matrices import MatrixZZ
 
 
 class Graph(object):
@@ -214,17 +212,21 @@ class Graph(object):
             >>> G.edge_set(weights=True)
             {(0, 1, 1), (0, 3, 1), (0, 4, 1), (1, 2, 1), (2, 3, 1), (3, 4, 1)}
         """
-        edge_set = set()
         graph_dict = self.graph_dict
+
+        edge_set = set()
+        add_edge = edge_set.add
 
         for u in graph_dict:
             for v in graph_dict[u]:
+                if v < u:
+                    continue
                 if weights:
                     weight = graph_dict[u][v]
-                    triple = (min(u, v), max(u, v), weight)
-                    edge_set.add(triple)
+                    triple = (u, v, weight)
+                    add_edge(triple)
                 else:
-                    edge_set.add((min(u, v), max(u, v)))
+                    add_edge((u, v))
 
         return edge_set
 
@@ -857,7 +859,7 @@ class Graph(object):
         """
         vertices = self.vertices()
         num_vertices = len(vertices)
-        mat = rosemary.algebra.matrices.matrices.MatrixZZ(num_vertices)
+        mat = MatrixZZ(num_vertices)
 
         for (i, u) in enumerate(vertices):
             for (j, v) in enumerate(vertices):
@@ -891,7 +893,7 @@ class Graph(object):
         """
         vertices = self.vertices()
         num_vertices = len(vertices)
-        mat = rosemary.algebra.matrices.matrices.MatrixZZ(num_vertices)
+        mat = MatrixZZ(num_vertices)
 
         for (i, v) in enumerate(vertices):
             mat[i][i] = len(self[v])
@@ -1177,6 +1179,12 @@ def coprime_pairs_graph(n):
         >>> G.edges()
         [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (2, 3), (2, 5), (3, 4), (3, 5), (4, 5), (5, 6)]
     """
+    def gcd(x, y):
+        """Euclid's algorithm"""
+        while y:
+            x, y = y, x % y
+        return x
+
     graph = Graph()
     for i in xrange(1, n + 1):
         for j in xrange(1, i):
