@@ -5,10 +5,11 @@ from heapq import heappush, heappop
 
 from rosemary.data_structures.heaps import PairingHeap
 
+inf = float('inf')
 
-################################################################################
+###########################################################################
 # Algorithms for the single-source shortest path problem.
-################################################################################
+###########################################################################
 
 
 def dijkstra(graph, s):
@@ -82,7 +83,6 @@ def dijkstra(graph, s):
     if s not in graph_dict:
         raise ValueError("dijkstra: {} is not a vertex of graph.".format(s))
 
-    inf = float('inf')
     distance = {u: inf for u in graph_dict}
     previous = {u: None for u in graph_dict}
 
@@ -176,7 +176,6 @@ def dijkstra_iterator(graph, s):
     if s not in graph_dict:
         raise ValueError("dijkstra_iterator: {} is not a vertex of graph.".format(s))
 
-    inf = float('inf')
     estimate = {u: inf for u in graph_dict}
     estimate[s] = 0
 
@@ -271,7 +270,6 @@ def dijkstra_buckets(graph, s):
     if s not in graph_dict:
         raise ValueError("dijkstra_buckets: {} is not a vertex of graph.".format(s))
 
-    inf = float('inf')
     estimate = {v: inf for v in graph_dict}
     estimate[s] = 0
 
@@ -381,7 +379,6 @@ def dijkstra_pairing_heap(graph, s):
     if s not in graph_dict:
         raise ValueError("dijkstra_pairing_heap: {} is not a vertex of graph.".format(s))
 
-    inf = float('inf')
     distance = {v: inf for v in graph_dict}
     previous = {s: None}
 
@@ -484,7 +481,6 @@ def bellman_ford(graph, s):
         raise ValueError("bellman_ford: {} is not a vertex of graph.".format(s))
 
     n = len(graph_dict)
-    inf = float('inf')
     count = {v: 0 for v in graph_dict}
     previous = {v: None for v in graph_dict}
 
@@ -520,9 +516,9 @@ def bellman_ford(graph, s):
     return cost, previous
 
 
-################################################################################
+###########################################################################
 # Algorithms for the single-pair shortest path problem.
-################################################################################
+###########################################################################
 
 
 def dijkstra_bidirectional(graph, s, t):
@@ -571,7 +567,6 @@ def dijkstra_bidirectional(graph, s, t):
     .. [2] R. Tarjan, "Data Structures and Network Algorithms", Society for
     Industrial and Applied Mathematics, 1983.
     """
-    inf = float('inf')
     graph_dict = graph.graph_dict
 
     if s not in graph_dict:
@@ -625,3 +620,114 @@ def dijkstra_bidirectional(graph, s, t):
                 best_path = forward_path[u] + backward_path[v][1:][::-1] + [t]
 
     return best_len, best_path
+
+
+###########################################################################
+# Algorithms for the all-pairs shortest path problem.
+###########################################################################
+
+
+def floyd_warshall(graph):
+    r"""Computes shortest paths and distances between all pairs of nodes of
+    `graph`.
+
+    Parameters
+    ----------
+    graph : rosemary.graphs.graphs.Graph
+
+    Returns
+    -------
+    (dist, pred) : tuple
+        The dict `dist` contains the length of the shortest path between
+        each pair of vertices in `graph`; i.e. `dist[u, v]` gives the
+        length of the shortest `u`, `v` path. The dict `pred` contains the
+        parent information of `v` in a shortest path rooted at `u`; i.e.
+        `pred[u, v]` gives the vertex previous to `v` in a `u`, `v`
+        shortest path.
+
+    Raises
+    ------
+    ValueError
+        If `graph` contains a negative cycle.
+
+    See Also
+    --------
+    Notes
+    -----
+    This method uses the algorithm due to Floyd [1], which itself is a
+    generalization of the transitive closure algorithm due to Warshall [2].
+    Our implementation follows that outlined in [3] and [4].
+
+    This algorithm computes shortest distances for all pairs and
+    shortest-path trees for all sources in O(n^3) time, where n = |V|. The
+    algorithm is so simple that on dense graphs it is likely to be faster
+    by a constant factor than n iterations of Dijkstra's algorithm. One
+    disadvantage of this algorithm is that it requires O(n^2) storage as
+    well.
+
+    References
+    ----------
+    .. [1] R. W. Floyd, "Algorithm 97: Shortest Path", Communications of
+    the ACM, Volume 5, Issue 6, June 1962, page 345.
+
+    .. [2] S. Warshall, "A Theorem on Boolean Matrices", Journal of the
+    ACM, Volume 9, Issue 1, Jan. 1962, pages 11-12.
+
+    .. [3] R. Tarjan, "Data Structures and Network Algorithms", Society for
+    Industrial and Applied Mathematics, 1983.
+
+    .. [4] R.K. Ahuja, T.L. Magnanti, J.B. Orlin, "Network Flows: Theory,
+    Algorithms, and Applications", Prentice-Hall, 1993.
+
+    Examples
+    --------
+    >>> G = Graph()
+    >>> G.add_edges([('a', 'b', 2), ('a', 'c', 1), ('b', 'c', 1),
+                     ('b', 'd', 2), ('b', 'e', 3), ('c', 'e', 4),
+                     ('d', 'e', 2)])
+    >>> d, p = floyd_warshall(G)
+    >>> d
+    {('b', 'c'): 1, ('a', 'a'): 0, ('e', 'd'): 2, ('d', 'e'): 2,
+     ('a', 'd'): 4, ('e', 'c'): 4, ('a', 'b'): 2, ('b', 'd'): 2,
+     ('c', 'a'): 1, ('e', 'b'): 3, ('d', 'b'): 2, ('d', 'c'): 3,
+     ('c', 'e'): 4, ('b', 'a'): 2, ('a', 'e'): 5, ('c', 'd'): 3,
+     ('e', 'a'): 5, ('b', 'b'): 0, ('b', 'e'): 3, ('e', 'e'): 0,
+     ('a', 'c'): 1, ('d', 'a'): 4, ('c', 'c'): 0, ('c', 'b'): 1,
+     ('d', 'd'): 0}
+    >>> p
+    {('b', 'c'): 'b', ('a', 'a'): None, ('e', 'd'): 'e', ('d', 'e'): 'd',
+     ('a', 'd'): 'b', ('e', 'c'): 'e', ('a', 'b'): 'a', ('b', 'd'): 'b',
+     ('c', 'a'): 'c', ('e', 'b'): 'e', ('d', 'b'): 'd', ('d', 'c'): 'b',
+     ('c', 'e'): 'c', ('b', 'a'): 'b', ('a', 'e'): 'c', ('c', 'd'): 'b',
+     ('e', 'a'): 'c', ('b', 'b'): None, ('b', 'e'): 'b', ('e', 'e'): None,
+     ('a', 'c'): 'a', ('d', 'a'): 'b', ('c', 'c'): None, ('c', 'b'): 'c',
+     ('d', 'd'): None}
+    """
+    graph_dict = graph.graph_dict
+    vertices = graph_dict.keys()
+    dist = {}
+    pred = {}
+
+    for u in vertices:
+        for v in vertices:
+            pred[u, v] = None
+            dist[u, v] = inf
+
+            if u == v:
+                dist[u, v] = 0
+            elif v in graph_dict[u]:
+                dist[u, v] = graph_dict[u][v]
+                pred[u, v] = u
+
+    # Labeling step.
+    for u in vertices:
+        if dist[u, u] < 0:
+            raise ValueError("Negative Cycle!")
+
+        for v in vertices:
+            for w in vertices:
+                if dist[v, w] > dist[v, u] + dist[u, w]:
+                    dist[v, w] = dist[v, u] + dist[u, w]
+                    pred[v, w] = pred[u, w]
+
+    return dist, pred

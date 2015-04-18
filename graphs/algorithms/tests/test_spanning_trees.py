@@ -39,7 +39,7 @@ class TestSpanningTrees(unittest.TestCase):
         self.petersen_graph = petersen_graph()
 
     def test_prim(self):
-        w, edges = prim(self.dasgupta_graph, 'a')
+        w, edges = prim(self.dasgupta_graph)
         self.assertEqual(w, self.dasgupta_weight)
         self.assertEqual(edges, self.dasgupta_edges)
 
