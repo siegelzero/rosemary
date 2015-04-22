@@ -1,5 +1,6 @@
 *.pyc
 *~
 .coverage
+*.egg-info
 env/
 tags
