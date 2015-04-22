@@ -123,11 +123,6 @@ def minimum_cost_paths_heuristic(graph, terminals):
     -----
     This method uses the heuristic algorithm given in [1].
     """
-    tree_edges = []
-    tree_vertices = set()
-    terminal_set = set(terminals)
-    tree_vertices.add(terminal_set.pop())
-
     # shortest_prev[u] holds the predecessor dict for the shortest path
     # tree rooted at u.
     shortest_prev = {}
@@ -138,29 +133,43 @@ def minimum_cost_paths_heuristic(graph, terminals):
         shortest_dist[u] = u_dist
         shortest_prev[u] = u_prev
 
-    while terminal_set:
-        min_dist = inf
-        for u in terminal_set - tree_vertices:
-            for v in tree_vertices:
-                if shortest_dist[u][v] < min_dist:
-                    min_dist = shortest_dist[u][v]
-                    min_vertices = (u, v)
+    best_weight = inf
 
-        u, v = min_vertices
-        a, b = shortest_prev[u][v], v
-        tree_vertices.add(v)
-        terminal_set.discard(u)
+    for root in terminals:
+        tree_edges = []
+        tree_vertices = set()
+        terminal_set = set(terminals)
+        terminal_set.discard(root)
+        tree_vertices.add(root)
 
-        while a is not None:
-            if a < b:
-                tree_edges.append((a, b))
-            else:
-                tree_edges.append((b, a))
+        while terminal_set:
+            min_dist = inf
+            for u in terminal_set - tree_vertices:
+                for v in tree_vertices:
+                    if shortest_dist[u][v] < min_dist:
+                        min_dist = shortest_dist[u][v]
+                        min_vertices = (u, v)
 
-            tree_vertices.add(a)
-            a, b = shortest_prev[u][a], a
+            u, v = min_vertices
+            a, b = shortest_prev[u][v], v
+            tree_vertices.add(v)
+            terminal_set.discard(u)
 
-    return sum(graph[u][v] for (u, v) in tree_edges), tree_edges
+            while a is not None:
+                if a < b:
+                    tree_edges.append((a, b))
+                else:
+                    tree_edges.append((b, a))
+
+                tree_vertices.add(a)
+                a, b = shortest_prev[u][a], a
+
+        tree_weight = sum(graph[u][v] for (u, v) in tree_edges)
+        if tree_weight < best_weight:
+            best_weight = tree_weight
+            best_edges = tree_edges
+
+    return best_weight, best_edges
 
 
 def _delete_nonterminal_leaves(edges, terminals):
