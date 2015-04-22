@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
+from setuptools import setup
 import os
 
 # Allow to run setup.py from another directory.
@@ -19,20 +19,7 @@ setup(
     long_description="""rosemary is a suite of algorithms for computations in number theory, discrete mathematics, and
                         combinatorial optimization""",
     include_package_data=True,
-    packages=find_packages(
-        exclude=(
-            '.*',
-            'EGG-INFO',
-            '*.egg-info',
-            '_trial*',
-            '*.tests',
-            '*.tests.*',
-            'tests.*',
-            'tests',
-            'examples.*',
-            'examples*',
-        )
-    ),
+    packages=['rosemary'],
     tests_require=[
         'coverage',
         'mock',
