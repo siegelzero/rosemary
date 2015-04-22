@@ -14,62 +14,71 @@ from rosemary.graphs.graphs import Graph
 
 
 def prim(graph, root=None, edge_list=True):
-    """
-    Returns a minimum spanning tree of the given graph.
+    r"""Returns a minimum spanning tree of the given graph.
 
-    Given a connected weighted graph and optional vertex w, this method returns
-    a minimum spanning tree of the graph, rooted at vertex w. In the case that
-    the graph is not connected, a minimum spanning tree of the component
-    containing the root vertex is returned.
+    Given a connected weighted graph and optional vertex w, this method
+    returns a minimum spanning tree of the graph, rooted at vertex w. In
+    the case that the graph is not connected, a minimum spanning tree of
+    the component containing the root vertex is returned.
 
-    Input:
-        * graph: Graph
+    Parameters
+    ----------
+    graph : rosemary.graphs.graphs.Graph
 
-        * root: vertex of graph (default=None)
-            Root vertex of spanning tree. If root is None, a (somewhat) random
-            vertex is chosen.
+    root : vertex of graph (default=None)
+        Root vertex of spanning tree. If root is None, a (somewhat) random
+        vertex is chosen.
 
-        * edge_list: bool (default=True)
-            If True, a list of the edges in the minimum spanning tree is
-            returned. Otherwise, a predecessor dict is returned.
+    edge_list : bool (default=True)
+        If True, a list of the edges in the minimum spanning tree is
+        returned. Otherwise, a predecessor dict is returned.
 
-    Output:
-        * (weight, edges): tuple
-            * weight: number
-                Weight of the minimum spanning tree.
+    Returns
+    -------
+    (weight, edges) : tuple
+        The number `weight` is the weight of the minimum spanning tree. If
+        the parameter `edge_list` is True, then `edges` is a list of the
+        edges in the minimum spanning tree. Otherwise, `edges` is the
+        predecessor dict of the spanning tree.
 
-            * edges: list
-                If edge_list is True, this is a list of the edges in the minimum
-                spanning tree. Otherwise, this is the predecessor dict of the
-                spanning tree.
+    Notes
+    -----
+    This method uses Prim's algorithm to find a minimum spanning tree of
+    the given graph. The notion of a spanning tree only makes sense if the
+    graph is connected. In the case that the graph is not connected, then a
+    minimum spanning tree of the component containing the root vertex is
+    returned.
 
-    Examples:
-        >>> G = Graph()
-        >>> G.add_edges([('a', 'b', 5), ('a', 'c', 6), ('a', 'd', 4),
-                         ('b', 'c', 1), ('b', 'd', 2), ('c', 'd', 2),
-                         ('c', 'e', 5), ('c', 'f', 3), ('d', 'f', 4),
-                         ('e', 'f', 4)])
-        >>> prim(G)
-        (14, [('a', 'd'), ('b', 'c'), ('b', 'd'), ('c', 'f'), ('e', 'f')])
-        >>> prim(G, edge_list=False)
-        (14, {'a': None, 'b': 'd', 'c': 'b', 'd': 'a', 'e': 'f', 'f': 'c'})
+    Prim's algorithm begins with a tree containing only the root vertex,
+    and then repeatedly grows the tree by adding the lightest edge between
+    a vertex in the tree and a vertex outside of the tree. Using Python
+    heaps, this algorithm runs in time O((|V| + |E|)*log(|V|)). Our
+    implementation is based on the exposition in [1]. See [2] for a
+    different exposition, and see [3] for a detailed overview of minimum
+    spanning tree algorithms.
 
-    Details:
-        This method uses Prim's algorithm to find a minimum spanning tree of the
-        given graph. The notion of a spanning tree only makes sense if the graph
-        is connected. In the case that the graph is not connected, then a
-        minimum spanning tree of the component containing the root vertex is
-        returned.
+    References
+    ----------
+    .. [1] T.H. Cormen, C.E. Leiserson, R.L. Rivest, C. Stein,
+    "Introduction to Algorithms", Third Edition, The MIT Press, 2009.
 
-        Prim's algorithm begins with a tree containing only the root vertex, and
-        then repeatedly grows the tree by adding the lightest edge between a
-        vertex in the tree and a vertex outside of the tree. Using Python heaps,
-        this algorithm runs in time O((|V| + |E|)*log(|V|)). Our implementation
-        is based on the exposition in the book "Introduction to Algorithms" by
-        Cormen, et al. Another standard reference is the book "Algorithms" by
-        Dasgupta, et al. See "Network Flows: Theory, Algorithms, and
-        Applications" by Ahuja, et al. for a detailed overview of minimum
-        spanning tree algorithms.
+    .. [2] R.K. Ahuja, T.L. Magnanti, J.B. Orlin, "Network Flows: Theory,
+    Algorithms, and Applications", Prentice-Hall, 1993.
+
+    .. [3] S. Dasgupta, C.H. Papadimitrious, and U. Vazirani, "Algorithms",
+    McGraw-Hill, 2008.
+
+    Examples
+    --------
+    >>> G = Graph()
+    >>> G.add_edges([('a', 'b', 5), ('a', 'c', 6), ('a', 'd', 4),
+                     ('b', 'c', 1), ('b', 'd', 2), ('c', 'd', 2),
+                     ('c', 'e', 5), ('c', 'f', 3), ('d', 'f', 4),
+                     ('e', 'f', 4)])
+    >>> prim(G)
+    (14, [('a', 'd'), ('b', 'c'), ('b', 'd'), ('c', 'f'), ('e', 'f')])
+    >>> prim(G, edge_list=False)
+    (14, {'a': None, 'b': 'd', 'c': 'b', 'd': 'a', 'e': 'f', 'f': 'c'})
     """
     # Choose a root vertex if none is given
     if root is None:

@@ -165,6 +165,13 @@ class Graph(object):
         vertex_set = set(self.graph_dict.keys())
         return vertex_set
 
+    def leaves(self):
+        """
+        Returns a set of the leaves of self; i.e. the vertices of degree 1.
+        """
+        leaves = {u for u in self.graph_dict if len(self.graph_dict[u]) == 1}
+        return leaves
+
     def edges(self, weights=False):
         """
         Returns a sorted list of the edges of self.
@@ -965,7 +972,7 @@ class Graph(object):
 
         for u in vertex_set:
             for v in (vertex_set & self.neighbors(u)):
-                induced.add_edge(u, v)
+                induced.add_edge(u, v, self.graph_dict[u][v])
 
         return induced
 

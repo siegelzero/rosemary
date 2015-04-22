@@ -667,8 +667,8 @@ def floyd_warshall(graph):
 
     References
     ----------
-    .. [1] R. W. Floyd, "Algorithm 97: Shortest Path", Communications of
-    the ACM, Volume 5, Issue 6, June 1962, page 345.
+    .. [1] R.W. Floyd, "Algorithm 97: Shortest Path", Communications of the
+    ACM, Volume 5, Issue 6, June 1962, page 345.
 
     .. [2] S. Warshall, "A Theorem on Boolean Matrices", Journal of the
     ACM, Volume 9, Issue 1, Jan. 1962, pages 11-12.
