@@ -2,6 +2,7 @@
 
 ################################################################################
 
+
 def subset_sum_recursive(L, target):
     """
     subset_sum_recursive(L, s):
@@ -12,7 +13,6 @@ def subset_sum_recursive(L, target):
 
     max_arr = [0, []]
     A = sorted(L)
-    ll = len(A)
 
     def backtrack(used, partial_sum, last):
         for part in A:
@@ -20,7 +20,7 @@ def subset_sum_recursive(L, target):
                 break
             t_sum = partial_sum + part
             if t_sum <= target:
-                t_used = used + [ part ]
+                t_used = used + [part]
                 if t_sum >= max_arr[0]:
                     max_arr[0] = t_sum
                     max_arr[1] = t_used
@@ -32,7 +32,9 @@ def subset_sum_recursive(L, target):
     backtrack([], 0, A[-1] + 1)
     return max_arr
 
+
 ################################################################################
+
 
 def subset_sum_middle(L, target):
     """
@@ -72,7 +74,9 @@ def subset_sum_middle(L, target):
 
     return best
 
+
 ################################################################################
+
 
 def subset_sum_dynamic(L, target):
     """
@@ -93,4 +97,3 @@ def subset_sum_dynamic(L, target):
                 M[i, w] = max(M[i - 1, w], L[i] + M[i - 1, w - L[i]])
 
     return M[n - 1, target]
-

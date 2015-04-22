@@ -1,8 +1,10 @@
-import cliques
-import coloring
-import connectivity
-import independent_sets
-import paths
-import spanning_trees
-import steiner_trees
-import traversal
+from rosemary.graphs.algorithms import (
+    cliques,
+    coloring,
+    connectivity,
+    independent_sets,
+    paths,
+    spanning_trees,
+    steiner_trees,
+    traversal,
+)

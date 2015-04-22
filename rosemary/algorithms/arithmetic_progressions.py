@@ -41,6 +41,7 @@ def has_three_term_ap(A, **kwargs):
                     return (A[i], A[j], A[k])
     return False
 
+
 def longest_ap(A):
     """
     Returns the longest arithmetic progressions in A.

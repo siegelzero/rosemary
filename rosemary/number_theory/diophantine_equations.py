@@ -86,9 +86,6 @@ def _pell_general(D, N, one_solution=False):
     """
     test with D = 1121311213, N = 11889485036288588
     """
-    #if D < 0 or N < 0:
-    #    raise ValueError("_pell_general: Must have D > 0 and N > 0")
-
     # Find fundamental solution to Pell
     for (t, u) in QuadraticIrrational(D).convergents():
         if t*t - D*u*u == 1:

@@ -2,14 +2,17 @@
 # Functions associated to formal power series
 ################################################################################
 
+
 import itertools
+
 
 def delta_series(n):
     eta = eta_series(n)
     delta = ps_power(eta, 24)
     return delta
 
-def eta_series(prec = 1000):
+
+def eta_series(prec=1000):
     """
     eta_series_qexp(z, prec = 1000):
     Returns the q-expansion for eta(z) to precision p, without the q^(1/24).
@@ -32,6 +35,7 @@ def eta_series(prec = 1000):
         coeff_list[term] = sign
     return coeff_list
 
+
 def ps_invert(A):
     """
     power_series_invert(A):
@@ -49,6 +53,7 @@ def ps_invert(A):
             ss += A[i] * B[k - i]
         B[k] = -ss / a0
     return B
+
 
 def ps_power(A, k):
     """
@@ -68,6 +73,7 @@ def ps_power(A, k):
         P[i] = ss // (i * a0)
     return P
 
+
 def ps_mult_classical(M, N):
     m = len(M)
     n = len(N)
@@ -76,6 +82,7 @@ def ps_mult_classical(M, N):
         for j in xrange(n):
             P[i + j] += M[i] * N[j]
     return P
+
 
 def ps_mult_karatsuba(M, N, kthresh=40):
     m = len(M)
@@ -99,16 +106,14 @@ def ps_mult_karatsuba(M, N, kthresh=40):
     z0 = ps_mult_karatsuba(f0, g0, kthresh)
     z2 = ps_mult_karatsuba(f1, g1, kthresh)
 
-    f1_f0 = [sum(e) for e in itertools.izip_longest(f1, f0, fillvalue = 0)]
-    g1_g0 = [sum(e) for e in itertools.izip_longest(g1, g0, fillvalue = 0)]
+    f1_f0 = [sum(e) for e in itertools.izip_longest(f1, f0, fillvalue=0)]
+    g1_g0 = [sum(e) for e in itertools.izip_longest(g1, g0, fillvalue=0)]
 
     xxyy = ps_mult_karatsuba(f1_f0, g1_g0, kthresh)
 
-    z1 = [e[0] - e[1] - e[2] for e in itertools.izip_longest(xxyy, z2, z0,
-        fillvalue = 0)]
+    z1 = [e[0] - e[1] - e[2] for e in itertools.izip_longest(xxyy, z2, z0, fillvalue=0)]
 
     t2 = [0] * (2*k) + z2
     t1 = [0] * (k) + z1
-    xy = [sum(e) for e in itertools.izip_longest(t2, t1, z0, fillvalue = 0)]
+    xy = [sum(e) for e in itertools.izip_longest(t2, t1, z0, fillvalue=0)]
     return xy
-

@@ -1,11 +1,10 @@
 import math
 import random
-#import numpy
+
 
 def euclidean_distance_matrix(points):
     num_points = len(points)
     distance_matrix = [[0]*num_points for _ in xrange(num_points)]
-    #distance_matrix = numpy.zeros((num_points, num_points))
     inf = float('inf')
 
     for i in xrange(num_points):
@@ -19,11 +18,13 @@ def euclidean_distance_matrix(points):
 
     return distance_matrix
 
+
 def cost(path, distance_matrix, num_vertices):
     total = distance_matrix[path[-1]][path[0]]
     for i in xrange(num_vertices - 1):
         total += distance_matrix[path[i]][path[i + 1]]
     return total
+
 
 def depth_first(points, distance_matrix=None):
     if distance_matrix is None:
@@ -95,7 +96,6 @@ def branch_and_bound(points, distance_matrix=None):
         MM[0][0] = inf
         j = 1
 
-
         for y in other_vertices:
             MM[0][j] = distance_matrix[X[-1]][y]
             j += 1
@@ -144,7 +144,6 @@ def branch_and_bound(points, distance_matrix=None):
                 if bound >= best[0]:
                     return
                 backtrack(path + [choice], l + 1, choices)
-
 
     backtrack([], 0, [])
     return best
@@ -275,10 +274,7 @@ def two_opt(points, distance_matrix=None):
 
     num_points = len(points)
 
-    #best_cost, best_sol = farthest_insertion(points)
-
     best_sol = range(num_points)
-    #random.shuffle(best_sol)
     best_cost = cost(best_sol, distance_matrix, num_points)
 
     done = False
@@ -310,6 +306,7 @@ def two_opt(points, distance_matrix=None):
 
     return best_cost, best_sol
 
+
 def simulated_annealing_two_opt(points, distance_matrix=None):
     if distance_matrix is None:
         distance_matrix = euclidean_distance_matrix(points)
@@ -319,12 +316,10 @@ def simulated_annealing_two_opt(points, distance_matrix=None):
     inf = float('inf')
     best_value = inf
     old_value = inf
-    #best_value, best_sol = farthest_insertion(points)
     best_sol = range(num_vertices)
     random.shuffle(best_sol)
     best_value = cost(best_sol, distance_matrix, num_vertices)
     count = 0
-
 
     while True:
         if abs(best_value - old_value) < 0.000001:

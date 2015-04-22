@@ -1,2 +1,4 @@
-import algorithms
-import graphs
+from rosemary.graphs import (
+    algorithms,
+    graphs,
+)

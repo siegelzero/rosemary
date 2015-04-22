@@ -221,4 +221,3 @@ def simulated_annealing(items, capacity):
         temp *= alpha
 
     return best_value, best_items
-

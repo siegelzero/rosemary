@@ -33,7 +33,7 @@ test-unit:
 	$(HIDE)$(VENV)/bin/nosetests $(PACKAGE)
 
 test-flake8:
-	$(HIDE)$(VENV)/bin/flake8 --max-line-length=120 $(PACKAGE)
+	$(HIDE)$(VENV)/bin/flake8 --max-line-length=120 --exclude="__init__.py,prime_list.py,tables.py,test_*.py" $(PACKAGE)
 
 coverage:
 	$(HIDE)$(VENV)/bin/nosetests --with-coverage --cover-erase --cover-inclusive --cover-package=$(PACKAGE) $(PACKAGE)
