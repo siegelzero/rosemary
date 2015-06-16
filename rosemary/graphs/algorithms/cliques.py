@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import rosemary.graphs.algorithms.coloring
 
 
@@ -303,6 +305,82 @@ def pardalos(graph):
     return tuple(max_clique)
 
 
+def pardalos_binary(graph):
+    """
+    Returns a maximum clique of graph.
+
+    Input:
+        * graph: Graph
+
+    Ouput:
+        * (size, clique): tuple
+            * size: int
+                Size of the maximum clique.
+
+            * clique: list
+                Vertices of a maximum clique of graph.
+
+    Examples:
+        >>> G = coprime_pairs_graph(10)
+        >>> pardalos(G)
+        (5, [1, 2, 3, 5, 7])
+        >>> G = random_graph(30, 0.5)
+        (6, [0, 11, 20, 23, 26, 28])
+
+    Details:
+        This method is based on the algorithm by Carraghan and Pardalos from the
+        paper "An Exact Algorithm for the Maximum Clique Problem". We follow the
+        outline in the paper "A Fast Algorithm for the Maximum Clique Problem"
+        by Ostergard.
+    """
+    vertices = graph.vertices(order='induced')
+    num_vertices = len(vertices)
+    all_vertices = 2**num_vertices - 1
+
+    # Dicts for translating between bit form and vertex form.
+    int_to_vertex_map = {}
+    vertex_to_int_map = {}
+
+    i = 1
+    for u in vertices:
+        vertex_to_int_map[u] = i
+        int_to_vertex_map[i] = u
+        i <<= 1
+
+    neighbors = {}
+    for u in vertices:
+        i = vertex_to_int_map[u]
+        neighbors[i] = 0
+        for v in graph.neighbors(u):
+            neighbors[i] |= vertex_to_int_map[v]
+
+    max_clique = [0, 0]
+
+    def backtrack(used, candidates, size):
+        if not candidates:
+            if size > max_clique[0]:
+                max_clique[0] = size
+                max_clique[1] = used
+            return
+
+        num_candidates = bin(candidates).count('1')
+        while candidates and size + num_candidates > max_clique[0]:
+            u = candidates & (-candidates)
+            candidates &= (candidates - 1)
+            num_candidates -= 1
+            backtrack(used | u, candidates & neighbors[u], size + 1)
+
+    backtrack(0, all_vertices, 0)
+
+    bits = max_clique[1]
+    clique = []
+    for i in xrange(num_vertices):
+        if bits & (1 << i):
+            clique.append(vertices[i])
+
+    return max_clique[0], clique
+
+
 def ostergard(graph):
     """
     Returns a maximum clique of graph.
@@ -397,6 +475,109 @@ def ostergard(graph):
         largest[i] = max_clique[0]
 
     return tuple(max_clique)
+
+
+def ostergard_binary(graph):
+    """
+    Returns a maximum clique of graph.
+
+    Input:
+        * graph: Graph
+
+    Ouput:
+        * (size, clique): tuple
+            * size: int
+                Size of the maximum clique.
+
+            * clique: list
+                Vertices of a maximum clique of graph.
+    Examples:
+        >>> G = coprime_pairs_graph(10)
+        >>> ostergard(G)
+        (5, [1, 5, 7, 9, 8])
+        >>> G = random_graph(30, 0.5)
+        >>> ostergard(G)
+        (6, [0, 11, 20, 23, 26, 28])
+
+    Details:
+        This function follows the algorithm outlined in the paper "A Fast
+        Algorithm for the Maximum Clique Problem" by Ostergard. Experimental
+        evidence suggests that this algorithm is superior to the Pardalos
+        algorithm for graphs with low edge density.
+    """
+    # We order the vertices by color class. In each class, the vertices are
+    # ordered by their degree in the graph.
+    vertices = []
+    (num_colors, coloring) = rosemary.graphs.algorithms.coloring.greedy_sequential(graph)
+    for color_class in coloring:
+        vertices.extend(sorted(color_class, key=graph.degree, reverse=True))
+
+    vertices = vertices[::-1]
+    num_vertices = len(vertices)
+    all_vertices = 2**num_vertices - 1
+
+    # Dicts for translating between bit form and vertex form.
+    int_to_vertex_map = {}
+    vertex_to_int_map = {}
+
+    i = 1
+    for u in vertices:
+        vertex_to_int_map[u] = i
+        int_to_vertex_map[i] = u
+        i <<= 1
+
+    neighbors = {}
+    for u in vertices:
+        i = vertex_to_int_map[u]
+        neighbors[i] = 0
+        for v in graph.neighbors(u):
+            neighbors[i] |= vertex_to_int_map[v]
+
+    max_clique = [0, 0]
+
+    def backtrack(used, candidates, size):
+        if not candidates:
+            if size > max_clique[0]:
+                max_clique[0] = size
+                max_clique[1] = used
+                found[0] = True
+            return
+
+        num_candidates = bin(candidates).count('1')
+        while candidates and size + num_candidates > max_clique[0]:
+            u = candidates & (-candidates)
+
+            if size + largest[u] <= max_clique[0]:
+                return
+
+            candidates &= (candidates - 1)
+            num_candidates -= 1
+            backtrack(used | u, candidates & neighbors[u], size + 1)
+
+            if found[0]:
+                return
+
+    # largest[i] is the size of the maximum clique in S[i].
+    largest = defaultdict(int)
+
+    # S[i] is the set of vertices {v_i, v_{i + 1}, ..., v_{n - 1}}.
+    S = [0]*num_vertices
+    for i in xrange(num_vertices):
+        S[i] = (all_vertices >> i) << i
+
+    for i in xrange(num_vertices - 1, -1, -1):
+        found = [False]
+        u = 1 << i
+        backtrack(u, S[i] & neighbors[u], 1)
+        largest[u] = max_clique[0]
+
+    bits = max_clique[1]
+    clique = []
+    for i in xrange(num_vertices):
+        if bits & (1 << i):
+            clique.append(vertices[i])
+
+    return max_clique[0], clique
 
 
 def maximum_clique(graph, algorithm='ostergard'):

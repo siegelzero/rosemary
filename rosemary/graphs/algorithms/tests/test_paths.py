@@ -1,4 +1,5 @@
 import unittest
+import functools
 
 from rosemary.graphs.graphs import Graph
 from rosemary.graphs.algorithms.paths import (
@@ -100,6 +101,11 @@ class TestShortestPaths(unittest.TestCase):
                                 dijkstra_buckets, self.graph, 'a')
 
     def test_dijkstra_iterator(self):
+        f = lambda g, u: list(dijkstra_iterator(g, u))
+        self.assertRaisesRegexp(ValueError,
+                                "dijkstra_iterator: 0 is not a vertex of graph.",
+                                f, self.graph, 0)
+
         for graph in (self.graph, self.graph2):
             paths = list(dijkstra_iterator(graph, 'a'))
             ddist, dprev = dijkstra(graph, 'a')
@@ -107,6 +113,10 @@ class TestShortestPaths(unittest.TestCase):
                 self.assertEqual(dist, ddist[node])
 
     def test_dijkstra_pairing_heap(self):
+        self.assertRaisesRegexp(ValueError,
+                                "dijkstra_pairing_heap: 0 is not a vertex of graph.",
+                                dijkstra_pairing_heap, self.graph, 0)
+
         distance, previous = dijkstra_pairing_heap(self.graph, 'a')
         self.assertEqual(distance, self.distance)
         self.assertEqual(previous, self.previous)
