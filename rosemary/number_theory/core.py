@@ -684,7 +684,6 @@ class _IsSquare(object):
             q = integer_sqrt(n)
             if q*q == n:
                 return q
-            print 'here:', n
             return False
 
 
@@ -704,9 +703,6 @@ def is_square(n):
 
         * False if n is not a perfect square.
 
-    Raises:
-        * ValueError: If n < 0.
-
     Examples:
         >>> is_square(16)
         4
@@ -716,10 +712,6 @@ def is_square(n):
         10
         >>> is_square([(2, 3), (5, 2)])
         False
-        >>> is_square(-2)
-        Traceback (most recent call last):
-        ...
-        ValueError: is_square: Must have n >= 0.
 
     Details:
         If n is a nonnegative integer, the function computes the integer square
@@ -729,7 +721,7 @@ def is_square(n):
     """
     if isinstance(n, list):
         if n[0][0] == -1:
-            raise ValueError("is_square: Must have n >= 0.")
+            return False
         n_factorization = n[:]
         sqrt = 1
         for (p, e) in n_factorization:
@@ -740,7 +732,9 @@ def is_square(n):
         return sqrt
     else:
         if n < 0:
-            raise ValueError("is_square: Must have n >= 0.")
+            return False
+        elif n == 0:
+            return True
         return _IsSquare.is_square(n)
 
 

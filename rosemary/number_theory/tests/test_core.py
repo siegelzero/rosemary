@@ -212,10 +212,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(is_power([(3, 4), (5, 4)], 2), (225, 2))
 
     def test_is_square(self):
-        self.assertRaisesRegexp(ValueError, "is_square: Must have n >= 0.", is_square, -2)
-        self.assertRaisesRegexp(ValueError, "is_square: Must have n >= 0.", is_square, [(-1, 1), (2, 2)])
-
-        for k in [2, 3, 5, 7, 11, 2545]:
+        for k in [-2, -1, 2, 3, 5, 7, 11, 2545]:
             self.assertEqual(is_square(k), False)
 
         for (k, r) in [(9, 3), (16, 4), (289, 17), (130321, 361)]:
@@ -225,11 +222,11 @@ class TestCore(unittest.TestCase):
         self.assertEqual(is_square([(2, 4), (5, 3)]), False)
 
         values = [
-            1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225, 256, 289, 324, 361, 400, 441, 484, 529, 576,
-            625, 676, 729, 784, 841, 900, 961
+            0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225, 256, 289, 324, 361, 400, 441, 484, 529,
+            576, 625, 676, 729, 784, 841, 900, 961
         ]
 
-        squares = [a for a in xrange(1, 1000) if is_square(a)]
+        squares = [a for a in xrange(1000) if is_square(a)]
 
         self.assertEqual(squares, values)
 
