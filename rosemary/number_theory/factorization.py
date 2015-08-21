@@ -18,39 +18,70 @@ from rosemary.number_theory.core import (
 )
 
 
-###############################################################################
+###########################################################################
 # Classical algorithms
-###############################################################################
+###########################################################################
+
+
+
+# .. [3] E. Bach, J. Shallit, "Algorithmic Number Theory I: Efficient
+# Algorithms", MIT Press, Cambridge, MA, 1996.
+
+# .. [4] D.E. Knuth, "The Art of Computer Programming, Volume 2:
+# Seminumerical Algorithms", Addison-Wesley Longman Publishing Co., Inc,
+# Boston, MA, 1997.
 
 
 def trial_division(n, bound=None):
-    """
-    Returns the smallest prime divisor of n, or proves primality.
+    r"""Returns the smallest prime divisor of `n`, or proves primality.
 
-    Given an integer n > 1, this algorithm attempts to find a factor of n by
-    using trial division.
+    Given an integer `n` > 1, this algorithm attempts to find a factor of
+    `n` by using trial division.
 
-    Input:
-        * n: int (n > 1)
-        * bound: int (default=None)
-            The bound for trial division.
+    Parameters
+    ----------
+    n : int (n > 1)
 
-    Output:
-        * d: int
-            The smallest prime factor of n, or n itself if n is prime.
+    bound : int, optional (default=None)
+        If a non-None value is passed, then only trial divisors <= `bound`
+        are considered. Otherwise, all trial divisors up the the square
+        root of `n` are considered.
 
-    Examples:
-        >>> trial_division(100)
-        2
-        >>> trial_division(10000004400000259)
-        100000007
+    Returns
+    -------
+    d : int
+        The smallest prime factor of `n`, or `n` itself if `n` is prime.
+        Note that if `bound` less than the square root of `n` is passed,
+        then there are no guarantees of the primality of `n`.
 
-    Details:
-        This method uses trial division to find the smallest prime factor of n.
-        The algorithm runs through the precomputed list of primes first, and
-        then uses a simple wheel modulo 30 after that. This algorithm is very
-        useful to find small prime factors of a number, but serves a poor
-        primality test for numbers more than 12 digits.
+    Notes
+    -----
+    This method uses trial division to find the smallest prime factor of n,
+    requiring O(sqrt(n)) arithmetic operations. The algorithm runs through
+    the precomputed list of primes first, and then uses a simple modulo 30
+    wheel after that. This algorithm is very useful to find small prime
+    factors of a number, but serves as a poor primality test for numbers
+    more than 12 digits.
+
+    References
+    ----------
+    .. [1] H. Cohen, "A Course in Computational Algebraic Number Theory",
+    Springer-Verlag, New York, 2000.
+
+    .. [2] R. Crandall, C. Pomerance, "Prime Numbers: A Computational
+    Perspective", Springer-Verlag, New York, 2001.
+
+    .. [3] V. Shoup, "A Computational Introduction to Number Theory and
+    Algebra", Cambridge University Press, New York, 2009.
+
+    Examples
+    --------
+    >>> trial_division(100)
+    2
+    >>> trial_division(10000004400000259)
+    100000007
+    >>> trial_division(10000004400000259, 100)
+    10000004400000259
     """
     if bound is None:
         bound = integer_sqrt(n) + 1
@@ -62,9 +93,9 @@ def trial_division(n, bound=None):
         if n % d == 0:
             return d
 
-    # Next we use a wheel for the rest. All primes >= 7 fall into one of eight
-    # residue classes modulo 30. This uses that fact to avoid trial dividing by
-    # numbers divisible by 2, 3, or 5.
+    # Next we use a wheel for the rest. All primes >= 7 fall into one of
+    # eight residue classes modulo 30. This uses that fact to avoid trial
+    # dividing by numbers divisible by 2, 3, or 5.
     offset = {1: 6, 7: 4, 11: 2, 13: 4, 17: 2, 19: 4, 23: 6, 29: 2}
     d += offset[d % 30]
 
@@ -72,79 +103,99 @@ def trial_division(n, bound=None):
         if n % d == 0:
             return d
         d += offset[d % 30]
+
     return n
 
 
 def fermat(n):
-    """
-    Returns a nontrivial divisor of n, or proves primality.
+    r"""Returns a nontrivial divisor of `n`, or proves primality.
 
-    Given an integer n > 1, this algorithm attempts to find a factor of n using
-    Fermat's method.
+    Given an integer `n` > 1, this algorithm attempts to find a factor of
+    `n` using Fermat's method. If `n` is even, then 2 is returned.
+    Otherwise, the largest prime factor of `n` less than or equal to
+    sqrt(n) is returned.
 
-    Input:
-        * n: int (n > 1)
+    Parameters
+    ----------
+    n : int (n > 1)
 
-    Output:
-        * d: int
-            If n == d, then n is proven prime. Otherwise, d is a nontrivial
-            divisor of n.
+    Returns
+    -------
+    d : int
+        If n == d, then n is proven prime. Otherwise, d is a nontrivial
+        divisor of n.
 
-    Examples:
-        >>> m = 1112470797641561909
-        >>> fermat(m)
-        1052788969
+    Notes
+    -----
+    This algorithm runs in time O((n + 1) / 2 - sqrt(n)), where n is the
+    number to be factored. In the worst case, n = 2*p, this algorithm is
+    much worse than trial division. Note that the worse case for Fermat's
+    method is the best case for trial division.
 
-    Details:
-        The algorithm used here is Fermat's method. This algorithm runs in time
-        O((n + 1) / 2 - sqrt(n)), where n is the number to be factored.  In the
-        worst case, this algorithm is much worse than trial division.  See
-        section 5.1.1 of "Prime Numbers - A Computation Perspective" by Crandall
-        and Pomerance for more details.
+    References
+    ----------
+    .. [1] R. Crandall, C. Pomerance, "Prime Numbers: A Computational
+    Perspective", Springer-Verlag, New York, 2001.
+
+    .. [2] D.E. Knuth, "The Art of Computer Programming, Volume 2:
+    Seminumerical Algorithms", Addison-Wesley Longman Publishing Co., Inc,
+    Boston, MA, 1997.
+
+    Examples
+    --------
+    >>> fermat(100)
+    2
+    >>> fermat(1112470797641561909)
+    1052788969
     """
     if n % 2 == 0:
         return 2
 
-    a = integer_sqrt(n) + 1
-    while a <= (n + 9)//6:
-        t = a**2 - n
+    for a in xrange(integer_sqrt(n) + 1, (n + 9)//6 + 1):
+        t = a*a - n
         b = integer_sqrt(t)
         if b*b == t:
             return a - b
-        a += 1
+
     return n
 
 
 def lehman(n):
-    """
-    Returns a nontrivial divisor of n, or proves primality.
+    r"""Returns a nontrivial divisor of `n`, or proves primality.
 
-    Given an integer n > 1, this algorithm finds a nontrivial factor of n if
+    Given an integer `n` > 1, this algorithm finds a nontrivial factor of n if
     n is not prime, or returns n if n is prime.
 
-    Input:
-        * n: int (n >= 3)
+    Parameters
+    ----------
+    n : int (n > 1)
 
-    Output:
-        * d: int
-            If d == n, then n is proven prime. Otherwise, d is a nontrivial
-            divisor of n.
+    Returns
+    -------
+    d : int
+        If d == n, then n is proven prime. Otherwise, d is a nontrivial
+        divisor of n.
 
-    Examples:
-        >>> l = 1112470797641561909
-        >>> lehman(l)
-        1056689261L
+    Notes
+    -----
+    The algorithm used is Lehman's Method. This algorithm runs in time
+    O(n^(1/3)). This is substantially better than O(n^(1/2)) trial division
+    for reasonably small value of n, but this algorithm is not suited for
+    large values of n. See section 8.4 of [1] or section 5.1.2 of [2] for
+    more details.
 
-    Details:
-        The algorithm used is Lehman's Method. This algorithm runs in time
-        O(n^(1/3)), where n is the number to be factored / proven prime. This is
-        substantially better than O(n^(1/2)) trial division for reasonably small
-        value of n, but this algorithm is not suited for large values of n. See
-        section 8.4 of "A Course in Computational Algebraic Number Theory" by
-        Cohen or section 5.1.2 of "Prime Numbers - A Computational Perspective"
-        by Crandall and Pomerance for more details.
+    References
+    ----------
+    .. [1] H. Cohen, "A Course in Computational Algebraic Number Theory",
+    Springer-Verlag, New York, 2000.
 
+    .. [2] R. Crandall, C. Pomerance, "Prime Numbers: A Computational
+    Perspective", Springer-Verlag, New York, 2001.
 
+    Examples
+    --------
+    >>> lehman(1112470797641561909)
+    1056689261L
     """
     # first, we trial divide up to floor(n^(1/3))
     bound = integer_nth_root(3, n)
@@ -178,41 +229,45 @@ def lehman(n):
 
 
 def pollard_p_minus_1(n, B=20000):
-    """
-    Attempts to find a nontrivial factor of n.
+    r"""Attempts to find a nontrivial factor of `n`.
 
-    Given a composite number n and search bound B, this algorithm attempts to
-    find a nontrivial factor of n.
+    Given a composite number `n` and search bound `B`, this algorithm
+    attempts to find a nontrivial factor of `n`.
 
-    Input:
-        * n: int (n > 1)
-            A composite integer.
+    Parameters
+    ----------
+    n : int (n > 1)
 
-        * B: int (B > 0) (default=20000)
-            Search bound.
+    B : int (B > 0) (default=20000)
 
-    Output:
-        * d: int
-            Nontrivial divisor of n.
+    Returns
+    -------
+    d : int
+        Nontrivial divisor of n.
 
-    Examples:
-        >>> m = 1112470797641561909
-        >>> pollard_p_minus_1(m)
-        1056689261L
+    Notes
+    -----
+    The algorithm used is Pollard's p - 1 method. We know that if p is an
+    odd prime, then 2^(p - 1) = 1 (mod p), and 2^M = 1 (mod p) if (p - 1) |
+    M. So if p is a prime factor of an integer n, then p divides gcd(2^M -
+    1, n). The idea behind this algorithm is to choose M with many divisors
+    of the form p - 1, and then search for many primes p as possible
+    divisors of n at once. For more information, see section 5.4 of [1].
 
-    Details:
-        The algorithm used is Pollard's p - 1 method. We know that if p is an
-        odd prime, then 2^(p - 1) = 1 (mod p), and 2^M = 1 (mod p) if (p - 1) |
-        M. So if p is a prime factor of an integer n, then p divides gcd(2^M -
-        1, n). The idea behind this algorithm is to choose M with many divisors
-        of the form p - 1, and then search for many primes p as possible
-        divisors of n at once. For more information, see section 5.4 of "Prime
-        Numbers - A Computational Perspective" by Crandall and Pomerance.
+    References
+    ----------
+    .. [1] R. Crandall, C. Pomerance, "Prime Numbers: A Computational
+    Perspective", Springer-Verlag, New York, 2001.
+
+    Examples
+    --------
+    >>> pollard_p_minus_1(1112470797641561909)
+    1056689261L
     """
     c = randint(2, 20)
     p_list = rosemary.number_theory.sieves.primes(B)
     for p in p_list:
-        a = integer_log(B, p)
+        a = integer_log(p, B)
         for _ in xrange(a):
             c = pow(c, p, n)
     g = gcd(c - 1, n)
