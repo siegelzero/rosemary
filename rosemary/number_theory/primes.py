@@ -358,10 +358,6 @@ def lmo_bit(x):
 
 
 def prime_sum2(n):
-    #if n <= 1:
-    #    return 0
-    #elif n <= _PRIME_LIST[-1]:
-    #    return bisect(_PRIME_LIST, n)
     root = integer_sqrt(n)
     primes = rosemary.number_theory.sieves.primes(root)
     a = len(primes)

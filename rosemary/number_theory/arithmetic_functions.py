@@ -17,103 +17,122 @@ import rosemary.number_theory.sieves
 ################################################################################
 
 
-def euler_phi(n):
-    """Returns the number of positive integers <= n that are coprime to n.
+def euler_phi(n=None, factorization=None):
+    r"""Returns the totient of `n`.
 
-    Input:
-        * n: int or list (n > 0)
-            The value of n can be an int or a factorization.
+    Given a positive integer `n`, this method returns the number of
+    positive integers `k \leq n` which are coprime to `n`.
 
-    Returns:
-        * r: int
+    Parameters
+    ----------
+    n : int, optional
 
-    Raises:
-        * ValueError: if n <= 0 or n is not an int or factorization.
+    factorization : list, optional
+        Factorization of `n` given as a list of (prime, exponent) pairs.
 
-    Examples:
-        >>> euler_phi(100)
-        40
-        >>> euler_phi([(2, 2), (5, 2)])
-        40
-        >>> euler_phi(11213)
-        11212
-        >>> euler_phi(0)
-        Traceback (most recent call last):
-        ...
-        ValueError: euler_phi: Must have n > 0.
+    Returns
+    -------
+    phi : int
+        The value euler_phi(n)
 
-    Details:
-        The Euler phi function is a multiplicative function satisfying phi(p**k)
-        = (p - 1)*p**(k - 1) for prime powers p**k. For positive integers n,
-        this method computes the factorization of n, and then uses this product
-        definition. If instead a factorization of n is given, then the product
-        formula is used directly. See "Fundamental Number Theory with
-        Applications" by Mollin for details.
+    Raises
+    ------
+    ValueError: If n <= 0.
+
+    Notes
+    -----
+    The Euler phi function is a multiplicative function satisfying
+    phi(p**k) = (p - 1)*p**(k - 1) for prime powers p**k.  For positive
+    integers n, this method computes the factorization of n, and then uses
+    this product definition. If instead a factorization of n is given, then
+    the product formula is used directly. See "Fundamental Number Theory
+    with Applications" by Mollin for details.
+
+    Examples
+    --------
+    >>> euler_phi(100)
+    40
+    >>> euler_phi(factorization=[(2, 2), (5, 2)])
+    40
+    >>> euler_phi(0)
+    Traceback (most recent call last):
+    ...
+    ValueError: euler_phi: Must have n > 0.
     """
-    if isinstance(n, (int, long)):
+    if n is None and factorization is None:
+        raise TypeError("euler_phi: Expected at least one argument.")
+    elif factorization is None:
         if n == 1:
             return 1
         elif n <= 0:
             raise ValueError("euler_phi: Must have n > 0.")
-        n_factorization = rosemary.number_theory.factorization.factor(n)
-    elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n
+        factorization = rosemary.number_theory.factorization.factor(abs(n))
     else:
-        raise ValueError("euler_phi: Input must be a positive integer or a factorization.")
+        if factorization[0][0] == -1:
+            factorization = factorization[1:]
 
     prod = 1
-    for (p, e) in n_factorization:
+    for (p, e) in factorization:
         prod *= p**(e - 1)*(p - 1)
     return prod
 
 
-def moebius(n):
-    """Returns the value of the Moebius function mu(n).
+def moebius(n=None, factorization=None):
+    r"""Returns the value of the Moebius function mu(n).
 
-    Input:
-        * n: int or list (n > 0)
-            The value of n can be an int or a factorization.
+    Parameters
+    ----------
+    n : int, optional
 
-    Returns:
-        * mu: int
+    factorization : list, optional
+        Factorization of `n` given as a list of (prime, exponent) pairs.
 
-    Raises:
-        * ValueError: If n <= 0 or n is not an int or factorization.
+    Returns
+    -------
+    mu : int
+        The value moebius(n).
 
-    Examples:
-        >>> moebius(35)
-        1
-        >>> moebius([(5, 1), (7, 1)])
-        1
-        >>> moebius(100)
-        0
-        >>> moebius(2)
-        -1
-        >>> moebius(-1)
-        Traceback (most recent call last):
-        ...
-        ValueError: moebius: Must have n > 0.
+    Raises
+    ------
+    ValueError: If n <= 0.
 
-    Details:
-        The Moebius mu function is a multiplicative function satisfying
-        mu(p1*p2*...pk) = (-1)**k, and mu(p**e) = 0 for e >= 2. For positive
-        integers n, this method computes the factorization of n, and then uses
-        this product definition. If instead a factorization of n is given, then
-        the product formula is used directly.
+    Notes
+    -----
+    The Moebius mu function is a multiplicative function satisfying
+    mu(p1*p2*...pk) = (-1)**k, and mu(p**e) = 0 for e >= 2. For positive
+    integers n, this method computes the factorization of n, and then uses
+    this product definition. If instead a factorization of n is given, then
+    the product formula is used directly.
+
+    Examples
+    --------
+    >>> moebius(35)
+    1
+    >>> moebius([(5, 1), (7, 1)])
+    1
+    >>> moebius(100)
+    0
+    >>> moebius(2)
+    -1
+    >>> moebius(-1)
+    Traceback (most recent call last):
+    ...
+    ValueError: moebius: Must have n > 0.
     """
-    if isinstance(n, (int, long)):
+    if n is None and factorization is None:
+        raise TypeError("euler_phi: Expected at least one argument.")
+    elif factorization is None:
         if n == 1:
             return 1
         elif n <= 0:
             raise ValueError("moebius: Must have n > 0.")
-        n_factorization = rosemary.number_theory.factorization.factor(n)
-    elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n
+        factorization = rosemary.number_theory.factorization.factor(abs(n))
     else:
-        raise ValueError("moebius: Input must be a positive integer or a factorization.")
+        if factorization[0][0] == -1:
+            factorization = factorization[1:]
 
-    if rosemary.number_theory.factorization.is_squarefree(n_factorization):
-        k = len(n_factorization)
+    if rosemary.number_theory.factorization.is_squarefree(factorization=factorization):
+        k = len(factorization)
         return (-1)**k
     else:
         return 0
@@ -122,7 +141,7 @@ def moebius(n):
 def sigma(n, k=1):
     """Returns the sum of the kth powers of the divisors of n.
 
-    Input:
+    Parameters
         * n: int or list (n > 0)
             The value of n can be an int or a factorization.
 
@@ -191,7 +210,7 @@ def sigma(n, k=1):
 def tau(n):
     """Returns the number of divisors of n.
 
-    Input:
+    Parameters
         * n: int (n > 0)
             The value of n can be an int or a factorization.
 
@@ -251,7 +270,7 @@ def carmichael_lambda(n):
     """Returns the smallest positive integer m such that a**m = 1 (mod n) for
     all integers a coprime to n.
 
-    Input:
+    Parameters
         * n: int or list (n > 1)
             The modulus. This value can be an int or a factorization.
 
@@ -310,7 +329,7 @@ def carmichael_lambda(n):
 def factorial(n):
     """Returns the factorial of n.
 
-    Input:
+    Parameters
         * n: int (n >= 0)
 
     Returns:
@@ -358,7 +377,7 @@ def factorial(n):
 def primorial(n):
     """Returns the product of the first n primes p1, p2, ..., pn.
 
-    Input:
+    Parameters
         * n: int (n > 0)
 
     Returns:
@@ -409,7 +428,7 @@ def primorial(n):
 def euler_phi_list(n):
     """Returns a list of values of euler_phi(k) for 1 <= k <= n.
 
-    Input:
+    Parameters
         * n: int (n > 0)
 
     Returns:
@@ -459,7 +478,7 @@ totient_list = euler_phi_list
 def moebius_list(n):
     """Return a list of the values of moebius(k) for 1 <= k <= n.
 
-    Input:
+    Parameters
         * n: int (n > 0)
 
     Returns:
@@ -512,7 +531,7 @@ def moebius_list(n):
 def sigma_list(n, k=1):
     """Return a list of the values of sigma(i, k) for 1 <= i <= n.
 
-    Input:
+    Parameters
         * n: int (n > 0)
         * k: int (k > 0) (default=1)
 
@@ -591,7 +610,7 @@ def sigma_list(n, k=1):
 def tau_list(n):
     """Returns a list of the values of tau(i), for 1 <= i <= n.
 
-    Input:
+    Parameters
         * n: int (n > 0)
 
     Returns:
@@ -637,7 +656,7 @@ def tau_list(n):
 def euler_phi_sum(n):
     """Returns the value of the sum of euler_phi(k) for k = 1, 2, ..., n.
 
-    Input:
+    Parameters
         * n: int (n > 0)
 
     Returns:
@@ -701,7 +720,7 @@ totient_sum = euler_phi_sum
 def euler_phi_weighted_sum(n):
     """Returns the value of the sum of k*euler_phi(k) for k = 1, 2, ..., n.
 
-    Input:
+    Parameters
         * n: int (n > 0)
 
     Returns:
@@ -755,7 +774,7 @@ def euler_phi_weighted_sum(n):
 def moebius_sum(n):
     """Returns the value of the sum of moebius(k) for k = 1, 2, ..., n.
 
-    Input:
+    Parameters
         * n: int (n > 0)
 
     Returns:
@@ -812,7 +831,7 @@ mertens = moebius_sum
 def sigma_sum(n):
     """Returns the value of the sum of sigma(k) for k = 1, 2, ..., n.
 
-    Input:
+    Parameters
         * n: int (n > 0)
 
     Returns:
@@ -859,7 +878,7 @@ def sigma_sum(n):
 def euler_phi_inverse(n):
     """Returns a sorted list of all positive integers k such that euler_phi(k) = n.
 
-    Input:
+    Parameters
         * n: int or list (n > 0)
             The value of n can be an int or a factorization.
 
@@ -910,7 +929,7 @@ def euler_phi_inverse(n):
 
     # Odd primes p that divide n must have the property that p - 1 divides m.
     prime_list = []
-    for d in rosemary.number_theory.factorization.divisors(n_factorization)[1:]:
+    for d in rosemary.number_theory.factorization.divisors(factorization=n_factorization)[1:]:
         if rosemary.number_theory.primality.is_prime(d + 1):
             prime_list.append(d + 1)
 

@@ -11,25 +11,16 @@ import rosemary.number_theory.primality
 from rosemary.number_theory.prime_list import _PRIME_LIST
 from rosemary.number_theory.core import (
     gcd,
-    integer_log,
     integer_nth_root,
     integer_sqrt,
+    is_power,
     jacobi_symbol,
 )
 
 
 ###########################################################################
-# Classical algorithms
+# Basic factorization algorithms
 ###########################################################################
-
-
-
-# .. [3] E. Bach, J. Shallit, "Algorithmic Number Theory I: Efficient
-# Algorithms", MIT Press, Cambridge, MA, 1996.
-
-# .. [4] D.E. Knuth, "The Art of Computer Programming, Volume 2:
-# Seminumerical Algorithms", Addison-Wesley Longman Publishing Co., Inc,
-# Boston, MA, 1997.
 
 
 def trial_division(n, bound=None):
@@ -111,9 +102,7 @@ def fermat(n):
     r"""Returns a nontrivial divisor of `n`, or proves primality.
 
     Given an integer `n` > 1, this algorithm attempts to find a factor of
-    `n` using Fermat's method. If `n` is even, then 2 is returned.
-    Otherwise, the largest prime factor of `n` less than or equal to
-    sqrt(n) is returned.
+    `n` using Fermat's method.
 
     Parameters
     ----------
@@ -163,8 +152,8 @@ def fermat(n):
 def lehman(n):
     r"""Returns a nontrivial divisor of `n`, or proves primality.
 
-    Given an integer `n` > 1, this algorithm finds a nontrivial factor of n if
-    n is not prime, or returns n if n is prime.
+    Given an integer `n` > 1, this algorithm attempts to find a factor of
+    `n` using Lehman's method.
 
     Parameters
     ----------
@@ -178,11 +167,10 @@ def lehman(n):
 
     Notes
     -----
-    The algorithm used is Lehman's Method. This algorithm runs in time
-    O(n^(1/3)). This is substantially better than O(n^(1/2)) trial division
-    for reasonably small value of n, but this algorithm is not suited for
-    large values of n. See section 8.4 of [1] or section 5.1.2 of [2] for
-    more details.
+    This algorithm runs in time O(n^(1/3)). This is substantially better
+    than O(n^(1/2)) trial division for reasonably small value of n, but
+    this algorithm is not suited for large values of n. See section 8.4 of
+    [1] or section 5.1.2 of [2] for more details.
 
     References
     ----------
@@ -194,6 +182,8 @@ def lehman(n):
 
     Examples
     --------
+    >>> lehman(100)
+    2
     >>> lehman(1112470797641561909)
     1056689261L
     """
@@ -228,170 +218,208 @@ def lehman(n):
     return n
 
 
-def pollard_p_minus_1(n, B=20000):
+def pollard_p_minus_1(n, limit=100000):
     r"""Attempts to find a nontrivial factor of `n`.
 
-    Given a composite number `n` and search bound `B`, this algorithm
-    attempts to find a nontrivial factor of `n`.
+    Given a composite number `n` and search bound `limit`, this algorithm
+    attempts to find a nontrivial factor of `n` using Pollard's p - 1
+    method.
 
     Parameters
     ----------
     n : int (n > 1)
+        Integer to be factored.
 
-    B : int (B > 0) (default=20000)
+    limit : int (limit > 0) (default=100000)
+        Search limit for possible prime divisors of p - 1.
 
     Returns
     -------
     d : int
-        Nontrivial divisor of n.
+        Divisor of n.
 
     Notes
     -----
-    The algorithm used is Pollard's p - 1 method. We know that if p is an
-    odd prime, then 2^(p - 1) = 1 (mod p), and 2^M = 1 (mod p) if (p - 1) |
-    M. So if p is a prime factor of an integer n, then p divides gcd(2^M -
-    1, n). The idea behind this algorithm is to choose M with many divisors
-    of the form p - 1, and then search for many primes p as possible
-    divisors of n at once. For more information, see section 5.4 of [1].
+    The algorithm used here is a one-stage form of Pollard's p - 1 method.
+    The idea used is that if p - 1 divides Q, then p divides a^Q - 1 if (a,
+    p) == 1. So if p is a prime factor of an integer n, then p divides
+    gcd(a^Q - 1, n). The idea here is to choose values Q with many divisors
+    of the form p - 1, and so search for many primes p as possible divisors
+    at once. This is not a general purpose factoring algorithm, but this
+    technique works well when n has a prime factor P such that P - 1 is
+    divisible by only small primes. See chapter 6 of [2] for details.
 
     References
     ----------
     .. [1] R. Crandall, C. Pomerance, "Prime Numbers: A Computational
     Perspective", Springer-Verlag, New York, 2001.
 
+    .. [2] H. Riesel, "Prime Numbers and Computer Methods for
+    Factorization", 2nd edition, Birkhauser Verlag, Basel, Switzerland,
+    1994.
+
     Examples
     --------
     >>> pollard_p_minus_1(1112470797641561909)
     1056689261L
     """
-    c = randint(2, 20)
-    p_list = rosemary.number_theory.sieves.primes(B)
+    p_list = rosemary.number_theory.sieves.primes(limit)
+    pow_list = []
+
     for p in p_list:
-        a = integer_log(p, B)
-        for _ in xrange(a):
-            c = pow(c, p, n)
-    g = gcd(c - 1, n)
-    return g
+        pk = p
+        while pk <= limit:
+            pow_list.append((pk, p))
+            pk *= p
+
+    pow_list.sort()
+    c = 13
+
+    for (count, (pk, p)) in enumerate(pow_list):
+        c = pow(c, p, n)
+        if count % 100 == 0:
+            g = gcd(c - 1, n)
+            if 1 < g < n:
+                return g
+
+    return gcd(c - 1, n)
 
 
-def pollard_rho(n):
+def pollard_rho(n, iterations=None):
+    r"""Attempts to find a nontrivial factor of `n`.
+
+    Given a composite number `n`, this algorithm attempts to find a
+    nontrivial factor of `n` using Pollard's rho algorithm.
+
+    Parameters
+    ----------
+    n : int (n > 1)
+        Integer to be factored.
+
+    iterations : int, optional (default=None)
+        Maximum number of iterations. If None, then the algorithm runs
+        until a factor is found.
+
+    Returns
+    -------
+    d : int
+        Factor of `n`.
+
+    Notes
+    -----
+    This method should return a nontrivial factor of n in O(sqrt(p)) steps,
+    where p is the least prime factor of n. Because of this dependence on
+    the smallest prime dividing n and not n itself, this method is
+    especially useful for large composites with small prime factors out of
+    range of trial division. For more details, see section 5.2.1 of [2] and
+    section 8.5 of [1].
+
+    References
+    ----------
+    .. [1] H. Cohen, "A Course in Computational Algebraic Number Theory",
+    Springer-Verlag, New York, 2000.
+
+    .. [2] R. Crandall, C. Pomerance, "Prime Numbers: A Computational
+    Perspective", Springer-Verlag, New York, 2001.
+
+    Examples
+    --------
+    >>> pollard_rho(1112470797641561909)
+    1052788969L
+    >>> pollard_rho(2175282241519502424792841)
+    513741730823L
     """
-    Attempts to find a nontrivial factor of n.
-
-    Given a composite number n, this algorithm attempts to find a nontrivial
-    factor of n. The algorithm used is Pollard's rho algorithm.
-
-    Input:
-        * n: int (n > 1)
-
-    Output:
-        * d: int
-
-    Examples:
-        >>> m = 1112470797641561909
-        >>> pollard_rho(m)
-        1052788969L
-        >>> m = 2175282241519502424792841
-        >>> pollard_rho(m)
-        513741730823L
-
-    Details:
-        The algorithm used is Pollard's rho factorization method. This method
-        should return a nontrivial factor of n in O(sqrt(p)) steps, where p is
-        the least prime factor of n. Because of this dependence on the smallest
-        prime dividing n and not n itself, this method is especially useful for
-        large composites with small prime factors out of range of trial
-        division. For more details, see section 5.2.1 of "Prime Numbers - A
-        Computational Perspective" by Crandall and Pomerance and section 8.5 of
-        "A Course in Computational Algebraic Number Theory" by Cohen.
-    """
-    # Instead of computing a gcd in each iteration, we accumulate the products
-    # and take the gcd only when the number of terms is a multiple of 'step'
-    step = 20
+    # Instead of computing a gcd in each iteration, we accumulate the
+    # products and take the gcd only when the number of terms is a multiple
+    # of `step`
+    step = 100
     prod = 1
-    terms = 0
-
-    # a is the constant term of the polynomial x^2 + a
     a = randint(1, n - 3)
-
-    # u is the random seed
     u = randint(0, n - 1)
     v = u
+    d = 1
 
-    while True:
+    if iterations is None:
+        X = itertools.count()
+    else:
+        X = xrange(iterations)
+
+    for k in X:
         u = (u*u + a) % n
         v = (v*v + a) % n
         v = (v*v + a) % n
         prod = prod*(u - v) % n
-        terms += 1
 
-        if terms == step:
-            g = gcd(prod, n)
-            if 1 < g < n:
-                return g
-            elif g == n:
-                return n
+        if k % step == 0:
+            d = gcd(prod, n)
             prod = 1
-            terms = 0
+            if d > 1:
+                return d
+
+    return n
 
 
 def pollard_rho_brent(n):
-    """
-    Attempts to find a nontrivial factor of n.
+    r"""Attempts to find a nontrivial factor of `n`.
 
-    Given a composite number n, this algorithm attempts to find a nontrivial
-    factor of n. The method used is Brent's improvement to the Pollard-Rho
+    Given a composite number `n`, this algorithm attempts to find a
+    nontrivial factor of `n` using Brent's improvement to the Pollard-rho
     algorithm.
 
-    Input:
-        * n: int (n > 1)
+    Parameters
+    ----------
+    n : int (n > 1)
+        Integer to factor.
 
-    Output:
-        * d: int
+    Returns
+    -------
+    d : int
+        Factor of `n`.
 
-    Examples:
-        >>> m = 1112470797641561909
-        >>> pollard_rho_brent(m)
-        1052788969L
-        >>> m = 2175282241519502424792841
-        >>> pollard_rho_brent(m)
-        513741730823L
+    Notes
+    -----
+    This method should return a nontrivial factor of n in O(sqrt(p)) steps,
+    where p is the least prime factor of n. Because of this dependence on
+    the smallest prime dividing n and not n itself, this method is
+    especially useful for large composites with small prime factors out of
+    range of trial division. For more details, see [1] and section 8.5 of
+    [2].
 
-    Details:
-        The algorithm used is Brent's improvement to Pollard's rho factorization
-        method. This method should return a nontrivial factor of n in O(sqrt(p))
-        steps, where p is the least prime factor of n. Because of this
-        dependence on the smallest prime dividing n and not n itself, this
-        method is especially useful for large composites with small prime
-        factors out of range of trial division. For more details, see the paper
-        "An Improved Monte Carlo Factorization Algorithm" by R.P. Brent and
-        section 8.5 of "A Course in Computational Algebraic Number Theory" by
-        Cohen.
+    References
+    ----------
+    .. [1] R.P. Brent, "An Improved Monte Carlo Factorization Algorithm",
+    BIT, Vol. 20, 1980.
+
+    .. [2] H. Cohen, "A Course in Computational Algebraic Number Theory",
+    Springer-Verlag, New York, 2000.
+
+    .. [3] J.M. Pollard, "A Monte Carlo Method for Factorization", BIT,
+    Vol. 15, 1975.
+
+    Examples
+    --------
+    >>> pollard_rho_brent(1112470797641561909)
+    1052788969L
+    >>> pollard_rho_brent(2175282241519502424792841)
+    513741730823L
     """
-    # c is the constant term of the polynomial
     c = randint(1, n - 3)
-
-    # y is the random seed
     y = randint(0, n - 1)
-
-    # m is the number of terms to multiply together before taking a gcd
-    m = 100
+    step = 100
     prod = 1
     r = 1
 
     while True:
         x = y
-        for _ in xrange(r):
+        for i in xrange(r):
             y = (y*y + c) % n
 
-        k = 0
-        while True:
+        for k in itertools.count(0, step):
             ys = y
-            for _ in xrange(m):
+            for i in xrange(min(step, r - k)):
                 y = (y*y + c) % n
                 prod = prod*(x - y) % n
             g = gcd(prod, n)
-            k += m
             if k >= r or g > 1:
                 break
 
@@ -408,9 +436,182 @@ def pollard_rho_brent(n):
     return g
 
 
-def z2_gaussian_elimination(exponents):
-    """
+def cfrac(n, k=None):
+    r"""Returns a nontrivial divisor of `n`.
 
+    Given a composite integer `n` > 1, this algorithm attempts to find a
+    factor of `n` using Morrison and Brillhart's continued fraction method
+    CFRAC.
+
+    Parameters
+    ----------
+    n : int (n > 1)
+        Number to be factored.
+
+    k : int, optional (default=None)
+        Multiplier to use in case the period of sqrt(n) is too short.
+
+    Returns
+    -------
+    d : int
+        Divisor of n.
+
+    Notes
+    -----
+    Morrison and Brillhart's continued fraction method was the first
+    factorization algorithm of subexponential running time. The idea is to
+    find a nontrivial solution to the congrunce x^2 = y^2 (mod n), and
+    extracting a factor from gcd(x + y, n). See [1] for details, and see
+    [2] for implementation details.
+
+    References
+    ----------
+    .. [1] H. Cohen, "A Course in Computational Algebraic Number Theory",
+    Springer-Verlag, New York, 2000.
+
+    .. [2] M.A. Morrison, J. Brillhart, "A Method of Factoring and the
+    Factorization of F7", Mathematics of Computation, Vol. 29, Num. 129,
+    Jan. 1975.
+
+    .. [3] H. Riesel, "Prime Numbers and Computer Methods for
+    Factorization", 2nd edition, Birkhauser Verlag, Basel, Switzerland,
+    1994.
+
+    Examples
+    --------
+    >>> cfrac(12007001)
+    4001
+    >>> cfrac(1112470797641561909)
+    1052788969L
+    >>> cfrac(2175282241519502424792841)
+    513741730823L
+    """
+    # B is our smoothness bound.
+    B = int(exp(0.5*sqrt(log(n)*log(log(n))))) + 1
+    prime_list = rosemary.number_theory.sieves.primes(B)
+
+    # Choose a multiplier if none is provided.
+    if k is None:
+        k = _cfrac_multiplier(n)
+    kn = k*n
+
+    # Perform simple trial division by the primes we computed to find any
+    # small prime divisors.
+    for p in prime_list:
+        if n % p == 0:
+            return p
+
+    # Our factor base needs to include -1 and 2, and the odd primes p for
+    # which (kN|p) = 0 or 1.
+    factor_base = [-1]
+    for p in prime_list:
+        if p == 2 or jacobi_symbol(kn, p) >= 0:
+            factor_base.append(p)
+
+    num_primes = len(factor_base)
+
+    # Compute the product of the elements in our factor base for smoothness
+    # checking computations later.
+    prod = 1
+    for p in factor_base:
+        prod *= p
+
+    # Instead of using trial division to check each value for smoothness
+    # individually, we use a batch smoothness test, processing batches of
+    # size `batch_size` at once.
+
+    # Set e as the least positive integer with n <= 2**e.
+    e = 1
+    while 2**e < n:
+        e *= 2
+
+    aq_pairs = _cfrac_aq_pairs(kn)
+
+    num_smooths_found = 0
+    exponent_matrix = []
+    a_list = []
+
+    while num_smooths_found <= num_primes:
+        (i, a, q) = aq_pairs.next()
+
+        # This is from the batch smoothness test given as Algorithm 3.3.1
+        # in [1].
+        if gcd(q, pow(prod, e, q)) != q:
+            continue
+
+        if i % 2 == 1:
+            q *= -1
+
+        # At this point, we know q is smooth, and we can factor it
+        # completely using our factor base.
+        exponent_vector = smooth_factor(q, factor_base)
+        exponent_matrix.append(exponent_vector)
+        num_smooths_found += 1
+        a_list.append(a)
+
+    kernel = _z2_gaussian_elimination(exponent_matrix)
+
+    for i in xrange(len(kernel)):
+        y = 1
+        x2_exponents = [0]*num_primes
+        for j in xrange(len(kernel[i])):
+            if kernel[i][j]:
+                y = (a_list[j]*y) % n
+                for f in xrange(num_primes):
+                    x2_exponents[f] += exponent_matrix[j][f]
+
+        x = 1
+        for j in xrange(num_primes):
+            x *= factor_base[j]**(x2_exponents[j]//2)
+
+        for val in [x - y, x + y]:
+            d = gcd(val, n)
+            if 1 < d < n:
+                return d
+
+
+def _z2_gaussian_elimination(exponents):
+    r"""Returns the zero linear combinations of the given vectors.
+
+    Given a list of vectors, this returns the linear combinations of the
+    vectors that sum to zero (modulo 2).
+
+    Parameters
+    ----------
+    exponents : list
+        List of vectors, each vector given as a list.
+
+    Returns
+    -------
+    relations : list
+        List of lists, each sublist has the coefficients of a linear
+        combination of the input vectors that sums to zero modulo 2.
+
+    Notes
+    -----
+    This is a subroutine useful in several factorization algorithms. Our
+    implementation is basically straightforward Gaussian elimination with a
+    few modifications, as outlined in [1].
+
+    References
+    ----------
+    .. [1] M.A. Morrison, J. Brillhart, "A Method of Factoring and the
+    Factorization of F7", Mathematics of Computation, Vol. 29, Num. 129,
+    Jan. 1975.
+
+    Examples
+    --------
+    >>> vectors = [
+        [1, 1, 1, 0, 0, 0, 0],
+        [0, 0, 0, 1, 1, 0, 0],
+        [0, 0, 1, 0, 0, 1, 0],
+        [1, 1, 0, 0, 0, 1, 0],
+        [0, 1, 0, 1, 0, 0, 1],
+        [1, 1, 0, 0, 0, 1, 0],
+        [0, 1, 0, 0, 1, 0, 1]
+    ]
+    >>> _z2_gaussian_elimination(vectors)
+    [[1, 0, 1, 1, 0, 0, 0], [1, 0, 1, 0, 0, 1, 0], [0, 1, 0, 0, 1, 0, 1]]
     """
     # Arithmetic done over Z2, so we reduce the exponent vectors modulo 2.
     num_rows = len(exponents)
@@ -431,8 +632,11 @@ def z2_gaussian_elimination(exponents):
         history.append(value)
         value >>= 1
 
-    # Starting in the rightmost column, find the first vector whose rightmost 1
-    # is in column j.
+    # Now we have the exponent vectors encoded in bits, so we can use
+    # efficient bit operations.
+
+    # Starting in the rightmost column, find the first vector whose
+    # rightmost 1 is in column j.
     bit = 1
     max_size = 1 << (num_cols - 1)
     while bit <= max_size:
@@ -443,8 +647,8 @@ def z2_gaussian_elimination(exponents):
                 pivot_found = True
                 his = history[i]
                 break
-        # If we haven't found a pivot yet, move to the next column left and look
-        # again.
+        # If we haven't found a pivot yet, move to the next column left and
+        # look again.
         if pivot_found:
             for m in xrange(i + 1, num_rows):
                 if reduced[m] & bit:
@@ -453,6 +657,7 @@ def z2_gaussian_elimination(exponents):
 
         bit <<= 1
 
+    # Now convert the binary encoded vectors back to exponent lists.
     vectors = []
     for i in xrange(num_rows):
         value = history[i]
@@ -471,39 +676,52 @@ def z2_gaussian_elimination(exponents):
     return vectors
 
 
-def smooth_factor(n, factor_base, num_primes=None):
+def smooth_factor(n, factor_base):
+    r"""Factors `n` over the factor base.
+
+    Returns the exponents in the prime factorization of `n` if `n` factors
+    completely using the primes in 'factor_base'.
+
+    Parameters
+    ----------
+    n : int
+        Integer to factor.
+
+    factor_base : list
+        A sorted list of primes, possibly including -1.
+
+    Returns
+    -------
+    exponents: list
+        If `n` factors completely over `factor_base`, then this is a list
+        of the exponents appearing in the prime factorization; exponents[i]
+        holds the power to which factor_base[i] divides `n`.
+
+    Raises
+    ------
+    ValueError
+        If `n` does not factor over `factor_base`.
+
+    Notes
+    -----
+    This is a straightforward implementation of factorization using trial
+    division, using only the primes in the given factor base.
+
+    References
+    ----------
+    .. [1] R. Crandall, C. Pomerance, "Prime Numbers: A Computational
+    Perspective", Springer-Verlag, New York, 2001.
+
+    Examples
+    --------
+    >>> smooth_factor(100, [2, 5])
+    [2, 2]
+    >>> smooth_factor(100, [2, 3, 5, 7])
+    [2, 0, 2, 0]
+    >>> smooth_factor(100, [3, 5])
+    ValueError: smooth_factor: n does not factor over the given factor base
     """
-    Returns the exponents in the prime factorization of n if n factors
-    completely using the primes in 'factor_base', and returns False otherwise.
-
-    Input:
-        * n: int
-
-        * factor_base: list
-            A sorted list of primes, possibly including -1.
-
-        * num_primes: int (default=None)
-            Number of elements in 'factor_base'.
-
-    Output cases:
-        * exponents: list
-            If n factors completely over the factor_base, then this is a list of
-            the exponents appearing in the prime factorization; exponents[i]
-            holds the power to which factor_base[i] divides n.
-
-        * Returns False if n does not factor over factor_base
-
-    Examples:
-        >>> smooth_factor(100, [2, 5])
-        [2, 2]
-        >>> smooth_factor(100, [2, 3, 5, 7])
-        [2, 0, 2, 0]
-        >>> smooth_factor(100, [3, 5])
-        False
-    """
-    if num_primes is None:
-        num_primes = len(factor_base)
-
+    num_primes = len(factor_base)
     exponents = [0]*num_primes
     start = 0
 
@@ -525,427 +743,418 @@ def smooth_factor(n, factor_base, num_primes=None):
         if n == 1:
             return exponents
 
-    return False
+    raise ValueError("smooth_factor: n does not factor over the given factor base")
 
 
-def dixon(n, num_trials=10000):
-    B = int(exp((log(n)*log(log(n)))**(0.5))**(0.5)) + 1
-    factor_base = rosemary.number_theory.sieves.primes(B)
-    num_primes = len(factor_base)
+def _cfrac_aq_pairs(n):
+    r"""Yields triples (i, A_{i - 1}, Q_i) for i > 0, where A_{i - 1}^2 =
+    (-1)^i Q_i (mod n)
 
-    for p in factor_base:
-        if n % p == 0:
-            return p
+    Parameters
+    ----------
+    n : int
 
-    num_smooths_found = 0
-    max_element = n
-    power = 1
-    while 2**power < max_element:
-        power *= 2
+    Yields
+    ------
+    (i, A_{i - 1}, Q_i) : tuple
+        Yields integer tuples consisting of the index `i`, the numerator of
+        the (i - 1)th convergent A({i - 1} (mod n), and the quantity Q_{i}
+        coming from the continued fraction expansion of sqrt(n).
 
-    prod = 1
-    for p in factor_base:
-        prod *= p
+    Notes
+    -----
+    The continued fraction expansion of sqrt(n) is computed, using the
+    formulas given in section 2 of [1]. See also appendix 8 of [2].
 
-    for trial in xrange(num_trials):
-        exponent_matrix = []
-        a_list = []
-        while num_smooths_found <= num_primes:
-            a = randint(1, n)
-            s = a*a % n
-            pp = pow(prod, power, s)
-            g = gcd(s, pp)
-            if g != s:
-                continue
+    References
+    ----------
+    .. [1] M.A. Morrison, J. Brillhart, "A Method of Factoring and the
+    Factorization of F7", Mathematics of Computation, Vol. 29, Num. 129,
+    Jan. 1975.
 
-            exponent_vector = smooth_factor(s, factor_base, num_primes)
-            exponent_matrix.append(exponent_vector)
-            num_smooths_found += 1
-            print num_smooths_found, num_primes
-            a_list.append(a)
+    .. [2] H. Riesel, "Prime Numbers and Computer Methods for
+    Factorization", 2nd edition, Birkhauser Verlag, Basel, Switzerland,
+    1994.
 
-        kernel = z2_gaussian_elimination(exponent_matrix)
-
-        for i in xrange(len(kernel)):
-            y = 1
-            x2_exponents = [0]*num_primes
-            for j in xrange(len(kernel[i])):
-                if kernel[i][j]:
-                    y = (a_list[j]*y) % n
-                    for f in xrange(num_primes):
-                        x2_exponents[f] += exponent_matrix[j][f]
-
-            x = 1
-            for f in xrange(num_primes):
-                x *= factor_base[f]**(x2_exponents[f]//2)
-
-            for val in [x - y, x + y]:
-                d = gcd(val, n)
-                if 1 < d < n:
-                    return d
-
-
-def cfrac(n, k=1):
+    Examples
+    --------
+    >>> X = _cfrac_aq_pairs(1000009)
+    >>> X.next()
+    (1, 1000, 9)
+    >>> X.next()
+    (2, 222001, 445)
+    >>> X.next()
+    (3, 889004, 873)
+    >>> X.next()
+    (4, 1000000, 81)
     """
+    g = integer_sqrt(n)
+    A0, A1 = 0, 1
+    Q0, Q1 = n, 1
+    P0 = 0
+    r0 = g
+
+    for i in itertools.count():
+        q = (g + P0)//Q1
+        r1 = g + P0 - q*Q1
+        A2 = (q*A1 + A0) % n
+        P1 = g - r1
+        Q2 = Q0 + q*(r1 - r0)
+
+        if i > 0:
+            yield (i, A1, Q1)
+
+        A0, A1 = A1, A2
+        Q0, Q1 = Q1, Q2
+        P0 = P1
+        r0 = r1
+
+
+def _cfrac_multiplier(n):
+    r"""Computes a multiplier for input into the cfrac algorithm.
+
+    Parameters
+    ----------
+    n : int
+        Integer to be factored.
+
+    Returns
+    -------
+    k : int
+        Multiplier for the cfrac algorithm.
+
+    Notes
+    -----
+    The continued fraction of sqrt(n) is always periodic. In the cases
+    where the period of sqrt(n) is too short, it is necessary to expand
+    sqrt(k*n) for some k > 1. We choose the multiplier `k` which allows th
+    elargest number of primes <= 31 to be in the factor base. The method
+    follows Remark 5.3 of [1].
+
+    References
+    ----------
+    .. [1] M.A. Morrison, J. Brillhart, "A Method of Factoring and the
+    Factorization of F7", Mathematics of Computation, Vol. 29, Num. 129,
+    Jan. 1975.
+
+    Examples
+    --------
+    >>> _cfrac_multiplier(5**77 - 1)
+    781
     """
-    def find_multiplier():
-        """
-        Computes a multiplier for input into the cfrac factorization algorithm.
-
-        The method is based on Remark 5.3 from the paper "A Method of Factoring
-        and the Factorization of F7" by Morrison and Brillhart.
-        """
-        choices = {}
-        # Look for multpliers in the range [1, 1000).
-        for k in xrange(1, 1000):
-            if jacobi_symbol(k*n, 3) >= 0 and jacobi_symbol(k*n, 5) >= 0:
-                # Find the multiplier k that allows the largest number of primes
-                # <= 31 into the factor base.
-                count = 0
-                for p in prime_list:
-                    # We've already looked at p = 3 and p = 5.
-                    if p <= 5:
-                        continue
-                    if p > 31:
-                        break
-                    if jacobi_symbol(k*n, p) >= 0:
-                        count += 1
-                if count not in choices:
-                    choices[count] = [k]
-                else:
-                    choices[count].append(k)
-        # If several values of k allow this maximal number, we simply choose the
-        # smallest of them.
-        max_count = max(choices)
-        return min(choices[max_count])
-
-    def cfrac_aq_pairs(n):
-        """
-        Yields tripes (i, A_{i - 1}, Q_i) for i > 0, where
-            A_{i - 1}^2 = (-1)^i Q_i (mod n)
-
-        Input:
-            * n: int
-
-        Output:
-            * X: generator
-
-        Details
-            This algorithm expands sqrt(n) into a simple continued fraction. The
-            values (i, A_{i - 1}, Q_i) output by this algorithm correspond to
-        """
-        g = integer_sqrt(n)
-        A0, A1 = 0, 1
-        Q0, Q1 = n, 1
-        P0 = 0
-        r0 = g
-
-        for i in itertools.count():
-            q = (g + P0)//Q1
-            r1 = g + P0 - q*Q1
-            A2 = (q*A1 + A0) % n
-            P1 = g - r1
-            Q2 = Q0 + q*(r1 - r0)
-
-            if i > 0:
-                yield (i, A1, Q1)
-
-            A0, A1 = A1, A2
-            Q0, Q1 = Q1, Q2
-            P0 = P1
-            r0 = r1
-
-    # B is our smoothness bound.
-    B = int(exp(0.5*sqrt(log(n)*log(log(n))))) + 1
-    prime_list = rosemary.number_theory.sieves.primes(B)
-
-    # Choose a multiplier if none is provided.
-    if k == 0:
-        k = find_multiplier()
-    kn = k*n
-
-    # Perform simple trial division by the primes we computed to find any small
-    # prime divisors.
-    for p in prime_list:
-        if n % p == 0:
-            return p
-
-    # Our factor base needs to include -1 and 2, and the odd primes p for which
-    # (kN|p) = 0 or 1.
-    factor_base = [-1]
-    for p in prime_list:
-        if p == 2 or jacobi_symbol(kn, p) >= 0:
-            factor_base.append(p)
-
-    # We compute the product of the elements in our factor base for smoothness
-    # checking computations later.
-    prod = 1
-    for p in factor_base:
-        prod *= p
-
-    num_primes = len(factor_base)
-
-    # Instead of using trial division to check each value for smoothness
-    # individually, we use a batch smoothness test, processing batches of size
-    # 'batch_size' at once.
-
-    exponent_matrix = []
-    num_smooths_found = 0
-    a_list = []
-
-    max_element = n
-    power = 1
-    while 2**power < max_element:
-        power *= 2
-
-    aq_pairs = cfrac_aq_pairs(kn)
-
-    while num_smooths_found <= num_primes:
-        (i, a, q) = aq_pairs.next()
-
-        pp = pow(prod, power, q)
-        g = gcd(q, pp)
-        if g != q:
-            continue
-
-        if i % 2 == 1:
-            q *= -1
-
-        exponent_vector = smooth_factor(q, factor_base, num_primes)
-        exponent_matrix.append(exponent_vector)
-        num_smooths_found += 1
-        a_list.append(a)
-
-    kernel = z2_gaussian_elimination(exponent_matrix)
-
-    for i in xrange(len(kernel)):
-        y = 1
-        x2_exponents = [0]*num_primes
-        for j in xrange(len(kernel[i])):
-            if kernel[i][j]:
-                y = (a_list[j]*y) % n
-                for f in xrange(num_primes):
-                    x2_exponents[f] += exponent_matrix[j][f]
-
-        x = 1
-        for j in xrange(num_primes):
-            x *= factor_base[j]**(x2_exponents[j]//2)
-
-        for val in [x - y, x + y]:
-            d = gcd(val, n)
-            if 1 < d < n:
-                return d
+    prime_list = [3, 5, 7, 11, 13, 17, 19, 23, 29, 31]
+    choices = {}
+    # Look for multpliers in the range [1, 1000).
+    for k in xrange(1, 1000):
+        if jacobi_symbol(k*n, 3) >= 0 and jacobi_symbol(k*n, 5) >= 0:
+            # Find the multiplier k that allows the largest number of
+            # primes <= 31 into the factor base.
+            count = sum(1 for p in prime_list if jacobi_symbol(k*n, p) >= 0)
+            if count not in choices:
+                choices[count] = [k]
+            else:
+                choices[count].append(k)
+    # If several values of k allow this maximal number, we simply choose the
+    # smallest of them.
+    max_count = max(choices)
+    return min(choices[max_count])
 
 
-################################################################################
-# Methods related to factorization and divisors
-################################################################################
+###########################################################################
+# General methods related to factorization and divisors
+###########################################################################
 
 
-def factor(n):
-    """
-    factorization(n):
-    Returns the factorization of n. Currently, this routine calls a number of
-    different algorithms.
+def factor(n, skip_trial_division=False, use_cfrac=False):
+    r"""Returns the factorization of the integer `n`.
 
-    Examples:
+    Parameters
+    ----------
+    n : int
+        Integer to be factored.
+
+    skip_trial_division : bool, optional (default=False)
+        If False, performs a preliminary trial division using the
+        precomputed list of primes. If True, then this step is skipped.
+
+    use_cfrac : bool, optional (default=False)
+        If True, applies the cfrac method to search for factors instead of
+        the Pollard rho method. If False, then the Pollard rho method is
+        used to search for factors.
+
+    Returns
+    -------
+    factorization : list
+        A list of pairs (p, e) consisting of the primes p and exponents e
+        such that p^e divides n.
+
+    Notes
+    -----
+    This method uses a variety of techniques to obtain a factorization of
+    n. First, we perform trial division using a precomputed list of primes
+    to find all small prime factors. After this, we apply Pollard's rho
+    method to find any remaining small prime divisors.
+
+    References
+    ----------
+    .. [1] H. Riesel, "Prime Numbers and Computer Methods for
+    Factorization", 2nd edition, Birkhauser Verlag, Basel, Switzerland,
+    1994.
+
+    Examples
+    --------
     >>> factor(100)
     [(2, 2), (5, 2)]
     >>> factor(537869)
     [(37, 1), (14537, 1)]
+    >>> factor(2**91 - 1)
+    [(127, 1), (911, 1), (8191, 1), (112901153L, 1), (23140471537L, 1)]
+    >>> factor(10**22 + 1)
+    [(89, 1), (101, 1), (1052788969L, 1), (1056689261L, 1)]
     """
-    D = collections.defaultdict(int)
+    fac = collections.defaultdict(int)
+
+    _is_prime = rosemary.number_theory.primality.is_probable_prime
+    if use_cfrac:
+        _factor = cfrac
+    else:
+        _factor = pollard_rho_brent
 
     if n == 0:
         raise ValueError("Prime factorization of 0 not defined")
 
+    # Detect perfect powers.
+    ab = is_power(n)
+    if ab:
+        (n, multiplier) = ab
+    else:
+        (n, multiplier) = (n, 1)
+
     # Take care of the sign
     if n < 0:
-        D[-1] = 1
-        n = -1 * n
+        fac[-1] = 1
+        n *= -1
 
-    # First, strip off all small factors on n
+    # Strip off all small factors of n
     for p in _PRIME_LIST:
         if n == 1:
             break
         elif p*p > n:
-            D[n] += 1
+            fac[n] += 1
             n = 1
             break
 
         while n % p == 0:
-            D[p] += 1
-            n = n // p
+            fac[p] += 1
+            n //= p
 
-    # Next, use pollard rho
+    # Next, strip off remaining factors.
     while n > 1:
-        if rosemary.number_theory.primality.is_probable_prime(n):
-            D[n] += 1
+        if _is_prime(n):
+            fac[n] += 1
             n = 1
         else:
-            d = pollard_rho_brent(n)
-            while not rosemary.number_theory.primality.is_probable_prime(d):
-                d = pollard_rho_brent(d)
-
+            d = _factor(n)
+            while not _is_prime(d):
+                d = _factor(d)
             while n % d == 0:
-                D[d] += 1
+                fac[d] += 1
                 n = n // d
 
-    p_list = sorted([(p, D[p]) for p in D])
-    return p_list
+    factorization = sorted([(p, fac[p]*multiplier) for p in fac])
+    return factorization
 
 
-def factor_back(F):
-    """
-    factor_back(F):
-    Given a factorization F, this return the factored integer.
+def factor_back(fac):
+    r"""Given the factorization of an integer, this returns the integer.
 
-    Examples:
+    Parameters
+    ----------
+    fac : list
+        A list of (p, e) prime, exponent pairs corresponding to the
+        factorization of some integer.
+
+    Returns
+    -------
+    n : int
+        The product p**e for (p, e) in `fac`. This gives back the
+        unfactored integer.
+
+    Examples
+    --------
+    >>> factor(537869)
+    [(37, 1), (14537, 1)]
+    >>> factor_back([(37, 1), (14537, 1)])
+    537869
+    >>> factor(100)
+    [[(2, 2), (5, 2)]
     >>> factor_back([(2, 2), (5, 2)])
     100
     """
-    if not isinstance(F, list):
+    if not isinstance(fac, list):
         raise ValueError("Not a factorization in factor_back")
 
     pp = 1
-    for (p, e) in F:
+    for (p, e) in fac:
         pp *= p**e
-
     return pp
 
 
-def divisors(n):
-    """
-    divisors(n):
-    Returns a sorted list of the positive integer divisors of n. The argument
-    n can be an integer, or the factorization of an integer.
+def divisors(n=None, factorization=None):
+    r"""Returns a sorted list of the positive integer divisors of `n`.
 
-    Examples:
+    Parameters
+    ----------
+    n : int, optional
+
+    factorization : list, optional
+        Factorization of `n` given as a list of (prime, exponent) pairs.
+
+    Returns
+    -------
+    div_list : list
+        Sorted list of the positive divisors of `n`.
+
+    Examples
+    --------
     >>> divisors(100)
     [1, 2, 4, 5, 10, 20, 25, 50, 100]
-    >>> divisors([(2, 2), (5, 2)])
+    >>> divisors(factorization=[(2, 2), (5, 2)])
     [1, 2, 4, 5, 10, 20, 25, 50, 100]
-    >>> divisors(426497)
-    [1, 71, 6007, 426497]
     """
-    if isinstance(n, (int, long)):
-        n_fac = factor(abs(n))
-    elif isinstance(n, list):
-        if n[0][0] == -1:
-            n_fac = n[1:]
-        else:
-            n_fac = n
+    if n is None and factorization is None:
+        raise TypeError("divisors: Expected at least one argument.")
+    elif factorization is None:
+        factorization = factor(abs(n))
     else:
-        raise ValueError("Input must be an integer or a factorization")
+        if factorization[0][0] == -1:
+            factorization = factorization[1:]
 
-    p_divs = [p for (p, e) in n_fac]
+    p_divisors = [p for (p, e) in factorization]
     div_list = []
-    iter_list = (xrange(e + 1) for (p, e) in n_fac)
+    iter_list = (xrange(e + 1) for (p, e) in factorization)
 
-    for tup in itertools.product(*iter_list):
-        pp = 1
-        for i in xrange(len(tup)):
-            pp *= p_divs[i]**tup[i]
-        div_list += [pp]
+    for exp_tuple in itertools.product(*iter_list):
+        prod = 1
+        for i in xrange(len(exp_tuple)):
+            prod *= p_divisors[i]**exp_tuple[i]
+        div_list += [prod]
 
-    div_list.sort()
-    return div_list
+    return sorted(div_list)
 
 
-def prime_divisors(n):
-    """
-    prime_divisors(n):
-    Returns a list of the primes dividing n
+def prime_divisors(n=None, factorization=None):
+    r"""Returns a sorted list of the primes dividing `n`.
 
-    Examples:
+    Parameters
+    ----------
+    n : int, optional
+
+    factorization : list, optional
+        Factorization of `n` given as a list of (prime, exponent) pairs.
+
+    Returns
+    -------
+    p_list : list
+        Sorted list of the prime divisors of `n`.
+
+    Examples
+    --------
     >>> prime_divisors(120)
     [2, 3, 5]
-    >>> prime_divisors(5272)
-    [2, 659]
+    >>> prime_divisors(factorization=[(2, 2), (5, 2)])
+    [2, 5]
     """
-    if isinstance(n, (int, long)):
-        n_fac = factor(abs(n))
-    elif isinstance(n, list):
-        if n[0][0] == -1:
-            n_fac = n[1:]
-        else:
-            n_fac = n
+    if n is None and factorization is None:
+        raise TypeError("prime_divisors: Expected at least one argument.")
+    elif factorization is None:
+        factorization = factor(abs(n))
     else:
-        raise ValueError("Input must be an integer or a factorization")
+        if factorization[0][0] == -1:
+            factorization = factorization[1:]
 
-    p_divs = [p for (p, e) in n_fac]
-    return p_divs
+    return [p for (p, e) in factorization]
 
 
-def xdivisors(n):
+def xdivisors(n=None, factorization=None):
+    r"""Yields the positive integer divisors of `n`.
+
+    Parameters
+    ----------
+    n : int, optional
+
+    factorization : list, optional
+        Factorization of `n` given as a list of (prime, exponent) pairs.
+
+    Yields
+    -------
+    divisors : iterator
+        Iterator over the positive integer divisors of `n`.
+
+    Examples
+    --------
+    >>> list(xdivisors(10))
+    [1, 5, 2, 10]
+    >>> list(xdivisors(factorization=[(2, 1), (5, 1)]))
+    [1, 5, 2, 10]
     """
-    Returns an iterator over the positive integer divisors of n.
-
-    Input:
-        * n: int (n > 0)
-
-    Output:
-        * divisors: iterator
-            Iterator over the positive integer divisors of n.
-
-    Examples:
-        >>> list(xdivisors(10))
-        [1, 5, 2, 10]
-    """
-    if isinstance(n, (int, long)):
-        n_fac = factor(n)
-    elif isinstance(n, list):
-        n_fac = n
+    if n is None and factorization is None:
+        raise TypeError("xdivisors: Expected at least one argument.")
+    elif factorization is None:
+        factorization = factor(abs(n))
     else:
-        raise ValueError("Input must be an integer or a factorization")
+        if factorization[0][0] == -1:
+            factorization = factorization[1:]
 
-    p_divs = [p for (p, e) in n_fac]
-    iter_list = (xrange(e + 1) for (p, e) in n_fac)
+    p_divisors = [p for (p, e) in factorization]
+    iter_list = (xrange(e + 1) for (p, e) in factorization)
 
-    for tup in itertools.product(*iter_list):
-        pp = 1
-        for (p, e) in itertools.izip(p_divs, tup):
-            pp *= p**e
-        yield pp
+    for exp_tuple in itertools.product(*iter_list):
+        prod = 1
+        for (p, e) in itertools.izip(p_divisors, exp_tuple):
+            prod *= p**e
+        yield prod
 
 
-def is_squarefree(n):
+def is_squarefree(n=None, factorization=None):
+    r"""Determines if n is squarefree.
+
+    Given a nonnegative integer n, this return True iff n is not divisible
+    by the square of an integer > 1.
+
+    Parameters
+    ----------
+    n : int, optional
+
+    factorization : list, optional
+        Factorization of `n` given as a list of (prime, exponent) pairs.
+
+    Returns
+    -------
+    b : bool
+        True if `n` is squarefree; False otherwise.
+
+    Notes
+    -----
+    If `n` is a nonnegative integer, this factors `n` and checks if `n` is
+    divisible by the square of a prime.  If `n` is in factored form, this
+    directly checks the prime factorization.
+
+    Examples
+    --------
+    >>> is_squarefree(35)
+    True
+    >>> is_squarefree(100)
+    False
+    >>> is_squarefree(factorization=[(2, 2), (5, 2)])
+    False
     """
-    Determines if n is squarefree.
-
-    Given a nonnegative integer n, this return True iff n is not divisible by
-    the square of an integer > 1.
-
-    Input:
-        * n: int (n >= 0)
-
-    Output:
-        * b: bool
-
-    Details:
-        If n is a nonnegative integer, this factors n and checks if n is
-        divisible by the square of a prime.  If n is in factored form, this
-        directly checks the prime factorization.
-
-    Examples:
-        >>> is_squarefree(35)
-        True
-        >>> is_squarefree(100)
-        False
-    """
-    if isinstance(n, (int, long)):
-        n_fac = factor(abs(n))
-
-    elif isinstance(n, list):
-        if n[0][0] == -1:
-            n_fac = n[1:]
-        else:
-            n_fac = n
+    if n is None and factorization is None:
+        raise TypeError("is_squarefree: Expected at least one argument.")
+    elif factorization is None:
+        factorization = factor(abs(n))
     else:
-        raise ValueError("Input must be an integer or a factorization")
+        if factorization[0][0] == -1:
+            factorization = factorization[1:]
 
-    for (p, e) in n_fac:
-        if e > 1:
-            return False
-
-    return True
+    return all(e == 1 for (p, e) in factorization)

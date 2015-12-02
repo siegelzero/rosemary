@@ -23,8 +23,6 @@ from rosemary.number_theory.arithmetic_functions import (
 
 class TestCore(unittest.TestCase):
     def test_carmichael_lambda(self):
-        self.assertRaisesRegexp(ValueError, "carmichael_lambda: Input must be a positive integer or a factorization.",
-                                carmichael_lambda, 'cat')
         self.assertRaisesRegexp(ValueError, "carmichael_lambda: Must have n > 0.", carmichael_lambda, -1)
 
         self.assertEqual(carmichael_lambda([(2, 3), (5, 2)]), 20)
@@ -44,9 +42,6 @@ class TestCore(unittest.TestCase):
         self.assertEqual(values, computed)
 
     def test_euler_phi(self):
-        self.assertRaisesRegexp(ValueError, "euler_phi: Input must be a positive integer or a factorization.",
-                                euler_phi, 'cat')
-
         self.assertRaisesRegexp(ValueError, "euler_phi: Must have n > 0.", euler_phi, -1)
 
         values = [
@@ -65,8 +60,6 @@ class TestCore(unittest.TestCase):
 
     def test_euler_phi_inverse(self):
         self.assertRaisesRegexp(ValueError, "euler_phi_inverse: Must have n > 0.", euler_phi_inverse, -1)
-        self.assertRaisesRegexp(ValueError, "euler_phi_inverse: Input must be a positive integer or a factorization.",
-                                euler_phi_inverse, 'cat')
         self.assertEqual(euler_phi_inverse([(2, 2), (5, 2)]), [101, 125, 202, 250])
         values = defaultdict(list)
 
@@ -171,7 +164,6 @@ class TestCore(unittest.TestCase):
 
     def test_moebius(self):
         self.assertRaisesRegexp(ValueError, "moebius: Must have n > 0.", moebius, -1)
-        self.assertRaisesRegexp(ValueError, "moebius: Input must be a positive integer or a factorization.", moebius, 'cat')
 
         values = [
             1, -1, -1, 0, -1, 1, -1, 0, 0, 1, -1, 0, -1, 1, 1, 0, -1, 0, -1, 0, 1, 1, -1, 0, 0, 1, 0, 0, -1, -1, -1, 0,
@@ -195,7 +187,7 @@ class TestCore(unittest.TestCase):
         values = [1, -1, 0]
 
         for i in xrange(3):
-            self.assertEqual(moebius(factorizations[i]), values[i])
+            self.assertEqual(moebius(factorization=factorizations[i]), values[i])
 
     def test_moebius_list(self):
         self.assertRaisesRegexp(ValueError, "moebius_list: Must have n > 0.", moebius_list, 0)
@@ -270,7 +262,6 @@ class TestCore(unittest.TestCase):
     def test_sigma(self):
         self.assertRaisesRegexp(ValueError, "sigma: Must have n > 0.", sigma, -1)
         self.assertRaisesRegexp(ValueError, "sigma: Must have k >= 0.", sigma, 10, -1)
-        self.assertRaisesRegexp(ValueError, "sigma: Input must be a positive integer or a factorization.", sigma, 'cat')
 
         values = [
             [1, 2, 2, 3, 2, 4, 2, 4, 3, 4, 2, 6, 2, 4, 4, 5, 2, 6, 2, 6],
@@ -363,7 +354,6 @@ class TestCore(unittest.TestCase):
 
     def test_tau(self):
         self.assertRaisesRegexp(ValueError, "tau: Must have n > 0.", tau, -1)
-        self.assertRaisesRegexp(ValueError, "tau: Input must be a positive integer or a factorization.", tau, "cat")
 
         self.assertEqual(tau([(2, 1), (5, 1)]), 4)
 
