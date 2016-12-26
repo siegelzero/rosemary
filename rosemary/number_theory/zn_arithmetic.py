@@ -2,7 +2,7 @@
 
 import itertools
 import rosemary.number_theory.factorization
-import rosemary.number_theory.arithmetic_functions
+import rosemary.number_theory.arithmetic_functions.functions as functions
 
 from random import randint
 from rosemary.number_theory.core import (
@@ -85,7 +85,7 @@ def is_primitive_root(a, n, phi=None, phi_divisors=None):
         return False
 
     if phi is None:
-        phi = rosemary.number_theory.arithmetic_functions.euler_phi(n)
+        phi = functions.euler_phi(n)
 
     if phi_divisors is None:
         phi_divisors = rosemary.number_theory.factorization.prime_divisors(phi)
@@ -173,7 +173,7 @@ def primitive_root(n, n_factorization=None, phi=None, phi_divisors=None):
         raise ValueError("primitive_root: No primitive root for n.")
 
     if phi is None:
-        phi = rosemary.number_theory.arithmetic_functions.euler_phi(n_factorization)
+        phi = functions.euler_phi(n_factorization)
 
     if phi_divisors is None:
         phi_divisors = rosemary.number_theory.factorization.prime_divisors(phi)

@@ -1,6 +1,6 @@
 import unittest
 
-from rosemary.number_theory.sieves import (
+from rosemary.number_theory.primes.sieves import (
     chartres,
     eratosthenes1,
     eratosthenes2,
@@ -146,7 +146,12 @@ class TestCore(unittest.TestCase):
         values = prime_xrange(1, 10**3)
         self.assertEqual(list(values), self.primes_to_1000)
         self.assertEqual(sum(prime_xrange(2*10**6)), self.sum_of_primes_to_2000000)
+
+        # Case where b >= 10^7 and a < sqrt(b)
         self.assertEqual(sum(prime_xrange(10**3, 10**7 + 10**3)), 3203934952888)
+
+        # Case where b >= 10^7 and a > sqrt(b)
+        self.assertEqual(sum(prime_xrange(10**6, 2*10**7)), 12235027416029)
 
     def test_primes(self):
         values = primes(1000)

@@ -151,19 +151,19 @@ class TestCore(unittest.TestCase):
 
     def test_pollard_rho(self):
         factorizations = {
-            414876509374946224887319096986555104270201L: 711628063L,
-            615028785027771754392800840284305067659311379685188908444467L: 21207101L,
+            414876509374946224887319096986555104270201L: set([711628063L]),
+            615028785027771754392800840284305067659311379685188908444467L: set([21207101L, 258065887L])
         }
-        for (n, p) in factorizations.items():
-            self.assertEqual(pollard_rho(n), p)
+        for (n, p_set) in factorizations.items():
+            self.assertIn(pollard_rho(n), p_set)
 
     def test_pollard_rho_brent(self):
         factorizations = {
-            414876509374946224887319096986555104270201L: 711628063L,
-            615028785027771754392800840284305067659311379685188908444467L: 21207101L,
+            414876509374946224887319096986555104270201L: set([711628063L]),
+            615028785027771754392800840284305067659311379685188908444467L: set([21207101L, 258065887L])
         }
-        for (n, p) in factorizations.items():
-            self.assertEqual(pollard_rho(n), p)
+        for (n, p_set) in factorizations.items():
+            self.assertIn(pollard_rho_brent(n), p_set)
 
     def test_prime_divisors(self):
         return

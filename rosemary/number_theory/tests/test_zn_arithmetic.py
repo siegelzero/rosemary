@@ -2,7 +2,7 @@ import unittest
 
 from collections import defaultdict
 
-from rosemary.number_theory.sieves import primes
+from rosemary.number_theory.primes.sieves import primes
 
 from rosemary.number_theory.zn_arithmetic import (
     discrete_log,

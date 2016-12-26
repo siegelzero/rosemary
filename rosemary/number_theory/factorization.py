@@ -5,8 +5,8 @@ import itertools
 from random import randint
 from math import exp, log, sqrt
 
-import rosemary.number_theory.sieves
-import rosemary.number_theory.primality
+import rosemary.number_theory.primes.sieves as sieves
+import rosemary.number_theory.primes.primality as primality
 
 from rosemary.number_theory.prime_list import _PRIME_LIST
 from rosemary.number_theory.core import (
@@ -263,7 +263,7 @@ def pollard_p_minus_1(n, limit=100000):
     >>> pollard_p_minus_1(1112470797641561909)
     1056689261L
     """
-    p_list = rosemary.number_theory.sieves.primes(limit)
+    p_list = sieves.primes(limit)
     pow_list = []
 
     for p in p_list:
@@ -488,7 +488,7 @@ def cfrac(n, k=None):
     """
     # B is our smoothness bound.
     B = int(exp(0.5*sqrt(log(n)*log(log(n))))) + 1
-    prime_list = rosemary.number_theory.sieves.primes(B)
+    prime_list = sieves.primes(B)
 
     # Choose a multiplier if none is provided.
     if k is None:
@@ -914,7 +914,7 @@ def factor(n, skip_trial_division=False, use_cfrac=False):
     """
     fac = collections.defaultdict(int)
 
-    _is_prime = rosemary.number_theory.primality.is_probable_prime
+    _is_prime = primality.is_probable_prime
     if use_cfrac:
         _factor = cfrac
     else:
