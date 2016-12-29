@@ -1,7 +1,7 @@
 # Modular arithmetic
 
 import itertools
-import rosemary.number_theory.factorization
+import rosemary.number_theory.factorization.factorization as factor
 import rosemary.number_theory.arithmetic_functions.functions as functions
 
 from random import randint
@@ -88,7 +88,7 @@ def is_primitive_root(a, n, phi=None, phi_divisors=None):
         phi = functions.euler_phi(n)
 
     if phi_divisors is None:
-        phi_divisors = rosemary.number_theory.factorization.prime_divisors(phi)
+        phi_divisors = factor.prime_divisors(phi)
 
     for d in phi_divisors:
         if pow(a, phi//d, n) == 1:
@@ -161,7 +161,7 @@ def primitive_root(n, n_factorization=None, phi=None, phi_divisors=None):
         Computational Algebraic Number Theory" by Cohen for more details.
     """
     if n_factorization is None:
-        n_factorization = rosemary.number_theory.factorization.factor(n)
+        n_factorization = factor.factor(n)
 
     if n % 4 == 0 and n != 4:
         raise ValueError("primitive_root: No primitive root for n.")
@@ -176,7 +176,7 @@ def primitive_root(n, n_factorization=None, phi=None, phi_divisors=None):
         phi = functions.euler_phi(n_factorization)
 
     if phi_divisors is None:
-        phi_divisors = rosemary.number_theory.factorization.prime_divisors(phi)
+        phi_divisors = factor.prime_divisors(phi)
 
     for g in xrange(1, n):
         if is_primitive_root(g, n, phi=phi, phi_divisors=phi_divisors):
@@ -218,7 +218,7 @@ def fibonacci_primitive_roots(p):
     sqrts = sqrts_mod_p(5, p)
     inverse = inverse_mod(2, p)
     quad_roots = [(1 + root)*inverse % p for root in sqrts]
-    phi_divisors = rosemary.number_theory.factorization.prime_divisors(p - 1)
+    phi_divisors = factor.prime_divisors(p - 1)
     roots = []
 
     for r in quad_roots:
@@ -478,7 +478,7 @@ def sqrts_mod_n(a, n, n_factorization=None):
         []
     """
     if n_factorization is None:
-        n_factorization = rosemary.number_theory.factorization.factor(n)
+        n_factorization = factor.factor(n)
 
     congruences = []
     moduli = []
@@ -770,7 +770,7 @@ def quadratic_congruence(coeff_list, n, n_factorization=None):
         Coury for detailed information.
     """
     if n_factorization is None:
-        n_factorization = rosemary.number_theory.factorization.factor(n)
+        n_factorization = factor.factor(n)
 
     (a, b, c) = coeff_list
     discriminant = b*b - 4*a*c

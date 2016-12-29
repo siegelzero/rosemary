@@ -1,23 +1,17 @@
 import unittest
 
-from rosemary.number_theory.factorization import (
+from rosemary.number_theory.factorization.algorithms import (
     _cfrac_aq_pairs,
     _cfrac_multiplier,
     _z2_gaussian_elimination,
     cfrac,
-    divisors,
-    factor,
-    factor_back,
     fermat,
-    is_squarefree,
     lehman,
     pollard_p_minus_1,
     pollard_rho,
     pollard_rho_brent,
-    prime_divisors,
     smooth_factor,
     trial_division,
-    xdivisors,
 )
 
 
@@ -73,55 +67,6 @@ class TestCore(unittest.TestCase):
         for (n, p) in factorizations.items():
             self.assertEqual(cfrac(n), p)
 
-    def test_divisors(self):
-        return
-
-    def test_factor(self):
-        factorizations = {
-            5**77 - 1: [
-                (2, 2),
-                (19531, 1),
-                (12207031L, 1),
-                (527093491L, 1),
-                (8090594434231L, 1),
-                (162715052426691233701L, 1)
-            ],
-            5**93 + 1: [
-                (2, 1),
-                (3, 2),
-                (7, 1),
-                (1303, 1),
-                (21207101L, 1),
-                (258065887L, 1),
-                (28086211607L, 1),
-                (75005167927L, 1),
-                (53345671490722200466369L, 1)
-            ],
-            1303**6*11213**4: [
-                (1303, 6),
-                (11213, 4)
-            ],
-            2**91 - 1: [
-                (127, 1),
-                (911, 1),
-                (8191, 1),
-                (112901153L, 1),
-                (23140471537L, 1)
-            ],
-            10**22 + 1: [
-                (89, 1),
-                (101, 1),
-                (1052788969L, 1),
-                (1056689261L, 1)
-            ]
-        }
-
-        for (n, n_fac) in factorizations.items():
-            self.assertEqual(n_fac, factor(n))
-
-    def test_factor_back(self):
-        return
-
     def test_fermat(self):
         factorizations = {
             100: 2,
@@ -129,9 +74,6 @@ class TestCore(unittest.TestCase):
         }
         for (n, p) in factorizations.items():
             self.assertEqual(fermat(n), p)
-
-    def test_is_squarefree(self):
-        return
 
     def test_lehman(self):
         factorizations = {
@@ -165,9 +107,6 @@ class TestCore(unittest.TestCase):
         for (n, p_set) in factorizations.items():
             self.assertIn(pollard_rho_brent(n), p_set)
 
-    def test_prime_divisors(self):
-        return
-
     def test_smooth_factor(self):
         self.assertEqual(smooth_factor(100, [2, 5]), [2, 2])
         self.assertEqual(smooth_factor(100, [2, 3, 5, 7]), [2, 0, 2, 0])
@@ -179,6 +118,3 @@ class TestCore(unittest.TestCase):
         self.assertEqual(trial_division(100), 2)
         self.assertEqual(trial_division(10000004400000259), 100000007)
         self.assertAlmostEqual(trial_division(10000004400000259, 100), 10000004400000259)
-
-    def test_xdivisors(self):
-        return

@@ -4,8 +4,8 @@
 # simply listing and counting whenever possible.
 
 from rosemary.number_theory.core import gcd
-from rosemary.number_theory.factorization import xdivisors
-from rosemary.number_theory.arithmetic_functions import euler_phi, factorial
+from rosemary.number_theory.factorization.factorization import xdivisors
+from rosemary.number_theory.arithmetic_functions.functions import euler_phi, factorial
 
 
 def bell_number(n):

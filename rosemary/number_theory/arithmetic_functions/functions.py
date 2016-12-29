@@ -1,4 +1,6 @@
+################################################################################
 # Arithmetic Functions
+################################################################################
 
 from rosemary.number_theory.prime_list import _PRIME_LIST
 
@@ -7,21 +9,20 @@ from rosemary.number_theory.core import (
     lcm_list,
 )
 
-import rosemary.number_theory.arithmetic_functions.lists as lists
-import rosemary.number_theory.factorization
+import rosemary.number_theory.factorization.factorization as factor
 import rosemary.number_theory.primes.primality as primality
 
 
 ################################################################################
-# multiplicative functions
+# Multiplicative functions
 ################################################################################
 
 
 def euler_phi(n=None, factorization=None):
-    r"""Returns the totient of `n`.
+    r"""Returns the Euler totient of `n`.
 
-    Given a positive integer `n`, this method returns the number of
-    positive integers `k \leq n` which are coprime to `n`.
+    For positive integers `n`, this method returns the number of positive
+    integers less than or equal to `n` which are relatively prime to `n`.
 
     Parameters
     ----------
@@ -37,19 +38,36 @@ def euler_phi(n=None, factorization=None):
 
     Raises
     ------
-    ValueError: If n <= 0.
+    ValueError
+        If ``n <= 0``.
+
+    See Also
+    --------
+    euler_phi_sum, euler_phi_list
 
     Notes
     -----
     The Euler phi function is a multiplicative function satisfying
-    phi(p**k) = (p - 1)*p**(k - 1) for prime powers p**k.  For positive
-    integers n, this method computes the factorization of n, and then uses
-    this product definition. If instead a factorization of n is given, then
-    the product formula is used directly. See "Fundamental Number Theory
-    with Applications" by Mollin for details.
+    .. math::
+        \phi(p^k) = (p - 1) p^{k - 1}
+
+    for prime powers ``p^k``. For positive integers `n`, this method
+    computes the factorization of `n`, and then uses this product
+    definition. If instead a factorization of `n` is given, then the
+    product formula is used directly. See section 2.3 of [1] for details,
+    and see section 3.7 for information related to the growth rate.
+
+    References
+    ----------
+    .. [1] T.M. Apostol, "Introduction to Analytic Number Theory",
+    Springer-Verlag, New York, 1976.
 
     Examples
     --------
+    >>> euler_phi(1)
+    1
+    >>> euler_phi(7)
+    6
     >>> euler_phi(100)
     40
     >>> euler_phi(factorization=[(2, 2), (5, 2)])
@@ -66,10 +84,10 @@ def euler_phi(n=None, factorization=None):
             return 1
         elif n <= 0:
             raise ValueError("euler_phi: Must have n > 0.")
-        factorization = rosemary.number_theory.factorization.factor(abs(n))
+        factorization = factor.factor(n)
     else:
         if factorization[0][0] == -1:
-            factorization = factorization[1:]
+            raise ValueError("euler_phi: Must have n > 0.")
 
     prod = 1
     for (p, e) in factorization:
@@ -78,7 +96,7 @@ def euler_phi(n=None, factorization=None):
 
 
 def moebius(n=None, factorization=None):
-    r"""Returns the value of the Moebius function mu(n).
+    r"""Returns the value of the Moebius function ``mu(n)``.
 
     Parameters
     ----------
@@ -94,21 +112,37 @@ def moebius(n=None, factorization=None):
 
     Raises
     ------
-    ValueError: If n <= 0.
+    ValueError
+        If ``n <= 0``.
+
+    See Also
+    --------
+    moebius_sum, moebius_list
 
     Notes
     -----
     The Moebius mu function is a multiplicative function satisfying
-    mu(p1*p2*...pk) = (-1)**k, and mu(p**e) = 0 for e >= 2. For positive
-    integers n, this method computes the factorization of n, and then uses
-    this product definition. If instead a factorization of n is given, then
-    the product formula is used directly.
+    .. math::
+        mu(p_1 p_2 \cdots p_k) = (-1)^k
+
+    and ``mu(p**e) = 0`` for ``e >= 2``. For positive integers `n`, this
+    method computes the factorization of `n`, and then uses this product
+    definition. If instead a factorization of `n` is given, then the
+    product formula is used directly. See section 2.2 of [1] for details,
+    and see section 3.9 for information related to the growth rate.
+
+    References
+    ----------
+    .. [1] T.M. Apostol, "Introduction to Analytic Number Theory",
+    Springer-Verlag, New York, 1976.
 
     Examples
     --------
+    >>> moebius(1)
+    1
     >>> moebius(35)
     1
-    >>> moebius([(5, 1), (7, 1)])
+    >>> moebius(factorization=[(5, 1), (7, 1)])
     1
     >>> moebius(100)
     0
@@ -126,12 +160,12 @@ def moebius(n=None, factorization=None):
             return 1
         elif n <= 0:
             raise ValueError("moebius: Must have n > 0.")
-        factorization = rosemary.number_theory.factorization.factor(abs(n))
+        factorization = factor.factor(n)
     else:
         if factorization[0][0] == -1:
-            factorization = factorization[1:]
+            raise ValueError("moebius: Must have n > 0.")
 
-    if rosemary.number_theory.factorization.is_squarefree(factorization=factorization):
+    if factor.is_squarefree(factorization=factorization):
         k = len(factorization)
         return (-1)**k
     else:
@@ -192,7 +226,7 @@ def sigma(n, k=1):
             return 1
         elif n <= 0:
             raise ValueError("sigma: Must have n > 0.")
-        n_factorization = rosemary.number_theory.factorization.factor(n)
+        n_factorization = factor.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
         n_factorization = n
     else:
@@ -249,7 +283,7 @@ def tau(n):
             return 1
         elif n <= 0:
             raise ValueError("tau: Must have n > 0.")
-        n_factorization = rosemary.number_theory.factorization.factor(n)
+        n_factorization = factor.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
         n_factorization = n
     else:
@@ -305,7 +339,7 @@ def carmichael_lambda(n):
             return 1
         elif n <= 0:
             raise ValueError("carmichael_lambda: Must have n > 0.")
-        n_factorization = rosemary.number_theory.factorization.factor(n)
+        n_factorization = factor.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
         n_factorization = n
     else:
@@ -420,233 +454,6 @@ def primorial(n):
         prod *= prime
 
 
-################################################################################
-# Summatory functions of multiplicative functions
-################################################################################
-
-
-def euler_phi_sum(n):
-    """Returns the value of the sum of euler_phi(k) for k = 1, 2, ..., n.
-
-    Parameters
-        * n: int (n > 0)
-
-    Returns:
-        * s: int
-
-    Raises:
-        * ValueError: If n <= 0.
-
-    Examples:
-        >>> euler_phi_sum(10)
-        32
-        >>> sum(euler_phi_list(10))
-        32
-        >>> euler_phi_sum(10**5)
-        3039650754
-        >>> euler_phi_sum(0)
-        Traceback (most recent call last):
-        ...
-        ValueError: euler_phi_sum: Must have n > 0.
-
-    Details:
-        Let S(n) = \sum_{k = 1}^{n} \phi(k). We use the identity
-        S(n) = n*(n + 1)/2 - \sum_{d = 2}^{n} S(n/d) to compute the value. By
-        applying a variant of Dirichlet's Hyperbola Method, we are able to cut
-        the limits of summation, and by memoizing the recursion, we are able to
-        achieve a sublinear runtime. See Section 4.2 of "The Prime Numbers and
-        Their Distribution" by Mendes, et al for the Hyperbola Method. See
-        section 4.9 equation 4.60 in "Concrete Mathematics" by Graham, et al for
-        a proof of the identity for S(n).
-    """
-    if n <= 0:
-        raise ValueError("euler_phi_sum: Must have n > 0.")
-
-    sqrt = int(n**(0.5))
-    phi_list = lists.euler_phi_list(sqrt)
-
-    # for i <= sqrt(n), compute the sum directly
-    cache = {1: 1}
-    for i in xrange(2, sqrt + 1):
-        cache[i] = cache[i - 1] + phi_list[i]
-
-    def S(n):
-        if n in cache:
-            return cache[n]
-
-        sqrt_n = int(n**(0.5))
-        value = n - sqrt_n*cache[sqrt_n]
-
-        for d in xrange(2, sqrt_n + 1):
-            value += (S(n//d) + phi_list[d]*(n//d))
-
-        cache[n] = n*(n + 1)//2 - value
-        return cache[n]
-
-    return S(n)
-
-
-totient_sum = euler_phi_sum
-
-
-def euler_phi_weighted_sum(n):
-    """Returns the value of the sum of k*euler_phi(k) for k = 1, 2, ..., n.
-
-    Parameters
-        * n: int (n > 0)
-
-    Returns:
-        * s: int
-
-    Raises:
-        * ValueError: If n <= 0.
-
-    Examples:
-        >>> euler_phi_weighted_sum(100)
-        203085
-        >>> sum(k*euler_phi(k) for k in xrange(1, 101))
-        203085
-        >>> euler_phi_weighted_sum(0)
-        Traceback (most recent call last):
-        ...
-        ValueError: euler_phi_weighted_sum: Must have n > 0.
-
-    Details:
-        Let T(n) = \sum_{k = 1}^{n} k*euler_phi(k). We use the relationship
-        \sum_{d = 1}^{n} d*T(n/d) = n*(n + 1)*(2*n + 1) / 6 to form a recurrence
-        for T(n). Using a form of Dirichlet's hyperbola method and memoizing the
-        recursion gives us a sublinear runtime.
-    """
-    if n <= 0:
-        raise ValueError("euler_phi_weighted_sum: Must have n > 0.")
-
-    sqrt = int(n**(0.5))
-    totients = lists.euler_phi_list(sqrt)
-
-    # for i <= sqrt(n), compute the sum directly
-    cache = {1: 1}
-    for i in xrange(2, sqrt + 1):
-        cache[i] = cache[i - 1] + i*totients[i]
-
-    def T(n):
-        if n in cache:
-            return cache[n]
-
-        sqrt_n = int(n**(0.5)) + 1
-        s1 = sum(d*totients[d]*(n//d - d + 1)*(n//d + d)//2 for d in xrange(1, sqrt_n))
-        s2 = sum(d*(T(n//d) - T(d - 1)) for d in xrange(2, sqrt_n))
-        s3 = sum(d*d*totients[d] for d in xrange(1, sqrt_n))
-
-        cache[n] = n*(n + 1)*(2*n + 1)//6 - (s1 + s2 - s3)
-        return cache[n]
-
-    return T(n)
-
-
-def moebius_sum(n):
-    """Returns the value of the sum of moebius(k) for k = 1, 2, ..., n.
-
-    Parameters
-        * n: int (n > 0)
-
-    Returns:
-        * s: int
-
-    Raises:
-        * ValueError: If n <= 0.
-
-    Examples:
-        >>> moebius_sum(10)
-        -1
-        >>> sum(moebius_list(10))
-        -1
-        >>> moebius_sum(0)
-        Traceback (most recent call last):
-        ...
-        ValueError: moebius_sum: Must have n > 0.
-
-    Details:
-        The formula used here is based on the relationship
-        \sum_{d = 1}^{n} M(n/d) = 1, where M(n) = \sum_{k = 1}^{n} moebius(k).
-        We convert this to a recursive formula, whereby using some form of
-        Dirichlet's hyperbola method and memoizing the recursion gives us a
-        sublinear runtime.
-    """
-    if n <= 0:
-        raise ValueError("moebius_sum: Must have n > 0.")
-
-    sqrt = int(n**(0.5))
-    mu_list = lists.moebius_list(sqrt)
-
-    # for i <= sqrt(n), compute the sum directly
-    cache = {1: 1}
-    for i in xrange(2, sqrt + 1):
-        cache[i] = cache[i - 1] + mu_list[i]
-
-    def M(n):
-        if n in cache:
-            return cache[n]
-        sqrt_n = int(n**(0.5)) + 1
-        value = n - 1
-        for d in xrange(2, sqrt_n):
-            value += M(n//d) - M(d - 1)
-            value += mu_list[d]*(n//d - d)
-        cache[n] = 1 - value
-        return cache[n]
-
-    return M(n)
-
-
-mertens = moebius_sum
-
-
-def sigma_sum(n):
-    """Returns the value of the sum of sigma(k) for k = 1, 2, ..., n.
-
-    Parameters
-        * n: int (n > 0)
-
-    Returns:
-        * sum: int
-
-    Raises:
-        * ValueError: If n <= 0.
-
-    Examples:
-        >>> sigma_sum(100)
-        8299
-        >>> sum(sigma_list(100))
-        8299
-        >>> sigma_sum(-1)
-        Traceback (most recent call last):
-        ...
-        ValueError: sigma_sum: Must have n > 0.
-
-    Details:
-        The formula used is obtained by interchanging the order of summation and
-        using some form of Dirichlet's hyperbola method to achieve a sublinear
-        runtime.
-    """
-    if n <= 0:
-        raise ValueError("sigma_sum: Must have n > 0.")
-
-    sqrt = int(n**(0.5))
-    value = -sqrt*(sqrt + 1)
-
-    for k in xrange(1, sqrt + 1):
-        nk = n//k
-        tt = nk - k + 1
-        value += 2*k*tt
-        value += tt*(nk + k)
-
-    return value//2
-
-
-################################################################################
-# Miscellaneous
-################################################################################
-
-
 def euler_phi_inverse(n):
     """Returns a sorted list of all positive integers k such that euler_phi(k) = n.
 
@@ -687,10 +494,10 @@ def euler_phi_inverse(n):
             return []
         elif n <= 0:
             raise ValueError("euler_phi_inverse: Must have n > 0.")
-        n_factorization = rosemary.number_theory.factorization.factor(n)
+        n_factorization = factor.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
         n_factorization = n
-        n = rosemary.number_theory.factorization.factor_back(n_factorization)
+        n = factor.factor_back(n_factorization)
     else:
         raise ValueError("euler_phi_inverse: Input must be a positive integer or a factorization.")
 
@@ -701,7 +508,7 @@ def euler_phi_inverse(n):
 
     # Odd primes p that divide n must have the property that p - 1 divides m.
     prime_list = []
-    for d in rosemary.number_theory.factorization.divisors(factorization=n_factorization)[1:]:
+    for d in factor.divisors(factorization=n_factorization)[1:]:
         if primality.is_prime(d + 1):
             prime_list.append(d + 1)
 
