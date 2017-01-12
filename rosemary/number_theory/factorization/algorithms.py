@@ -1,19 +1,16 @@
 # Algorithms related to integer factorization
 
-import collections
 import itertools
 from random import randint
 from math import exp, log, sqrt
 
 import rosemary.number_theory.primes.sieves as sieves
-import rosemary.number_theory.primes.primality as primality
 
 from rosemary.number_theory.prime_list import _PRIME_LIST
 from rosemary.number_theory.core import (
     gcd,
     integer_nth_root,
     integer_sqrt,
-    is_power,
     jacobi_symbol,
 )
 

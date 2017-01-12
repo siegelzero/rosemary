@@ -4,10 +4,10 @@ import collections
 import itertools
 
 import rosemary.number_theory.factorization.algorithms as algorithms
-import rosemary.number_theory.primes.primality as primality
 
+from rosemary.number_theory.classification import is_power
 from rosemary.number_theory.prime_list import _PRIME_LIST
-from rosemary.number_theory.core import is_power
+from rosemary.number_theory.primes.primality import is_probable_prime
 
 
 ###########################################################################
@@ -64,7 +64,7 @@ def factor(n, skip_trial_division=False, use_cfrac=False):
     """
     fac = collections.defaultdict(int)
 
-    _is_prime = primality.is_probable_prime
+    _is_prime = is_probable_prime
     if use_cfrac:
         _factor = algorithms.cfrac
     else:
@@ -295,47 +295,3 @@ def unitary_divisors(n=None, factorization=None):
 
     div_list.sort()
     return div_list
-
-
-def is_squarefree(n=None, factorization=None):
-    r"""Determines if n is squarefree.
-
-    Given a nonnegative integer n, this return True iff n is not divisible
-    by the square of an integer > 1.
-
-    Parameters
-    ----------
-    n : int, optional
-
-    factorization : list, optional
-        Factorization of `n` given as a list of (prime, exponent) pairs.
-
-    Returns
-    -------
-    b : bool
-        True if `n` is squarefree; False otherwise.
-
-    Notes
-    -----
-    If `n` is a nonnegative integer, this factors `n` and checks if `n` is
-    divisible by the square of a prime.  If `n` is in factored form, this
-    directly checks the prime factorization.
-
-    Examples
-    --------
-    >>> is_squarefree(35)
-    True
-    >>> is_squarefree(100)
-    False
-    >>> is_squarefree(factorization=[(2, 2), (5, 2)])
-    False
-    """
-    if n is None and factorization is None:
-        raise TypeError("is_squarefree: Expected at least one argument.")
-    elif factorization is None:
-        factorization = factor(abs(n))
-    else:
-        if factorization[0][0] == -1:
-            factorization = factorization[1:]
-
-    return all(e == 1 for (p, e) in factorization)

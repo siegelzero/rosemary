@@ -1,8 +1,7 @@
 # Primality tests
 
 from rosemary.number_theory.prime_list import _PRIME_LIST
-
-import rosemary.number_theory.factorization
+from rosemary.number_theory.factorization.algorithms import trial_division
 
 from bisect import bisect_left
 from math import log
@@ -72,7 +71,7 @@ def is_prime(n):
         if not is_probable_prime(n):
             return False
         # otherwise, use trial division to ensure primality
-        d = rosemary.number_theory.factorization.trial_division(n)
+        d = trial_division(n)
         return d == n
 
 

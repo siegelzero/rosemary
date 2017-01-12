@@ -1,16 +1,65 @@
-################################################################################
 # Arithmetic Functions
-################################################################################
 
-from rosemary.number_theory.prime_list import _PRIME_LIST
+import inspect
+
+import rosemary.number_theory.factorization.factorization
+import rosemary.number_theory.primes.sieves as sieves
+import rosemary.number_theory.classification
 
 from rosemary.number_theory.core import (
     bit_count,
     lcm_list,
 )
 
-import rosemary.number_theory.factorization.factorization as factor
-import rosemary.number_theory.primes.primality as primality
+
+################################################################################
+# Utilities
+################################################################################
+
+
+def _validate_input(n):
+    r"""Validates input of a multiplicative arithmetical function.
+
+    This method ensures that the input `n` of a multiplicative arithmetical
+    function is either an integer type or the factorization of an integer,
+    given as a list of (prime, exponent) pairs.
+
+    Parameters
+    ----------
+    n : integer or factorization (n > 0)
+        The value of `n` can be an integer or the factorization of an
+        integer given as a list of (prime, exponent) pairs.
+
+    Returns
+    -------
+    factorization : list
+        The validated factorization of `n`.
+
+    Raises
+    ------
+    ValueError
+        If ``n <= 0`` or `n` is not a valid factorization.
+
+    OneFactorization
+        If ``n == 1``, since the factoring doesn't make sense in this case.
+    """
+    # Name of calling function
+    caller_name = inspect.stack()[1][3]
+
+    if isinstance(n, (int, long)):
+        if n == 1:
+            return [(1, 1)]
+        elif n <= 0:
+            message = "{}: Must have n > 0.".format(caller_name)
+            raise ValueError(message)
+        factorization = rosemary.number_theory.factorization.factorization.factor(n)
+    elif isinstance(n, list) and n[0][0] > 0:
+        factorization = n
+    else:
+        message = "{}: Input must be a positive integer or a factorization.".format(caller_name)
+        raise ValueError(message)
+
+    return factorization
 
 
 ################################################################################
@@ -18,7 +67,7 @@ import rosemary.number_theory.primes.primality as primality
 ################################################################################
 
 
-def euler_phi(n=None, factorization=None):
+def euler_phi(n):
     r"""Returns the Euler totient of `n`.
 
     For positive integers `n`, this method returns the number of positive
@@ -26,10 +75,9 @@ def euler_phi(n=None, factorization=None):
 
     Parameters
     ----------
-    n : int, optional
-
-    factorization : list, optional
-        Factorization of `n` given as a list of (prime, exponent) pairs.
+    n : integer or factorization (n > 0)
+        The value of `n` can be an integer or the factorization of an
+        integer given as a list of (prime, exponent) pairs.
 
     Returns
     -------
@@ -51,16 +99,20 @@ def euler_phi(n=None, factorization=None):
     .. math::
         \phi(p^k) = (p - 1) p^{k - 1}
 
-    for prime powers ``p^k``. For positive integers `n`, this method
+    for prime powers ``p**k``. For positive integers `n`, this method
     computes the factorization of `n`, and then uses this product
     definition. If instead a factorization of `n` is given, then the
-    product formula is used directly. See section 2.3 of [1] for details,
-    and see section 3.7 for information related to the growth rate.
+    product formula is used directly. See section 2.3 of [1] and section
+    16.1 of [2] for details, and see section 3.7 for information related to
+    the growth rate.
 
     References
     ----------
     .. [1] T.M. Apostol, "Introduction to Analytic Number Theory",
     Springer-Verlag, New York, 1976.
+
+    .. [2] G.H. Hardy, E.M. Wright, "An Introduction to the Theory of
+    Numbers", 6th edition, Oxford University Press, 2008.
 
     Examples
     --------
@@ -70,24 +122,17 @@ def euler_phi(n=None, factorization=None):
     6
     >>> euler_phi(100)
     40
-    >>> euler_phi(factorization=[(2, 2), (5, 2)])
+    >>> euler_phi([(2, 2), (5, 2)])
     40
     >>> euler_phi(0)
     Traceback (most recent call last):
     ...
     ValueError: euler_phi: Must have n > 0.
     """
-    if n is None and factorization is None:
-        raise TypeError("euler_phi: Expected at least one argument.")
-    elif factorization is None:
-        if n == 1:
-            return 1
-        elif n <= 0:
-            raise ValueError("euler_phi: Must have n > 0.")
-        factorization = factor.factor(n)
-    else:
-        if factorization[0][0] == -1:
-            raise ValueError("euler_phi: Must have n > 0.")
+    factorization = _validate_input(n)
+
+    if factorization == [(1, 1)]:
+        return 1
 
     prod = 1
     for (p, e) in factorization:
@@ -95,15 +140,14 @@ def euler_phi(n=None, factorization=None):
     return prod
 
 
-def moebius(n=None, factorization=None):
+def moebius(n):
     r"""Returns the value of the Moebius function ``mu(n)``.
 
     Parameters
     ----------
-    n : int, optional
-
-    factorization : list, optional
-        Factorization of `n` given as a list of (prime, exponent) pairs.
+    n : integer or factorization (n > 0)
+        The value of `n` can be an integer or the factorization of an
+        integer given as a list of (prime, exponent) pairs.
 
     Returns
     -------
@@ -128,13 +172,17 @@ def moebius(n=None, factorization=None):
     and ``mu(p**e) = 0`` for ``e >= 2``. For positive integers `n`, this
     method computes the factorization of `n`, and then uses this product
     definition. If instead a factorization of `n` is given, then the
-    product formula is used directly. See section 2.2 of [1] for details,
-    and see section 3.9 for information related to the growth rate.
+    product formula is used directly. See section 2.2 of [1] and section
+    16.3 of [2] for details, and see section 3.9 of [1] for information
+    related to the growth rate.
 
     References
     ----------
     .. [1] T.M. Apostol, "Introduction to Analytic Number Theory",
     Springer-Verlag, New York, 1976.
+
+    .. [2] G.H. Hardy, E.M. Wright, "An Introduction to the Theory of
+    Numbers", 6th edition, Oxford University Press, 2008.
 
     Examples
     --------
@@ -142,7 +190,7 @@ def moebius(n=None, factorization=None):
     1
     >>> moebius(35)
     1
-    >>> moebius(factorization=[(5, 1), (7, 1)])
+    >>> moebius([(5, 1), (7, 1)])
     1
     >>> moebius(100)
     0
@@ -153,19 +201,12 @@ def moebius(n=None, factorization=None):
     ...
     ValueError: moebius: Must have n > 0.
     """
-    if n is None and factorization is None:
-        raise TypeError("euler_phi: Expected at least one argument.")
-    elif factorization is None:
-        if n == 1:
-            return 1
-        elif n <= 0:
-            raise ValueError("moebius: Must have n > 0.")
-        factorization = factor.factor(n)
-    else:
-        if factorization[0][0] == -1:
-            raise ValueError("moebius: Must have n > 0.")
+    factorization = _validate_input(n)
 
-    if factor.is_squarefree(factorization=factorization):
+    if factorization == [(1, 1)]:
+        return 1
+
+    if rosemary.number_theory.classification.is_squarefree(factorization):
         k = len(factorization)
         return (-1)**k
     else:
@@ -173,124 +214,158 @@ def moebius(n=None, factorization=None):
 
 
 def sigma(n, k=1):
-    """Returns the sum of the kth powers of the divisors of n.
+    r"""Returns the sum of the `k`th powers of the divisors of `n`.
 
     Parameters
-        * n: int or list (n > 0)
-            The value of n can be an int or a factorization.
+    ----------
+    n : integer or factorization (n > 0)
+        The value of `n` can be an integer or the factorization of an
+        integer given as a list of (prime, exponent) pairs.
 
-        * k: int (k >= 0) (default=1)
+    k : integer (k >= 0) (default=1)
+        The exponent in the divisor sum.
 
-    Returns:
-        * s: int
+    Returns
+    -------
+    sum : int
 
-    Raises:
-        * ValueError: If n <= 0 or k < 0.
+    Raises
+    ------
+    ValueError
+        If ``n <= 0`` or ``k < 0``.
 
-    Examples:
-        >>> sigma(9)
-        13
-        >>> 1 + 3 + 9
-        13
-        >>> sigma([(3, 2)])
-        13
-        >>> sigma(10, 2)
-        130
-        >>> 1**2 + 2**2 + 5**2 + 10**2
-        130
-        >>> sigma(10, 0)
-        4
-        >>> sigma(-1)
-        Traceback (most recent call last):
-        ...
-        ValueError: sigma: Must have n > 0.
-        >>> sigma(10, -1)
-        Traceback (most recent call last):
-        ...
-        ValueError: sigma: Must have k >= 0.
+    See Also
+    --------
+    sigma_sum, sigma_list, tau
 
-    Details:
-        The divisor sigma function is a multiplicative function satisfying
-        sigma(p**e, k) = 1 + p**k + p**(2*k) + ... + p**(e*k) for prime powers
-        p**e. For positive integers n, this method computes the factorization of
-        n, and then uses this product definition. If instead a factorization
-        of n is given, then the product formula is used directly.
+    Notes
+    -----
+    The divisor sigma function is a multiplicative function satisfying
+    .. math::
+        \sigma(p^e, k) &= 1 + p^k + p^{2k} + \cdots + p^{ek} \\
+                       &= \frac{p^{k(e + 1)} - 1}{p^{k} - 1}
+
+    for prime powers ``p**e``. For positive integers `n`, this method
+    computes the factorization of `n`, and then uses this product
+    definition. If instead a factorization of `n` is given, then the
+    product formula is used directly. See section 2.13 of [1] and section
+    16.7 of [2] for details, and see section 3.6 of [1] for information
+    related to the growth rate.
+
+    References
+    ----------
+    .. [1] T.M. Apostol, "Introduction to Analytic Number Theory",
+    Springer-Verlag, New York, 1976.
+
+    .. [2] G.H. Hardy, E.M. Wright, "An Introduction to the Theory of
+    Numbers", 6th edition, Oxford University Press, 2008.
+
+    Examples
+    --------
+    >>> sigma(9)
+    13
+    >>> 1 + 3 + 9
+    13
+    >>> sigma([(3, 2)])
+    13
+    >>> sigma(10, 2)
+    130
+    >>> 1**2 + 2**2 + 5**2 + 10**2
+    130
+    >>> sigma(10, 0)
+    4
+    >>> sigma(-1)
+    Traceback (most recent call last):
+    ...
+    ValueError: sigma: Must have n > 0.
+    >>> sigma(10, -1)
+    Traceback (most recent call last):
+    ...
+    ValueError: sigma: Must have k >= 0.
     """
     if k < 0:
         raise ValueError("sigma: Must have k >= 0.")
     elif k == 0:
         return tau(n)
 
-    if isinstance(n, (int, long)):
-        if n == 1:
-            return 1
-        elif n <= 0:
-            raise ValueError("sigma: Must have n > 0.")
-        n_factorization = factor.factor(n)
-    elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n
-    else:
-        raise ValueError("sigma: Input must be a positive integer or a factorization.")
+    factorization = _validate_input(n)
 
     prod = 1
-
-    for (p, e) in n_factorization:
+    for (p, e) in factorization:
         pk = p**k
         prod *= (pk**(e + 1) - 1)//(pk - 1)
-
     return prod
 
 
+sum_of_divisors = sigma
+
+
 def tau(n):
-    """Returns the number of divisors of n.
+    r"""Returns the number of divisors of n.
 
     Parameters
-        * n: int (n > 0)
-            The value of n can be an int or a factorization.
+    ----------
+    n : integer or factorization (n > 0)
+        The value of `n` can be an integer or the factorization of an
+        integer given as a list of (prime, exponent) pairs.
 
-    Returns:
-        * s: int
+    Returns
+    -------
+    tau : int
+        The number of divisors of `n`.
 
-    Raises:
-        * ValueError: If n <= 0 or if n is not an int or factorization.
+    Raises
+    ------
+    ValueError
+        If ``n <= 0`` or `n` is not a valid factorization.
 
-    Examples:
-        >>> tau(9)
-        3
-        >>> tau([(2, 2), (5, 2)])
-        9
-        >>> tau(100)
-        9
-        >>> tau('cat')
-        Traceback (most recent call last):
-        ...
-        ValueError: tau: Input must be a positive integer or a factorization.
+    See Also
+    --------
+    sigma, tau_list
 
-        >>> tau(-1)
-        Traceback (most recent call last):
-        ...
-        ValueError: tau: Must have n > 0.
+    Notes
+    -----
+    The divisor tau function is a multiplicative function satisfying
+    .. math::
+        tau(p**k) = 1 + k
 
-    Details:
-        The divisor tau function is a multiplicative function satisfying
-        tau(p**k) = 1 + k for prime powers p**k. For positive integers n, this
-        method computes the factorization of n, and then uses this product
-        definition. If instead a factorization of n is given, then the product
-        formula is used directly.
+    for prime powers ``p**k``. For positive integers `n`, this method
+    computes the factorization of `n`, and then uses this product
+    definition. If instead a factorization of `n` is given, then the
+    product formula is used directly. See section 2.13 of [1] and section
+    16.7 of [2] for details, and see section 3.6 of [1] for information
+    related to the growth rate.
+
+    References
+    ----------
+    .. [1] T.M. Apostol, "Introduction to Analytic Number Theory",
+    Springer-Verlag, New York, 1976.
+
+    .. [2] G.H. Hardy, E.M. Wright, "An Introduction to the Theory of
+    Numbers", 6th edition, Oxford University Press, 2008.
+
+    Examples
+    --------
+    >>> tau(9)
+    3
+    >>> tau([(2, 2), (5, 2)])
+    9
+    >>> tau(100)
+    9
+    >>> tau('cat')
+    Traceback (most recent call last):
+    ...
+    ValueError: tau: Input must be a positive integer or a factorization.
+
+    >>> tau(-1)
+    Traceback (most recent call last):
+    ...
+    ValueError: tau: Must have n > 0.
     """
-    if isinstance(n, (int, long)):
-        if n == 1:
-            return 1
-        elif n <= 0:
-            raise ValueError("tau: Must have n > 0.")
-        n_factorization = factor.factor(n)
-    elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n
-    else:
-        raise ValueError("tau: Input must be a positive integer or a factorization.")
+    factorization = _validate_input(n)
 
     prod = 1
-    for (p, e) in n_factorization:
+    for (p, e) in factorization:
         prod *= (e + 1)
     return prod
 
@@ -301,45 +376,58 @@ def tau(n):
 
 
 def carmichael_lambda(n):
-    """Returns the smallest positive integer m such that a**m = 1 (mod n) for
-    all integers a coprime to n.
+    r"""Returns the value of the Carmichael lambda function at `n`.
+
+    This function returns the smallest positive integer `m` such that
+    ``a**m = 1 (mod n)`` for all integers `a` coprime to `n`. This integer
+    `m` is also called the least universal exponent for `n`.
 
     Parameters
-        * n: int or list (n > 1)
-            The modulus. This value can be an int or a factorization.
+    ----------
+    n : integer or factorization (n > 1)
+        The value of `n` can be an integer or the factorization of an
+        integer given as a list of (prime, exponent) pairs.
 
-    Returns:
-        * m: int
 
-    Raises:
-        * ValueError: If n <= 0 or n is not an integer or factorization.
+    Returns
+    -------
+    m : int
+        The least universal exponent for `n`.
 
-    Examples:
-        >>> carmichael_lambda(100)
-        20
-        >>> carmichael_lambda([(2, 2), (5, 2)])
-        20
-        >>> carmichael_lambda(113)
-        112
-        >>> carmichael_lambda(0)
-        Traceback (most recent call last):
-        ...
-        ValueError: carmichael_lambda: Must have n > 0.
+    Raises
+    ------
+    ValueError
+        If ``n <= 0`` or if `n` is a valid factorization.
 
-    Details:
-        The Carmichael lambda function gives the exponent of the multiplicative
-        group of integers modulo n. For each n, lambda(n) divides euler_phi(n).
-        This method uses the standard definition of the Carmichael lambda
-        function. In particular, lambda(n) is the least common multiple of the
-        values of lambda(p**e) for each prime power in the factorization of n.
-        See "Fundamental Number Theory with Applications" by Mollin for details.
+    Notes
+    -----
+    The Carmichael lambda function gives the exponent of the multiplicative
+    group of integers modulo n. For each n, lambda(n) divides euler_phi(n).
+    This method uses the standard definition of the Carmichael lambda
+    function. In particular, lambda(n) is the least common multiple of the
+    values of lambda(p**e) for each prime power in the factorization of n.
+    See "Fundamental Number Theory with Applications" by Mollin for
+    details.
+
+    Examples
+    --------
+    >>> carmichael_lambda(100)
+    20
+    >>> carmichael_lambda([(2, 2), (5, 2)])
+    20
+    >>> carmichael_lambda(113)
+    112
+    >>> carmichael_lambda(0)
+    Traceback (most recent call last):
+    ...
+    ValueError: carmichael_lambda: Must have n > 0.
     """
     if isinstance(n, (int, long)):
         if n == 1:
             return 1
         elif n <= 0:
             raise ValueError("carmichael_lambda: Must have n > 0.")
-        n_factorization = factor.factor(n)
+        n_factorization = rosemary.number_theory.factorization.factorization.factor(n)
     elif isinstance(n, list) and n[0][0] > 0:
         n_factorization = n
     else:
@@ -443,102 +531,7 @@ def primorial(n):
     if n <= 0:
         raise ValueError("primorial: Must have n >= 1.")
 
-    num_primes = len(_PRIME_LIST)
-    if n >= num_primes:
-        raise ValueError("primorial: Must have n < {}.".format(num_primes))
-
     prod = 1
-    for (i, prime) in enumerate(_PRIME_LIST):
-        if i == n:
-            return prod
+    for (i, prime) in sieves.primes_first_n(n):
         prod *= prime
-
-
-def euler_phi_inverse(n):
-    """Returns a sorted list of all positive integers k such that euler_phi(k) = n.
-
-    Parameters
-        * n: int or list (n > 0)
-            The value of n can be an int or a factorization.
-
-    Returns:
-        * values: list
-
-    Raises:
-        * ValueError: If n <= 0 or n is not an int or factorization.
-
-    Examples:
-        >>> euler_phi_inverse(40)
-        [41, 55, 75, 82, 88, 100, 110, 132, 150]
-        >>> euler_phi_inverse(100)
-        [101, 125, 202, 250]
-        >>> euler_phi_inverse([(2, 2), (5, 2)])
-        [101, 125, 202, 250]
-        >>> euler_phi_inverse(103)
-        []
-        >>> euler_phi_inverse(-1)
-        Traceback (most recent call last):
-        ...
-        ValueError: euler_phi_inverse: Must have n > 0.
-
-    Details:
-        This uses the algorithm outlined in "Discovering Mathematics with Magma"
-        by Bosma and Cannon. For a different method, see the paper "Euler's
-        Totient Function and its Inverse" by Gupta.
-    """
-    if isinstance(n, (int, long)):
-        if n == 1:
-            return [1, 2]
-        elif n > 1 and n % 2 == 1:
-            # We know euler_phi(n) is even for n >= 3
-            return []
-        elif n <= 0:
-            raise ValueError("euler_phi_inverse: Must have n > 0.")
-        n_factorization = factor.factor(n)
-    elif isinstance(n, list) and n[0][0] > 0:
-        n_factorization = n
-        n = factor.factor_back(n_factorization)
-    else:
-        raise ValueError("euler_phi_inverse: Input must be a positive integer or a factorization.")
-
-    powers_of_two = set([1])
-    if n % 2 == 0:
-        for i in xrange(1, n_factorization[0][1] + 1):
-            powers_of_two.add(2**i)
-
-    # Odd primes p that divide n must have the property that p - 1 divides m.
-    prime_list = []
-    for d in factor.divisors(factorization=n_factorization)[1:]:
-        if primality.is_prime(d + 1):
-            prime_list.append(d + 1)
-
-    # Here, we store pairs (a, b) such that a is odd and phi(a) = m/b, with b
-    # even or 1. Every pair contributes at least one solution. When b = 1, the
-    # pair contributes two solutions.
-    pairs = [(1, n)]
-    for p in reversed(prime_list):
-        new_pairs = []
-        for (a, b) in pairs:
-            if b == 1:
-                continue
-            pk = p
-            d = b//(p - 1)
-            mmod = b % (p - 1)
-            while mmod == 0:
-                if d % 2 == 0 or d == 1:
-                    new_pairs.append((pk*a, d))
-                pk *= p
-                mmod = d % p
-                d = d//p
-        pairs.extend(new_pairs)
-
-    # When b = 2^k, we have the solution 2*b*a.
-    values = []
-    for (a, b) in pairs:
-        if b in powers_of_two:
-            values.append(2*b*a)
-            if b == 1:
-                values.append(a)
-
-    values.sort()
-    return values
+    return prod
