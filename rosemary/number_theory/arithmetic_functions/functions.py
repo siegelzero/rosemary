@@ -68,7 +68,7 @@ def _validate_input(n):
 
 
 def euler_phi(n):
-    r"""Returns the Euler totient of `n`.
+    r"""Returns the value of the Euler totient function of ``phi(n)``.
 
     For positive integers `n`, this method returns the number of positive
     integers less than or equal to `n` which are relatively prime to `n`.
@@ -140,7 +140,7 @@ def euler_phi(n):
     return prod
 
 
-def moebius(n):
+def moebius_mu(n):
     r"""Returns the value of the Moebius function ``mu(n)``.
 
     Parameters

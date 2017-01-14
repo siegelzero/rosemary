@@ -4,7 +4,7 @@ from rosemary.number_theory.arithmetic_functions.functions import (
     carmichael_lambda,
     euler_phi,
     factorial,
-    moebius,
+    moebius_mu,
     primorial,
     sigma,
     tau,
@@ -78,8 +78,8 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(values, computed)
 
-    def test_moebius(self):
-        self.assertRaisesRegexp(ValueError, "moebius: Must have n > 0.", moebius, -1)
+    def test_moebius_mu(self):
+        self.assertRaisesRegexp(ValueError, "moebius_mu: Must have n > 0.", moebius_mu, -1)
 
         values = [
             1, -1, -1, 0, -1, 1, -1, 0, 0, 1, -1, 0, -1, 1, 1, 0, -1, 0, -1, 0, 1, 1, -1, 0, 0, 1, 0, 0, -1, -1, -1, 0,
@@ -91,7 +91,7 @@ class TestCore(unittest.TestCase):
             0, -1, 0, -1, 0
         ]
 
-        computed = [moebius(k) for k in xrange(1, 201)]
+        computed = [moebius_mu(k) for k in xrange(1, 201)]
         self.assertEqual(values, computed)
 
         factorizations = [
@@ -103,7 +103,7 @@ class TestCore(unittest.TestCase):
         values = [1, -1, 0]
 
         for i in xrange(3):
-            self.assertEqual(moebius(factorization=factorizations[i]), values[i])
+            self.assertEqual(moebius_mu(factorization=factorizations[i]), values[i])
 
     def test_primorial(self):
         self.assertRaisesRegexp(ValueError, "primorial: Must have n >= 1.", primorial, 0)
