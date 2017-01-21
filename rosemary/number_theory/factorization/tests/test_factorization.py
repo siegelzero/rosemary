@@ -4,7 +4,6 @@ from rosemary.number_theory.factorization.factorization import (
     divisors,
     factor,
     factor_back,
-    is_squarefree,
     prime_divisors,
     xdivisors,
 )
@@ -58,9 +57,6 @@ class TestCore(unittest.TestCase):
             self.assertEqual(n_fac, factor(n))
 
     def test_factor_back(self):
-        return
-
-    def test_is_squarefree(self):
         return
 
     def test_prime_divisors(self):

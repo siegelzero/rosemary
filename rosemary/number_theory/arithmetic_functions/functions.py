@@ -213,7 +213,7 @@ def moebius_mu(n):
         return 0
 
 
-def sigma(n, k=1):
+def divisor_sigma(n, k=1):
     r"""Returns the sum of the `k`th powers of the divisors of `n`.
 
     Parameters
@@ -262,33 +262,36 @@ def sigma(n, k=1):
 
     Examples
     --------
-    >>> sigma(9)
+    >>> divisor_sigma(9)
     13
     >>> 1 + 3 + 9
     13
-    >>> sigma([(3, 2)])
+    >>> divisor_sigma([(3, 2)])
     13
-    >>> sigma(10, 2)
+    >>> divisor_sigma(10, 2)
     130
     >>> 1**2 + 2**2 + 5**2 + 10**2
     130
-    >>> sigma(10, 0)
+    >>> divisor_sigma(10, 0)
     4
-    >>> sigma(-1)
+    >>> divisor_sigma(-1)
     Traceback (most recent call last):
     ...
-    ValueError: sigma: Must have n > 0.
-    >>> sigma(10, -1)
+    ValueError: divisor_sigma: Must have n > 0.
+    >>> divisor_sigma(10, -1)
     Traceback (most recent call last):
     ...
-    ValueError: sigma: Must have k >= 0.
+    ValueError: divisor_sigma: Must have k >= 0.
     """
     if k < 0:
-        raise ValueError("sigma: Must have k >= 0.")
+        raise ValueError("divisor_sigma: Must have k >= 0.")
     elif k == 0:
-        return tau(n)
+        return divisor_tau(n)
 
     factorization = _validate_input(n)
+
+    if factorization == [(1, 1)]:
+        return 1
 
     prod = 1
     for (p, e) in factorization:
@@ -297,10 +300,10 @@ def sigma(n, k=1):
     return prod
 
 
-sum_of_divisors = sigma
+sum_of_divisors = divisor_sigma
 
 
-def tau(n):
+def divisor_tau(n):
     r"""Returns the number of divisors of n.
 
     Parameters
@@ -311,7 +314,7 @@ def tau(n):
 
     Returns
     -------
-    tau : int
+    divisor_tau : int
         The number of divisors of `n`.
 
     Raises
@@ -346,28 +349,34 @@ def tau(n):
 
     Examples
     --------
-    >>> tau(9)
+    >>> divisor_tau(9)
     3
-    >>> tau([(2, 2), (5, 2)])
+    >>> divisor_tau([(2, 2), (5, 2)])
     9
-    >>> tau(100)
+    >>> divisor_tau(100)
     9
-    >>> tau('cat')
+    >>> divisor_tau('cat')
     Traceback (most recent call last):
     ...
-    ValueError: tau: Input must be a positive integer or a factorization.
+    ValueError: divisor_tau: Input must be a positive integer or a factorization.
 
-    >>> tau(-1)
+    >>> divisor_tau(-1)
     Traceback (most recent call last):
     ...
-    ValueError: tau: Must have n > 0.
+    ValueError: divisor_tau: Must have n > 0.
     """
     factorization = _validate_input(n)
+
+    if factorization == [(1, 1)]:
+        return 1
 
     prod = 1
     for (p, e) in factorization:
         prod *= (e + 1)
     return prod
+
+
+number_of_divisors = divisor_tau
 
 
 ################################################################################
@@ -506,7 +515,8 @@ def primorial(n):
         * prod: int
 
     Raises:
-        * ValueError: If n < 1 or n >= 78498.
+        * ValueError
+            If n < 1.
 
     Examples:
         >>> primorial(3)
@@ -532,6 +542,6 @@ def primorial(n):
         raise ValueError("primorial: Must have n >= 1.")
 
     prod = 1
-    for (i, prime) in sieves.primes_first_n(n):
-        prod *= prime
+    for p in sieves.primes_first_n(n):
+        prod *= p
     return prod

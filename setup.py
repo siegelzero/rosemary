@@ -1,17 +1,8 @@
-#!/usr/bin/env python
-
-import os
-
-from setuptools import setup
-
-# Allow to run setup.py from another directory.
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-version = '1.0.0'
+from setuptools import setup, find_packages
 
 setup(
     name='rosemary',
-    version=version,
+    version='0.0.1',
     url='https://github.com/siegelzero/rosemary',
     license='MIT',
     author='Kenneth Brown',
@@ -20,10 +11,6 @@ setup(
     long_description="""rosemary is a suite of algorithms for computations in number theory, discrete mathematics, and
                         combinatorial optimization""",
     include_package_data=True,
-    packages=["rosemary"],
-    tests_require=[
-        'coverage',
-        'nose',
-    ],
-    test_suite='nose.collector',
+    # packages=['rosemary', 'rosemary.number_theory'],
+    packages=find_packages(),
 )

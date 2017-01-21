@@ -54,18 +54,27 @@ class _IsSquare(object):
 def is_square(n):
     """Determines if n is a perfect square.
 
-    Given a nonnegative integer n, this returns False if n is not a perfect
-    square, and returns the square root of n otherwise.
+    Given a nonnegative integer `n`, this returns False if `n` is not a
+    perfect square, and returns the square root of `n` otherwise.
 
-    Input:
-        * n: int or list (n >= 0)
-            The value of n can be an int or a factorization.
+    Parameters
+    ----------
+    n : integer or factorization (n >= 0)
+        The value of `n` can be an integer or the factorization of an
+        integer given as a list of (prime, exponent) pairs.
 
-    Returns:
-        * sqrt: int
-            If n is a perfect square, the square root of n is returned.
+    Returns
+    -------
+    sqrt : integer or boolean
+        * the square root of `n` if `n` is a perfect square.
+        * False if `n` is not a perfect square.
 
-        * False if n is not a perfect square.
+    Notes
+    -----
+    If n is a nonnegative integer, the function computes the integer square
+    root of n, and checks if this root squared is n. If n is in factored
+    form, this checks if the exponents in the prime factorization are all
+    even.
 
     Examples:
         >>> is_square(16)
@@ -77,11 +86,6 @@ def is_square(n):
         >>> is_square([(2, 3), (5, 2)])
         False
 
-    Details:
-        If n is a nonnegative integer, the function computes the integer square
-        root of n, and checks if this root squared is n. If n is in factored
-        form, this checks if the exponents in the prime factorization are all
-        even.
     """
     if isinstance(n, list):
         if n[0][0] == -1:
@@ -246,7 +250,34 @@ def is_squarefree(n):
     >>> is_squarefree(factorization=[(2, 2), (5, 2)])
     False
     """
-    n = abs(n)
     factorization = rosemary.number_theory.arithmetic_functions.functions._validate_input(n)
 
     return all(e == 1 for (p, e) in factorization)
+
+
+def is_prime_power():
+    return
+
+
+def is_totient():
+    return
+
+
+def is_polygonal():
+    return
+
+
+def is_factorial():
+    return
+
+
+def is_powerful():
+    return
+
+
+def is_fibonacci():
+    return
+
+
+def is_perfect():
+    return

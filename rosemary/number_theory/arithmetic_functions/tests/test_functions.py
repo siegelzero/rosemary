@@ -2,12 +2,12 @@ import unittest
 
 from rosemary.number_theory.arithmetic_functions.functions import (
     carmichael_lambda,
+    divisor_sigma,
+    divisor_tau,
     euler_phi,
     factorial,
     moebius_mu,
     primorial,
-    sigma,
-    tau,
 )
 
 
@@ -103,11 +103,10 @@ class TestCore(unittest.TestCase):
         values = [1, -1, 0]
 
         for i in xrange(3):
-            self.assertEqual(moebius_mu(factorization=factorizations[i]), values[i])
+            self.assertEqual(moebius_mu(factorizations[i]), values[i])
 
     def test_primorial(self):
         self.assertRaisesRegexp(ValueError, "primorial: Must have n >= 1.", primorial, 0)
-        self.assertRaisesRegexp(ValueError, "primorial: Must have n < 78498.", primorial, 100000000000)
 
         values = [
             2, 6, 30, 210, 2310, 30030, 510510, 9699690, 223092870, 6469693230, 200560490130, 7420738134810,
@@ -142,9 +141,9 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(values, computed)
 
-    def test_sigma(self):
-        self.assertRaisesRegexp(ValueError, "sigma: Must have n > 0.", sigma, -1)
-        self.assertRaisesRegexp(ValueError, "sigma: Must have k >= 0.", sigma, 10, -1)
+    def test_divisor_sigma(self):
+        self.assertRaisesRegexp(ValueError, "divisor_sigma: Must have n > 0.", divisor_sigma, -1)
+        self.assertRaisesRegexp(ValueError, "divisor_sigma: Must have k >= 0.", divisor_sigma, 10, -1)
 
         values = [
             [1, 2, 2, 3, 2, 4, 2, 4, 3, 4, 2, 6, 2, 4, 4, 5, 2, 6, 2, 6],
@@ -170,7 +169,7 @@ class TestCore(unittest.TestCase):
         ]
 
         for i in xrange(11):
-            computed = [sigma(n, i) for n in xrange(1, 21)]
+            computed = [divisor_sigma(n, i) for n in xrange(1, 21)]
             self.assertEqual(values[i], computed)
 
         factorizations = [
@@ -182,12 +181,12 @@ class TestCore(unittest.TestCase):
         values = [12, 72, 28]
 
         for i in xrange(3):
-            self.assertEqual(sigma(factorizations[i]), values[i])
+            self.assertEqual(divisor_sigma(factorizations[i]), values[i])
 
-    def test_tau(self):
-        self.assertRaisesRegexp(ValueError, "tau: Must have n > 0.", tau, -1)
+    def test_divisor_tau(self):
+        self.assertRaisesRegexp(ValueError, "divisor_tau: Must have n > 0.", divisor_tau, -1)
 
-        self.assertEqual(tau([(2, 1), (5, 1)]), 4)
+        self.assertEqual(divisor_tau([(2, 1), (5, 1)]), 4)
 
         values = [
             1, 2, 2, 3, 2, 4, 2, 4, 3, 4, 2, 6, 2, 4, 4, 5, 2, 6, 2, 6, 4, 4, 2, 8, 3, 4, 4, 6, 2, 8, 2, 6, 4, 4, 4, 9,
@@ -198,7 +197,7 @@ class TestCore(unittest.TestCase):
             8, 6, 10, 4, 4, 2, 18, 2, 8, 4, 8, 4, 8, 4, 6, 8, 8, 2, 14, 2, 4, 8, 9, 2, 12, 2, 12
         ]
 
-        computed = [tau(k) for k in xrange(1, 201)]
+        computed = [divisor_tau(k) for k in xrange(1, 201)]
         self.assertEqual(computed, values)
 
 if __name__ == "__main__":
