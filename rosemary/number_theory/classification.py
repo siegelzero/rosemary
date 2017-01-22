@@ -71,7 +71,7 @@ def is_square(n):
 
     Notes
     -----
-    If n is a nonnegative integer, the function computes the integer square
+    If `n` is a nonnegative integer, the function computes the integer square
     root of n, and checks if this root squared is n. If n is in factored
     form, this checks if the exponents in the prime factorization are all
     even.

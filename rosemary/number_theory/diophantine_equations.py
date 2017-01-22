@@ -1,5 +1,6 @@
+from rosemary.number_theory.classification import is_square
 from rosemary.number_theory.continued_fractions import QuadraticIrrational
-from rosemary.number_theory.core import integer_sqrt, is_square
+from rosemary.number_theory.core import integer_sqrt
 from rosemary.number_theory.zn_arithmetic import sqrts_mod_n
 
 import sys
