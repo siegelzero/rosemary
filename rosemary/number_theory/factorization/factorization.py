@@ -4,8 +4,8 @@ import collections
 import itertools
 
 import rosemary.number_theory.factorization.algorithms as algorithms
+import rosemary.number_theory.classification
 
-from rosemary.number_theory.classification import is_power
 from rosemary.number_theory.prime_list import _PRIME_LIST
 from rosemary.number_theory.primes.primality import is_probable_prime
 
@@ -74,7 +74,7 @@ def factor(n, skip_trial_division=False, use_cfrac=False):
         raise ValueError("Prime factorization of 0 not defined")
 
     # Detect perfect powers.
-    ab = is_power(n)
+    ab = rosemary.number_theory.classification.is_power(n)
     if ab:
         (n, multiplier) = ab
     else:

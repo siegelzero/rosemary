@@ -10,7 +10,25 @@ from rosemary.number_theory.classification import (
 
 class TestClassification(unittest.TestCase):
     def test_is_squarefree(self):
-        return
+        true_values = [
+            1, 2, 3, 5, 6, 7, 10, 11, 13, 14, 15, 17, 19, 21, 22, 23, 26,
+            29, 30, 31, 33, 34, 35, 37, 38, 39, 41, 42, 43, 46, 47, 51, 53,
+            55, 57, 58, 59, 61, 62, 65, 66, 67, 69, 70, 71, 73, 74, 77, 78,
+            79, 82, 83, 85, 86, 87, 89, 91, 93, 94, 95, 97
+        ]
+
+        false_values = [
+            4, 8, 9, 12, 16, 18, 20, 24, 25, 27, 28, 32, 36, 40, 44, 45,
+            48, 49, 50, 52, 54, 56, 60, 63, 64, 68, 72, 75, 76, 80, 81, 84,
+            88, 90, 92, 96, 98, 99
+        ]
+
+        true_computed = [e for e in xrange(1, 100) if is_squarefree(e)]
+        false_computed = [e for e in xrange(1, 100) if not is_squarefree(e)]
+
+        self.assertEqual(true_values, true_computed)
+        self.assertEqual(false_values, false_computed)
+
 
     def test_is_power(self):
         self.assertRaisesRegexp(ValueError, "is_power: Must have k >= 1.", is_power, 10, 0)

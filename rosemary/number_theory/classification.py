@@ -235,11 +235,18 @@ def is_squarefree(n):
     b : bool
         True if `n` is squarefree; False otherwise.
 
+    See Also
+    --------
+    is_powerful
+
     Notes
     -----
     If `n` is a nonnegative integer, this factors `n` and checks if `n` is
     divisible by the square of a prime.  If `n` is in factored form, this
     directly checks the prime factorization.
+
+    References
+    ----------
 
     Examples
     --------
@@ -267,8 +274,15 @@ def is_polygonal():
     return
 
 
-def is_factorial():
-    return
+def is_factorial(n):
+    product = 1
+    k = 2
+
+    while product < n:
+        product *= k
+        k += 1
+
+    return product == n
 
 
 def is_powerful():
