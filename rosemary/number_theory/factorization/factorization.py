@@ -15,7 +15,7 @@ from rosemary.number_theory.primes.primality import is_probable_prime
 ###########################################################################
 
 
-def factor(n, skip_trial_division=False, use_cfrac=False):
+def factor(n, skip_trial_division=False, skip_power_detection=True, use_cfrac=False):
     r"""Returns the factorization of the integer `n`.
 
     Parameters
@@ -26,6 +26,8 @@ def factor(n, skip_trial_division=False, use_cfrac=False):
     skip_trial_division : bool, optional (default=False)
         If False, performs a preliminary trial division using the
         precomputed list of primes. If True, then this step is skipped.
+
+    skip_power_detection : bool, optional (default=True)
 
     use_cfrac : bool, optional (default=False)
         If True, applies the cfrac method to search for factors instead of
@@ -74,9 +76,12 @@ def factor(n, skip_trial_division=False, use_cfrac=False):
         raise ValueError("Prime factorization of 0 not defined")
 
     # Detect perfect powers.
-    ab = rosemary.number_theory.classification.is_power(n)
-    if ab:
-        (n, multiplier) = ab
+    if not skip_power_detection:
+        ab = rosemary.number_theory.classification.is_power(n)
+        if ab:
+            (n, multiplier) = ab
+        else:
+            (n, multiplier) = (n, 1)
     else:
         (n, multiplier) = (n, 1)
 
@@ -195,6 +200,51 @@ def divisors(n=None, factorization=None):
         div_list += [prod]
 
     return sorted(div_list)
+
+
+def divisor_pairs(n=None, factorization=None):
+    r"""Returns a sorted list of the positive integer divisors of `n`.
+
+    Parameters
+    ----------
+    n : int, optional
+
+    factorization : list, optional
+        Factorization of `n` given as a list of (prime, exponent) pairs.
+
+    Returns
+    -------
+    div_list : list
+        Sorted list of the positive divisors of `n`.
+
+    See Also
+    --------
+    prime_divisors, unitary_divisors, xdivisors
+
+    Examples
+    --------
+    >>> divisors(100)
+    [1, 2, 4, 5, 10, 20, 25, 50, 100]
+    >>> divisors(factorization=[(2, 2), (5, 2)])
+    [1, 2, 4, 5, 10, 20, 25, 50, 100]
+    """
+    if n is None and factorization is None:
+        raise TypeError("divisors: Expected at least one argument.")
+    elif factorization is None:
+        factorization = factor(abs(n))
+    else:
+        if factorization[0][0] == -1:
+            factorization = factorization[1:]
+
+    div_list = divisors(n, factorization=factorization)
+
+    pairs = []
+    for d in div_list:
+        if d > n//d:
+            break
+        pairs.append((d, n//d))
+
+    return pairs
 
 
 def prime_divisors(n=None, factorization=None):

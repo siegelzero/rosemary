@@ -106,7 +106,17 @@ def is_square(n):
         return _IsSquare.is_square(n)
 
 
-def is_power(n, k=None):
+def is_power2(n):
+    k = 2
+    while 2**k <= n:
+        r = integer_nth_root(k, n)
+        if r**k == n:
+            return (r, k)
+        k += 1
+    return False
+
+
+def is_power(n, k=None, detect_only=False):
     """Determines if n is a perfect power.
 
     If n is a perfect power, this returns (b, k) where n = b^k with k maximal.
