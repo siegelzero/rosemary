@@ -101,8 +101,8 @@ def is_square(n):
     else:
         if n < 0:
             return False
-        elif n == 0:
-            return True
+        elif n in (0, 1):
+            return n
         return _IsSquare.is_square(n)
 
 

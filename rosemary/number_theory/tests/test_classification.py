@@ -88,8 +88,6 @@ class TestClassification(unittest.TestCase):
             576, 625, 676, 729, 784, 841, 900, 961
         ]
 
-        squares = [a for a in xrange(1000) if is_square(a)]
+        squares = [a for a in xrange(1000) if is_square(a) is not False]
 
         self.assertEqual(squares, values)
-
-

@@ -1,6 +1,109 @@
 from collections import defaultdict
 
 
+def to_string(entries):
+    s = []
+    for i in xrange(9):
+        for j in xrange(9):
+            s.append(str(entries[i][j]))
+    return ''.join(s)
+
+
+def parse(digits):
+    M = [[0]*9 for _ in xrange(9)]
+    for (i, d) in enumerate(digits):
+        M[i//9][i % 9] = int(d)
+    return M
+
+
+def algorithmx(target, sets):
+    solution = []
+
+    Y = {}
+    for i in xrange(len(sets)):
+        Y[i] = list(sets[i])
+
+    X = {j: set() for j in target}
+    for i in Y:
+        for j in Y[i]:
+            X[j].add(i)
+
+    def solve():
+        if not X:
+            yield [sets[i] for i in solution]
+        else:
+            c = min(X, key=lambda c: len(X[c]))
+
+            for r in list(X[c]):
+                solution.append(r)
+
+                cols = []
+                for j in Y[r]:
+                    for i in X[j]:
+                        for k in Y[i]:
+                            if k != j:
+                                X[k].remove(i)
+                    cols.append(X.pop(j))
+
+                for s in solve():
+                    yield s
+
+                for j in reversed(Y[r]):
+                    X[j] = cols.pop()
+                    for i in X[j]:
+                        for k in Y[i]:
+                            if k != j:
+                                X[k].add(i)
+
+                solution.pop()
+
+    return solve()
+
+
+def algorithm_dlx(target, sets):
+    solution = []
+
+    Y = {}
+    for i in xrange(len(sets)):
+        Y[i] = list(sets[i])
+
+    X = {j: set() for j in target}
+    for i in Y:
+        for j in Y[i]:
+            X[j].add(i)
+
+    def solve():
+        if not X:
+            yield [sets[i] for i in solution]
+        else:
+            c = min(X, key=lambda c: len(X[c]))
+
+            for r in list(X[c]):
+                solution.append(r)
+
+                cols = []
+                for j in Y[r]:
+                    for i in X[j]:
+                        for k in Y[i]:
+                            if k != j:
+                                X[k].remove(i)
+                    cols.append(X.pop(j))
+
+                for s in solve():
+                    yield s
+
+                for j in reversed(Y[r]):
+                    X[j] = cols.pop()
+                    for i in X[j]:
+                        for k in Y[i]:
+                            if k != j:
+                                X[k].add(i)
+
+                solution.pop()
+
+    return solve()
+
+
 class ExactCover(object):
     """
     Class representing the Exact Cover problem.
@@ -144,3 +247,62 @@ def latin_square_ints(n):
                 ints.append((val << (n*n)) | (1 << (n*n - j*n - i - 1)))
 
     return ints
+
+
+def sudoku_vectors(M):
+    vectors = []
+    block_idx = {
+        (0, 0): 0,
+        (0, 3): 1,
+        (0, 6): 2,
+        (3, 0): 3,
+        (3, 3): 4,
+        (3, 6): 5,
+        (6, 0): 6,
+        (6, 3): 7,
+        (6, 6): 8
+    }
+
+    for row in range(9):
+        for col in range(9):
+            if M[row][col] == 0:
+                digits = range(1, 10)
+            else:
+                digits = [M[row][col]]
+
+            for digit in digits:
+                entries = set()
+                entries.add("{}O{}".format(row, col))
+                entries.add("{}R{}".format(digit, row))
+                entries.add("{}C{}".format(digit, col))
+
+                rr = row - (row % 3)
+                cc = col - (col % 3)
+                entries.add("{}B{}".format(digit, block_idx[rr, cc]))
+
+                vectors.append(entries)
+
+    return vectors
+
+
+def sudoku_dlx(a):
+    M = parse(a)
+    vecs = sudoku_vectors(M)
+    target = set()
+    for e in vecs:
+        target.update(e)
+
+    sol = algorithmx(target, vecs).next()
+
+    for entry in sol:
+        for e in entry:
+            if e[1] == 'O':
+                r = int(e[0])
+                c = int(e[2])
+
+            if e[1] == 'C':
+                d = int(e[0])
+
+        M[r][c] = d
+
+    return to_string(M)
