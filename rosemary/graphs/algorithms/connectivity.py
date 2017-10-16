@@ -82,3 +82,16 @@ def connected_component(graph, u):
     """
     connected_vertices = list(breadth_first_search(graph, u))
     return connected_vertices
+
+
+def is_connected(graph):
+    r"""Returns True if the graph is connected and False otherwise.
+    """
+    vertex_set = graph.vertex_set()
+
+    if len(vertex_set) == 0:
+        return True
+
+    u = list(vertex_set)[0]
+    connected_vertices = set(breadth_first_search(graph, u))
+    return connected_vertices == vertex_set

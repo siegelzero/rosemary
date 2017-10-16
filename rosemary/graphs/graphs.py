@@ -1199,3 +1199,53 @@ def coprime_pairs_graph(n):
                 graph.add_edge(i, j)
 
     return graph
+
+
+def odd_graph(k):
+    r"""Returns the odd graph O_k.
+
+    The vertices of the odd graph O_k are the k-element subsets of {1, 2,
+    ..., 2*k + 1}. Two vertices are adjacent if and only if they are
+    disjoint sets.
+
+    Parameters
+    ----------
+    k : int
+
+    Returns
+    -------
+    graph : Graph
+
+    See Also
+    --------
+    petersen_graph
+
+    Notes
+    -----
+
+    References
+    ----------
+    .. [1] D.B. West, "Introduction to Graph Theory", 2nd Edition, Prentice
+    Hall, 2000.
+
+    Examples
+    --------
+    # The odd graph O_2 is a triangle
+    >>> G = odd_graph(2)
+    >>> G.vertices()
+    ['0', '1', '2']
+    >>> G.edges()
+    [('0', '1'), ('0', '2'), ('1', '2')]
+    """
+    graph = Graph()
+    ints = ''.join(map(str, range(2*k - 1)))
+
+    for tup in itertools.combinations(ints, k - 1):
+        u = ''.join(tup)
+        graph.add_vertex(u)
+
+    for (u, v) in itertools.combinations(graph.vertices(), 2):
+        if len(set(u) & set(v)) == 0:
+            graph.add_edge(u, v)
+
+    return graph

@@ -4,6 +4,7 @@ from collections import deque, defaultdict
 from heapq import heappush, heappop
 
 from rosemary.data_structures.heaps import PairingHeap
+from rosemary.graphs.algorithms.connectivity import is_connected
 
 inf = float('inf')
 
@@ -731,3 +732,256 @@ def floyd_warshall(graph):
                     pred[v, w] = pred[u, w]
 
     return dist, pred
+
+
+###########################################################################
+# Algorithms for Hamiltonian Paths
+###########################################################################
+
+
+def hamiltonian_paths3(graph):
+    """
+    Parameters
+    ----------
+    graph : rosemary.graphs.graphs.Graph
+        Weighted graph with nonnegative edge weights.
+    """
+    if not is_connected(graph):
+        return
+
+    vertices = sorted(graph.vertices(),
+                      key=lambda u: len(graph[u]))
+
+    vertex_to_bit = {}
+    bit_to_vertex = {}
+    for (i, v) in enumerate(vertices):
+        vertex_to_bit[v] = 2**i
+        bit_to_vertex[2**i] = v
+
+    neighbors = {}
+    for (i, u) in enumerate(vertices):
+        neighbors[2**i] = 0
+        for v in graph.neighbors(u):
+            neighbors[2**i] |= vertex_to_bit[v]
+
+    n = graph.num_vertices()
+    all_bits = 2**n - 1
+    used = []
+
+    def extend(last, remaining):
+        if not remaining:
+            yield [bit_to_vertex[e] for e in used]
+        else:
+            candidates = remaining & neighbors[last]
+
+            while candidates:
+                u = candidates & (-candidates)
+                used.append(u)
+
+                for foo in extend(u, remaining - u):
+                    yield foo
+
+                candidates -= u
+                used.pop()
+
+    vertices = graph.vertex_set()
+
+    for i in xrange(n):
+        used.append(2**i)
+        for foo in extend(2**i, all_bits - 2**i):
+            yield foo
+        used.pop()
+
+
+def hamiltonian_paths2(graph):
+    """
+    Parameters
+    ----------
+    graph : rosemary.graphs.graphs.Graph
+        Weighted graph with nonnegative edge weights.
+    """
+    if not is_connected(graph):
+        return
+
+    used = []
+    unused = graph.vertex_set()
+
+    def extend(last):
+        if not unused:
+            yield list(used)
+        else:
+            candidates = sorted(graph.neighbors(last) & unused,
+                                key=lambda u: len(graph[u]))
+
+            for v in candidates:
+                used.append(v)
+                unused.discard(v)
+
+                for foo in extend(v):
+                    yield foo
+
+                used.pop()
+                unused.add(v)
+
+    vertices = graph.vertex_set()
+
+    for v in vertices:
+        used.append(v)
+        unused.discard(v)
+
+        for foo in extend(v):
+            yield foo
+
+        used.pop()
+        unused.add(v)
+
+
+def hamiltonian_paths(graph):
+    """
+    Parameters
+    ----------
+    graph : rosemary.graphs.graphs.Graph
+        Weighted graph with nonnegative edge weights.
+    """
+    used = []
+    unused = graph.vertex_set()
+
+    def extend(last):
+        if not unused:
+            yield list(used)
+        else:
+            for v in graph.neighbors(last) & unused:
+                used.append(v)
+                unused.discard(v)
+
+                for foo in extend(v):
+                    yield foo
+
+                used.pop()
+                unused.add(v)
+
+    vertices = graph.vertex_set()
+
+    for v in vertices:
+        used.append(v)
+        unused.discard(v)
+
+        for foo in extend(v):
+            yield foo
+
+        used.pop()
+        unused.add(v)
+
+
+def number_of_hamiltonian_paths(graph):
+    """
+    Parameters
+    ----------
+    graph : rosemary.graphs.graphs.Graph
+        Weighted graph with nonnegative edge weights.
+    """
+    def extend(last, left):
+        if not left:
+            return 1
+        else:
+            total = 0
+            for u in graph.neighbors(last) & left:
+                total += extend(u, left - {u})
+            return total
+
+    vertices = graph.vertex_set()
+    ss = 0
+    for v in vertices:
+        ss += extend(v, vertices - {v})
+    return ss
+
+
+def number_of_hamiltonian_paths3(graph):
+    """
+    Parameters
+    ----------
+    graph : rosemary.graphs.graphs.Graph
+        Weighted graph with nonnegative edge weights.
+    """
+    vertices = graph.vertices()
+    vertex_to_bit = {}
+    for (i, v) in enumerate(vertices):
+        vertex_to_bit[v] = 2**i
+
+    neighbors = {}
+    for (i, u) in enumerate(vertices):
+        neighbors[2**i] = 0
+        for v in graph.neighbors(u):
+            neighbors[2**i] |= vertex_to_bit[v]
+
+    n = graph.num_vertices()
+    all_bits = 2**n - 1
+
+    def extend(last, remaining, cache={}):
+        if (last, remaining) not in cache:
+            if remaining == 0:
+                return 1
+            else:
+                total = 0
+                candidates = remaining & neighbors[last]
+
+                while candidates:
+                    u = candidates & (-candidates)
+                    total += extend(u, remaining - u)
+                    candidates -= u
+
+                cache[last, remaining] = total
+
+        return cache[last, remaining]
+
+    count = 0
+    for i in xrange(n):
+        count += extend(2**i, all_bits - 2**i)
+    return count
+
+
+def number_of_hamiltonian_paths4(graph):
+    """
+    Parameters
+    ----------
+    graph : rosemary.graphs.graphs.Graph
+        Weighted graph with nonnegative edge weights.
+    """
+    vertices = graph.vertices()
+    vertex_to_bit = {}
+    for (i, v) in enumerate(vertices):
+        vertex_to_bit[v] = 2**i
+
+    neighbors = {}
+    for (i, u) in enumerate(vertices):
+        neighbors[2**i] = 0
+        for v in graph.neighbors(u):
+            neighbors[2**i] |= vertex_to_bit[v]
+
+    n = graph.num_vertices()
+    all_bits = 2**n - 1
+
+    def extend(bits, cache={}):
+        if bits not in cache:
+            remaining = bits % (2**n)
+
+            if remaining == 0:
+                return 1
+            else:
+                last = bits >> n
+                total = 0
+                candidates = remaining & neighbors[last]
+
+                while candidates:
+                    u = candidates & (-candidates)
+                    total += extend((u << n) + (remaining - u))
+                    candidates -= u
+
+                cache[(last << n) + remaining] = total
+
+        return cache[bits]
+
+    count = 0
+    for i in xrange(n):
+        count += extend(2**(n + i) + (all_bits - 2**i))
+    return count
