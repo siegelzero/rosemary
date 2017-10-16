@@ -8,13 +8,13 @@ import itertools
 
 
 def pell_fundamental_solution(D, n=1):
-    """Returns the fundamental solution to the Pell equation x**2 - D*y**2 == n,
-    where n in (-1, 1).
+    """Returns the fundamental solution to the Pell equation x**2 - D*y**2
+    == n, where n in (-1, 1).
 
     Given D > 0 not a square, and n in (-1, 1), this method returns the
-    fundamental solution to the Pell equation described above. The fundamental
-    solution (x, y) is the one with least positive value of x, and
-    correspondingly the least positive value of y.
+    fundamental solution to the Pell equation described above. The
+    fundamental solution (x, y) is the one with least positive value of x,
+    and correspondingly the least positive value of y.
 
     Input:
         * D: int (D > 0)
@@ -47,13 +47,14 @@ def pell_fundamental_solution(D, n=1):
         ValueError: pell_fundamental_solution: Must have D > 0 not a perfect square and n in (-1, 1).
 
     Details:
-        For D > 0 not a perfect square, the equation x**2 - D*y**2 == 1 always
-        has solutions, while the equation x**2 - D*y**2 == -1 only has solutions
-        when the continued fraction expansion of sqrt(D) has odd period length.
+        For D > 0 not a perfect square, the equation x**2 - D*y**2 == 1
+        always has solutions, while the equation x**2 - D*y**2 == -1 only
+        has solutions when the continued fraction expansion of sqrt(D) has
+        odd period length.
 
-        See Corollary 5.7 of "Fundamental Number Theory with Applications" by
-        Mollin for details. See also the article "Simple Continued Fraction
-        Solutions for Diophantine Equations" by Mollin.
+        See Corollary 5.7 of "Fundamental Number Theory with Applications"
+        by Mollin for details. See also the article "Simple Continued
+        Fraction Solutions for Diophantine Equations" by Mollin.
     """
     if D <= 0 or is_square(D) or n not in (1, -1):
         raise ValueError("pell_fundamental_solution: Must have D > 0 not a perfect square and n in (-1, 1).")
