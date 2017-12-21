@@ -1249,3 +1249,17 @@ def odd_graph(k):
             graph.add_edge(u, v)
 
     return graph
+
+
+def grid_graph(n):
+    graph = Graph()
+
+    for i in xrange(n):
+        for j in xrange(n):
+            u = i*n + j
+            if j < n - 1:
+                graph.add_edge(u, u + 1)
+            if u + n < n*n:
+                graph.add_edge(u, u + n)
+
+    return graph

@@ -147,7 +147,7 @@ class TravelingSalesman(object):
         population = self.select(popsize)
 
         for i in xrange(popsize):
-            population.append(('inf', []))
+            population.append((float('inf'), []))
 
         population.sort()
 
