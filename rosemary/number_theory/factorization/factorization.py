@@ -8,6 +8,7 @@ import rosemary.number_theory.classification
 
 from rosemary.number_theory.prime_list import _PRIME_LIST
 from rosemary.number_theory.primes.primality import is_probable_prime
+from rosemary.number_theory.primes.sieves import primes
 
 
 ###########################################################################
@@ -345,3 +346,75 @@ def unitary_divisors(n=None, factorization=None):
 
     div_list.sort()
     return div_list
+
+
+def factored_xrange(a, b=None):
+    """Returns an iterator over the factorizations of the numbers in [a, b).
+
+    Given positive integers a and b with a < b, this returns an iterator over
+    all pairs (n, n_factorization) with a <= n < b, and n_factorization is the
+    factorization of n into prime powers. If the optional parameter b is None,
+    then a is taken to be 1, and b = a.
+
+    Input:
+        * a: int (a > 0)
+        * b: int (b > a) (default=None)
+
+    Returns:
+        * P: generator
+            The values output by this generator are tuples (n, n_factorization),
+            where n is an integer in [a, b), and n_factorization is the prime
+            factorization of n.
+
+    Examples:
+        >>> list(factored_xrange(10, 20))
+        [(10, [(2, 1), (5, 1)]),
+         (11, [(11, 1)]),
+         (12, [(2, 2), (3, 1)]),
+         (13, [(13, 1)]),
+         (14, [(2, 1), (7, 1)]),
+         (15, [(3, 1), (5, 1)]),
+         (16, [(2, 4)]),
+         (17, [(17, 1)]),
+         (18, [(2, 1), (3, 2)]),
+         (19, [(19, 1)])]
+
+    Details:
+        All primes <= sqrt(b) are computed, and a segmented sieve is used to
+        construct the factorizations of the integers in the interval [a, b).
+    """
+    if a < 2:
+        a = 1
+
+    if b is None:
+        b, a = a, 1
+
+    if b <= a:
+        return
+
+    block_size = int(b**(0.5))
+    prime_list = primes(block_size)
+
+    if a == 1:
+        yield (1, [(1, 1)])
+        a += 1
+
+    for start in xrange(a, b, block_size):
+        block = range(start, start + block_size)
+        factorizations = [[] for _ in xrange(block_size)]
+
+        for p in prime_list:
+            offset = ((p*(start//p + 1) - a) % block_size) % p
+            for i in xrange(offset, block_size, p):
+                k = 0
+                while block[i] % p == 0:
+                    block[i] /= p
+                    k += 1
+                factorizations[i].append((p, k))
+
+        for i in xrange(block_size):
+            if start + i >= b:
+                return
+            if block[i] != 1:
+                factorizations[i].append((block[i], 1))
+            yield (start + i, factorizations[i])

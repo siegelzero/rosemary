@@ -4,6 +4,7 @@ from rosemary.number_theory.factorization.factorization import (
     divisors,
     factor,
     factor_back,
+    factored_xrange,
     prime_divisors,
     xdivisors,
 )
@@ -55,6 +56,17 @@ class TestCore(unittest.TestCase):
 
         for (n, n_fac) in factorizations.items():
             self.assertEqual(n_fac, factor(n))
+
+    def test_factored_xrange(self):
+        values = factored_xrange(10000)
+        for (n, n_fac) in values:
+            prod = 1
+            for (p, e) in n_fac:
+                prod *= p**e
+            self.assertEqual(n, prod)
+
+        self.assertEqual(list(factored_xrange(0, 100)), list(factored_xrange(100)))
+        self.assertEqual(list(factored_xrange(0)), [])
 
     def test_factor_back(self):
         return

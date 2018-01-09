@@ -2,7 +2,7 @@
 # Summatory functions of multiplicative functions
 ################################################################################
 
-import rosemary.number_theory.arithmetic_functions.lists as lists
+import rosemary.number_theory.arithmetic_functions.sieves as sieves
 
 
 def euler_phi_sum(n):
@@ -49,7 +49,7 @@ def euler_phi_sum(n):
         raise ValueError("euler_phi_sum: Must have n > 0.")
 
     sqrt = int(n**(0.5))
-    phi_list = lists.euler_phi_list(sqrt)
+    phi_list = sieves.euler_phi_list(sqrt)
 
     # for i <= sqrt(n), compute the sum directly
     cache = {1: 1}
@@ -107,7 +107,7 @@ def euler_phi_weighted_sum(n):
         raise ValueError("euler_phi_weighted_sum: Must have n > 0.")
 
     sqrt = int(n**(0.5))
-    totients = lists.euler_phi_list(sqrt)
+    totients = sieves.euler_phi_list(sqrt)
 
     # for i <= sqrt(n), compute the sum directly
     cache = {1: 1}
@@ -168,7 +168,7 @@ def moebius_sum(n):
         raise ValueError("moebius_sum: Must have n > 0.")
 
     sqrt = int(n**(0.5))
-    mu_list = lists.moebius_list(sqrt)
+    mu_list = sieves.moebius_list(sqrt)
 
     # for i <= sqrt(n), compute the sum directly
     cache = {1: 1}

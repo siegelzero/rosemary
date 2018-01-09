@@ -4,9 +4,7 @@ from rosemary.number_theory.primes.sieves import (
     chartres,
     eratosthenes1,
     eratosthenes2,
-    factored_xrange,
     luo,
-    moebius_xrange,
     prime_xrange,
     primes,
     primes_first_n,
@@ -86,17 +84,6 @@ class TestCore(unittest.TestCase):
         value = sum(eratosthenes2(2*10**5))
         self.assertEqual(value, self.sum_of_primes_to_200000)
 
-    def test_factored_xrange(self):
-        values = factored_xrange(10000)
-        for (n, n_fac) in values:
-            prod = 1
-            for (p, e) in n_fac:
-                prod *= p**e
-            self.assertEqual(n, prod)
-
-        self.assertEqual(list(factored_xrange(0, 100)), list(factored_xrange(100)))
-        self.assertEqual(list(factored_xrange(0)), [])
-
     def test_luo(self):
         values = luo(1000)
         self.assertEqual(values, self.primes_to_1000)
@@ -112,23 +99,6 @@ class TestCore(unittest.TestCase):
 
         value = sum(luo(2*10**5))
         self.assertEqual(value, self.sum_of_primes_to_200000)
-
-    def test_moebius_xrange(self):
-        values = [
-            (1, 1), (2, -1), (3, -1), (4, 0), (5, -1), (6, 1), (7, -1), (8, 0), (9, 0), (10, 1), (11, -1), (12, 0),
-            (13, -1), (14, 1), (15, 1), (16, 0), (17, -1), (18, 0), (19, -1), (20, 0), (21, 1), (22, 1), (23, -1),
-            (24, 0), (25, 0), (26, 1), (27, 0), (28, 0), (29, -1), (30, -1), (31, -1), (32, 0), (33, 1), (34, 1),
-            (35, 1), (36, 0), (37, -1), (38, 1), (39, 1), (40, 0), (41, -1), (42, -1), (43, -1), (44, 0), (45, 0),
-            (46, 1), (47, -1), (48, 0), (49, 0), (50, 0), (51, 1), (52, 0), (53, -1), (54, 0), (55, 1), (56, 0),
-            (57, 1), (58, 1), (59, -1), (60, 0), (61, -1), (62, 1), (63, 0), (64, 0), (65, 1), (66, -1), (67, -1),
-            (68, 0), (69, 1), (70, -1), (71, -1), (72, 0), (73, -1), (74, 1), (75, 0), (76, 0), (77, 1), (78, -1),
-            (79, -1), (80, 0), (81, 0), (82, 1), (83, -1), (84, 0), (85, 1), (86, 1), (87, 1), (88, 0), (89, -1),
-            (90, 0), (91, 1), (92, 0), (93, 1), (94, 1), (95, 1), (96, 0), (97, -1), (98, 0), (99, 0),
-        ]
-
-        self.assertEqual(values, list(moebius_xrange(100)))
-        self.assertEqual(sum(v for n, v in moebius_xrange(1, 1000)), 2)
-        self.assertEqual(sum(v for n, v in moebius_xrange(10, 1)), 0)
 
     def test_prime_xrange(self):
         primes = [

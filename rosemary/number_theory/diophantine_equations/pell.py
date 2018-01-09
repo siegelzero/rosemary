@@ -89,79 +89,79 @@ class PellEquation(object):
                 return (x, y)
 
 
-    def pell_fundamental_solution(D, n=1):
-        r"""Returns the fundamental solution to the Pell equation
-        x**2 - D*y**2 == n, where n in (-1, 1).
+def pell_fundamental_solution(D, n=1):
+    r"""Returns the fundamental solution to the Pell equation
+    x**2 - D*y**2 == n, where n in (-1, 1).
 
-        Given D > 0 not a square, and n in (-1, 1), this method returns the
-        fundamental solution to the Pell equation described above. The
-        fundamental solution (x, y) is the one with least positive value of x,
-        and correspondingly the least positive value of y.
+    Given D > 0 not a square, and n in (-1, 1), this method returns the
+    fundamental solution to the Pell equation described above. The
+    fundamental solution (x, y) is the one with least positive value of x,
+    and correspondingly the least positive value of y.
 
-        Parameters
-        ----------
-        D : int (D > 0)
+    Parameters
+    ----------
+    D : int (D > 0)
 
-        n : int (n == 1 or n == -1)
+    n : int (n == 1 or n == -1)
 
-        Returns
-        -------
-        (x, y): tuple
+    Returns
+    -------
+    (x, y): tuple
 
-        Raises
-        ------
-        ValueError : If D <= 0, D is perfect square, n not in (-1, 1), or if no
-        solution exists.
+    Raises
+    ------
+    ValueError : If D <= 0, D is perfect square, n not in (-1, 1), or if no
+    solution exists.
 
-        Notes
-        -----
-        If D is a positive integer that is not a perfect square, then the
-        equation x**2 - D*y**2 == 1 has a solution in positive integers.
+    Notes
+    -----
+    If D is a positive integer that is not a perfect square, then the
+    equation x**2 - D*y**2 == 1 has a solution in positive integers.
 
-        On the other hand, of the continued fraction expansion of sqrt(D) has
-        even period length, then there are no solutions to the equation
-        x**2 - D*y**2 == -1. Otherwise, the equation has a solution.
+    On the other hand, of the continued fraction expansion of sqrt(D) has
+    even period length, then there are no solutions to the equation
+    x**2 - D*y**2 == -1. Otherwise, the equation has a solution.
 
-        See Theorem 3.2.1 in [1] for the positive case and Theorem 3.6.1 in [1]
-        for the negative case.
+    See Theorem 3.2.1 in [1] for the positive case and Theorem 3.6.1 in [1]
+    for the negative case.
 
-        References
-        ----------
-        .. [1] T. Andreescu, D. Andrica, "Quadratic Diophantine Equations",
-        Springer-Verlag, New York, 2015.
+    References
+    ----------
+    .. [1] T. Andreescu, D. Andrica, "Quadratic Diophantine Equations",
+    Springer-Verlag, New York, 2015.
 
-        Examples
-        --------
-        >>> pell_fundamental_solution(61)
-        (1766319049, 226153980)
-        >>> 1766319049**2 - 61*226153980**2
-        1
-        >>> pell_fundamental_solution(17, -1)
-        (4, 1)
-        >>> 4**2 - 17*1**2
-        -1
-        >>> pell_fundamental_solution(15, -1)
-        Traceback (most recent call last):
-        ...
-        ValueError: pell_fundamental_solution: Solution nonexistent.
-        >>> pell_fundamental_solution(15, -2)
-        Traceback (most recent call last):
-        ...
-        ValueError: pell_fundamental_solution: Must have D > 0 not a perfect square and n in (-1, 1).
-        """
-        if D <= 0 or is_square(D) or n not in (1, -1):
-            raise ValueError("pell_fundamental_solution: Must have D > 0 not a perfect square and n in (-1, 1).")
+    Examples
+    --------
+    >>> pell_fundamental_solution(61)
+    (1766319049, 226153980)
+    >>> 1766319049**2 - 61*226153980**2
+    1
+    >>> pell_fundamental_solution(17, -1)
+    (4, 1)
+    >>> 4**2 - 17*1**2
+    -1
+    >>> pell_fundamental_solution(15, -1)
+    Traceback (most recent call last):
+    ...
+    ValueError: pell_fundamental_solution: Solution nonexistent.
+    >>> pell_fundamental_solution(15, -2)
+    Traceback (most recent call last):
+    ...
+    ValueError: pell_fundamental_solution: Must have D > 0 not a perfect square and n in (-1, 1).
+    """
+    if D <= 0 or is_square(D) or n not in (1, -1):
+        raise ValueError("pell_fundamental_solution: Must have D > 0 not a perfect square and n in (-1, 1).")
 
-        contfrac = QuadraticIrrational(D)
+    contfrac = QuadraticIrrational(D)
 
-        # No solution for n == -1 if the period length is even.
-        if n == -1 and contfrac.period_length % 2 == 0:
-            raise ValueError("pell_fundamental_solution: Solution nonexistent.")
+    # No solution for n == -1 if the period length is even.
+    if n == -1 and contfrac.period_length % 2 == 0:
+        raise ValueError("pell_fundamental_solution: Solution nonexistent.")
 
-        # Otherwise, solutions always exist for D not a perfect square.
-        for (x, y) in contfrac.convergents():
-            if x*x - D*y*y == n:
-                return (x, y)
+    # Otherwise, solutions always exist for D not a perfect square.
+    for (x, y) in contfrac.convergents():
+        if x*x - D*y*y == n:
+            return (x, y)
 
 
 def pell_small(D, N):
