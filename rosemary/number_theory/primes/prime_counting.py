@@ -1,7 +1,7 @@
-import rosemary.number_theory.sieves
+import rosemary.number_theory.primes.sieves as sieves
 
-from rosemary.number_theory.core import integer_nth_root, integer_sqrt
 from rosemary.data_structures import bit_sieve
+from rosemary.number_theory.core import integer_nth_root, integer_sqrt
 from rosemary.number_theory.prime_list import _PRIME_LIST
 
 from bisect import bisect
@@ -40,7 +40,7 @@ def legendre(n):
         return bisect(_PRIME_LIST, n)
 
     root = integer_sqrt(n)
-    primes = rosemary.number_theory.sieves.primes(root)
+    primes = sieves.primes(root)
     a = len(primes)
 
     def phi(x, a, cache={}):
@@ -101,8 +101,8 @@ def meissel(n):
                          x//231 - x//385 + x//210 + x//330 + x//462 + x//770 + x//1155 - x//2310)
             elif a == 6:
                 value = (x - x//2 - x//3 - x//5 - x//7 - x//11 - x//13 + x//6 + x//10 + x//14 + x//22 + x//26 + x//15 +
-                         x//21 + x//33 + x//39 + x//35 + x//55 + x//65 + x//77 + x//91 + x//143 - x//30 - x//42 - x//66
-                         - x//78 - x//70 - x//110 - x//130 - x//154 - x//182 - x//286 - x//105 - x//165 - x//195 -
+                         x//21 + x//33 + x//39 + x//35 + x//55 + x//65 + x//77 + x//91 + x//143 - x//30 - x//42 -
+                         x//66 - x//78 - x//70 - x//110 - x//130 - x//154 - x//182 - x//286 - x//105 - x//165 - x//195 -
                          x//231 - x//273 - x//429 - x//385 - x//455 - x//715 - x//1001 + x//210 + x//330 + x//390 +
                          x//462 + x//546 + x//858 + x//770 + x//910 + x//1430 + x//2002 + x//1155 + x//1365 + x//2145 +
                          x//3003 + x//5005 - x//2310 - x//2730 - x//4290 - x//6006 - x//10010 - x//15015 + x//30030)
@@ -154,7 +154,7 @@ def lehmer(n):
         return bisect(_PRIME_LIST, n)
 
     root = integer_nth_root(4, n**3)
-    primes = rosemary.number_theory.sieves.primes(root)
+    primes = sieves.primes(root)
 
     a = bisect(primes, integer_nth_root(4, n))
     b = bisect(primes, integer_sqrt(n))
@@ -183,8 +183,8 @@ def lehmer(n):
                          x//231 - x//385 + x//210 + x//330 + x//462 + x//770 + x//1155 - x//2310)
             elif a == 6:
                 value = (x - x//2 - x//3 - x//5 - x//7 - x//11 - x//13 + x//6 + x//10 + x//14 + x//22 + x//26 + x//15 +
-                         x//21 + x//33 + x//39 + x//35 + x//55 + x//65 + x//77 + x//91 + x//143 - x//30 - x//42 - x//66
-                         - x//78 - x//70 - x//110 - x//130 - x//154 - x//182 - x//286 - x//105 - x//165 - x//195 -
+                         x//21 + x//33 + x//39 + x//35 + x//55 + x//65 + x//77 + x//91 + x//143 - x//30 - x//42 -
+                         x//66 - x//78 - x//70 - x//110 - x//130 - x//154 - x//182 - x//286 - x//105 - x//165 - x//195 -
                          x//231 - x//273 - x//429 - x//385 - x//455 - x//715 - x//1001 + x//210 + x//330 + x//390 +
                          x//462 + x//546 + x//858 + x//770 + x//910 + x//1430 + x//2002 + x//1155 + x//1365 + x//2145 +
                          x//3003 + x//5005 - x//2310 - x//2730 - x//4290 - x//6006 - x//10010 - x//15015 + x//30030)
@@ -243,7 +243,7 @@ def lmo(x):
         return bisect(_PRIME_LIST, x)
 
     root = integer_nth_root(3, x**2)
-    primes = rosemary.number_theory.sieves.primes(root)
+    primes = sieves.primes(root)
 
     t = integer_nth_root(3, x)
     c = bisect(primes, t)
@@ -302,7 +302,7 @@ def lmo(x):
 def lmo_bit(x):
     root = int(x**(2.0/3.0))
 
-    primes = rosemary.number_theory.sieves.primes(root)
+    primes = sieves.primes(root)
     t = x**(0.33333333333333)
 
     c = bisect(primes, t)
@@ -359,7 +359,7 @@ def lmo_bit(x):
 
 def prime_sum2(n):
     root = integer_sqrt(n)
-    primes = rosemary.number_theory.sieves.primes(root)
+    primes = sieves.primes(root)
     a = len(primes)
 
     sum_table = [0]*(root + 1)
@@ -442,7 +442,7 @@ def pi_table(n):
     >>> pi_table(10)
     ([2, 3, 5, 7], [0, 0, 1, 2, 2, 3, 3, 4, 4, 4, 4])
     """
-    primes = rosemary.number_theory.sieves.primes(n)
+    primes = sieves.primes(n)
     table = [0]*(n + 1)
     last = 0
 
