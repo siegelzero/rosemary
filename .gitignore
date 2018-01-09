@@ -1,6 +1,7 @@
 *.pyc
 *~
 .coverage
+.gitconfig
 *.egg-info
 build/
 dist/
