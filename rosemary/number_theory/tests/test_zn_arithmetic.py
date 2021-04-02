@@ -112,8 +112,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(values, computed)
 
     def test_is_primitive_root(self):
-        for n in xrange(2, 100):
-            roots = [a for a in xrange(1, n) if is_primitive_root(a, n)]
+        for n in range(2, 100):
+            roots = [a for a in range(1, n) if is_primitive_root(a, n)]
             if n not in self.roots:
                 self.assertEqual(roots, [])
             else:
@@ -121,13 +121,13 @@ class TestCore(unittest.TestCase):
 
         p = 61
         phi_divisors = [2, 3, 5]
-        roots = [a for a in xrange(1, p) if is_primitive_root(a, p, phi_divisors=phi_divisors)]
+        roots = [a for a in range(1, p) if is_primitive_root(a, p, phi_divisors=phi_divisors)]
         self.assertEqual(roots, self.roots[61])
 
-        roots = [a for a in xrange(1, p) if is_primitive_root(a, p, phi_divisors=phi_divisors, phi=p - 1)]
+        roots = [a for a in range(1, p) if is_primitive_root(a, p, phi_divisors=phi_divisors, phi=p - 1)]
         self.assertEqual(roots, self.roots[p])
 
-        roots = [a for a in xrange(1, p) if is_primitive_root(a, p, phi=p - 1)]
+        roots = [a for a in range(1, p) if is_primitive_root(a, p, phi=p - 1)]
         self.assertEqual(roots, self.roots[p])
 
         self.assertRaisesRegexp(ValueError, 'is_primitive_root: n must be >= 2.', is_primitive_root, 3, -1)
@@ -144,7 +144,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(nth_roots_of_minus1_mod_p(1, 2), [1])
 
         for (p, n) in [(101, 4), (17, 8), (19, 2)]:
-            values = [a for a in xrange(p) if a**n % p == p - 1]
+            values = [a for a in range(p) if a**n % p == p - 1]
             computed = nth_roots_of_minus1_mod_p(n, p)
             self.assertEqual(values, computed)
 
@@ -154,12 +154,12 @@ class TestCore(unittest.TestCase):
         self.assertEqual(nth_roots_of_unity_mod_p(1, 2), [1])
 
         for (p, n) in [(101, 4), (17, 8), (19, 2)]:
-            values = [a for a in xrange(p) if a**n % p == 1]
+            values = [a for a in range(p) if a**n % p == 1]
             computed = nth_roots_of_unity_mod_p(n, p)
             self.assertEqual(values, computed)
 
     def test_primitive_root(self):
-        for n in xrange(2, 100):
+        for n in range(2, 100):
             try:
                 g = primitive_root(n)
             except:
@@ -184,12 +184,12 @@ class TestCore(unittest.TestCase):
         self.assertEqual(sqrts_mod_n(49, 53**3*61**4), [7, 721465236980, 1339862033577, 2061327270550])
         self.assertEqual(sqrts_mod_n(-1, 5**3*7**2), [])
 
-        for n in xrange(2, 200):
+        for n in range(2, 200):
             values = defaultdict(list)
-            for a in xrange(n):
+            for a in range(n):
                 values[a*a % n].append(a)
 
-            for a in xrange(n):
+            for a in range(n):
                 self.assertEqual(values[a], sqrts_mod_n(a, n))
 
     def test_sqrts_mod_p(self):
@@ -197,16 +197,16 @@ class TestCore(unittest.TestCase):
 
         for p in [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]:
             values = defaultdict(list)
-            for a in xrange(p):
+            for a in range(p):
                 values[a*a % p].append(a)
 
-            for a in xrange(p):
+            for a in range(p):
                 self.assertEqual(values[a], sqrts_mod_p(a, p))
 
         # Exercise 2.32 of Crandall and Pomerance
         pairs = {
             (3615, 2**16 + 1): [367, 65170],
-            (552512556430486016984082237, 2**89 - 1): [1000000000000000000L, 618970018642690137449562111L],
+            (552512556430486016984082237, 2**89 - 1): [1000000000000000000, 618970018642690137449562111],
         }
 
         for (a, p) in pairs:

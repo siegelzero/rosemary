@@ -24,7 +24,7 @@ def euler_phi_list(n):
     Examples:
         >>> euler_phi_list(10)
         [0, 1, 1, 2, 2, 4, 2, 6, 4, 6, 4]
-        >>> [0] + [euler_phi(k) for k in xrange(1, 11)]
+        >>> [0] + [euler_phi(k) for k in range(1, 11)]
         [0, 1, 1, 2, 2, 4, 2, 6, 4, 6, 4]
         >>> euler_phi_list(0)
         Traceback (most recent call last):
@@ -43,11 +43,11 @@ def euler_phi_list(n):
     prime_list = prime_sieves.primes(n)
 
     for p in prime_list:
-        for mul in xrange(p, n + 1, p):
+        for mul in range(p, n + 1, p):
             block[mul] *= (p - 1)
         pk = p*p
         while pk <= n:
-            for mul in xrange(pk, n + 1, pk):
+            for mul in range(pk, n + 1, pk):
                 block[mul] *= p
             pk *= p
 
@@ -74,7 +74,7 @@ def moebius_list(n):
     Examples:
         >>> moebius_list(10)
         [0, 1, -1, -1, 0, -1, 1, -1, 0, 0, 1]
-        >>> [0] + [moebius(k) for k in xrange(1, 11)]
+        >>> [0] + [moebius(k) for k in range(1, 11)]
         [0, 1, -1, -1, 0, -1, 1, -1, 0, 0, 1]
         >>> moebius_list(0)
         Traceback (most recent call last):
@@ -96,14 +96,14 @@ def moebius_list(n):
     block[0] = 0
 
     for p in prime_list:
-        for i in xrange(p, n + 1, p):
+        for i in range(p, n + 1, p):
             if i % (p*p) == 0:
                 block[i] = 0
             else:
                 block[i] *= -1
                 values[i] *= p
 
-    for i in xrange(n + 1):
+    for i in range(n + 1):
         if block[i] and values[i] < i:
             block[i] *= -1
 
@@ -128,11 +128,11 @@ def sigma_list(n, k=1):
     Examples:
         >>> sigma_list(10)
         [0, 1, 3, 4, 7, 6, 12, 8, 15, 13, 18]
-        >>> [0] + [sigma(k) for k in xrange(1, 11)]
+        >>> [0] + [sigma(k) for k in range(1, 11)]
         [0, 1, 3, 4, 7, 6, 12, 8, 15, 13, 18]
         >>> sigma_list(10, 2)
         [0, 1, 5, 10, 21, 26, 50, 50, 85, 91, 130]
-        >>> [0] + [sigma(k, 2) for k in xrange(1, 11)]
+        >>> [0] + [sigma(k, 2) for k in range(1, 11)]
         [0, 1, 5, 10, 21, 26, 50, 50, 85, 91, 130]
         >>> sigma_list(-1)
         Traceback (most recent call last):
@@ -163,9 +163,9 @@ def sigma_list(n, k=1):
         block = [0]*(n + 1)
         sqrt = int(n**(0.5))
 
-        for j in xrange(1, sqrt + 1):
+        for j in range(1, sqrt + 1):
             block[j*j] += j
-            for k in xrange(j + 1, n//j + 1):
+            for k in range(j + 1, n//j + 1):
                 block[k*j] += j + k
 
     else:
@@ -179,9 +179,9 @@ def sigma_list(n, k=1):
             term = mul**2
             last = mul
             while pk <= n:
-                for idx in xrange(pk, n + 1, pk):
+                for idx in range(pk, n + 1, pk):
                     block[idx] *= (term - 1)
-                    block[idx] /= (last - 1)
+                    block[idx] //= (last - 1)
                 pk *= p
                 last = term
                 term *= mul
@@ -206,7 +206,7 @@ def tau_list(n):
     Examples:
         >>> tau_list(10)
         [0, 1, 2, 2, 3, 2, 4, 2, 4, 3, 4]
-        >>> [0] + [tau(k) for k in xrange(1, 11)]
+        >>> [0] + [tau(k) for k in range(1, 11)]
         [0, 1, 2, 2, 3, 2, 4, 2, 4, 3, 4]
         >>> tau_list(-1)
         Traceback (most recent call last):
@@ -223,9 +223,9 @@ def tau_list(n):
     block = [0]*(n + 1)
     sqrt = int(n**(0.5))
 
-    for j in xrange(1, sqrt + 1):
+    for j in range(1, sqrt + 1):
         block[j*j] += 1
-        for k in xrange(j + 1, n//j + 1):
+        for k in range(j + 1, n//j + 1):
             block[k*j] += 2
     return block
 
@@ -235,7 +235,7 @@ def tau_list(n):
 ################################################################################
 
 
-def moebius_xrange(a, b=None):
+def moebius_range(a, b=None):
     """Return an generator over values of moebius(k) for a <= k < b.
 
     Input:
@@ -249,7 +249,7 @@ def moebius_xrange(a, b=None):
             moebius function.
 
     Examples:
-        >>> list(moebius_xrange(10, 20))
+        >>> list(moebius_range(10, 20))
         [(10, 1), (11, -1), (12, 0), (13, -1), (14, 1), (15, 1), (16, 0), (17, -1), (18, 0), (19, -1)]
 
     Details:
@@ -270,20 +270,20 @@ def moebius_xrange(a, b=None):
     block_size = integer_sqrt(b)
     prime_list = prime_sieves.primes(block_size)
 
-    for start in xrange(a, b, block_size):
+    for start in range(a, b, block_size):
         block = [1]*block_size
         values = [1]*block_size
 
         for p in prime_list:
             offset = ((p*(start//p + 1) - a) % block_size) % p
-            for i in xrange(offset, block_size, p):
+            for i in range(offset, block_size, p):
                 if (start + i) % (p*p) == 0:
                     block[i] = 0
                 else:
                     block[i] *= -1
                     values[i] *= p
 
-        for i in xrange(block_size):
+        for i in range(block_size):
             if start + i >= b:
                 return
             if block[i] and values[i] < start + i:

@@ -103,7 +103,7 @@ def miller_rabin(n, a=None):
     if b == 1 or b == n - 1:
         return True
 
-    for _ in xrange(1, s):
+    for _ in range(1, s):
         b = (b*b) % n
         if b == n - 1:
             return True
@@ -130,7 +130,7 @@ def miller_rabin_deterministic(n):
 
     W = min(int(2*log(n)**2), n - 1)
 
-    for a in xrange(2, W + 1):
+    for a in range(2, W + 1):
         if not miller_rabin(n, a):
             return False
     return True
@@ -148,7 +148,7 @@ def lucas_lehmer(p):
     """
     v = 4
     mp = 2**p - 1
-    for _ in xrange(1, p - 1):
+    for _ in range(1, p - 1):
         v = (v*v - 2) % mp
     return (v == 0)
 
@@ -179,8 +179,8 @@ def is_probable_prime(n):
         algorithm 3.5.2 of "Prime Numbers: A Computational Perspective" by
         Crandall and Pomerance for details.
     """
-    # return all(solovay_strassen(n, a) for a in xrange(2, min(n - 1, 20)))
-    return all(miller_rabin(n, a) for a in xrange(2, min(n - 1, 20)))
+    # return all(solovay_strassen(n, a) for a in range(2, min(n - 1, 20)))
+    return all(miller_rabin(n, a) for a in range(2, min(n - 1, 20)))
 
 
 def is_prime(n):

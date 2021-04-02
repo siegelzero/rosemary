@@ -61,8 +61,8 @@ class TestCore(unittest.TestCase):
     def test_cfrac(self):
         factorizations = {
             12007001: 4001,
-            1112470797641561909L: 1052788969L,
-            2175282241519502424792841: 513741730823L,
+            1112470797641561909: 1052788969,
+            2175282241519502424792841: 513741730823,
         }
         for (n, p) in factorizations.items():
             self.assertEqual(cfrac(n), p)
@@ -70,7 +70,7 @@ class TestCore(unittest.TestCase):
     def test_fermat(self):
         factorizations = {
             100: 2,
-            1112470797641561909L: 1052788969L,
+            1112470797641561909: 1052788969,
         }
         for (n, p) in factorizations.items():
             self.assertEqual(fermat(n), p)
@@ -78,31 +78,31 @@ class TestCore(unittest.TestCase):
     def test_lehman(self):
         factorizations = {
             100: 2,
-            1112470797641561909L: 1056689261L,
+            1112470797641561909: 1056689261,
         }
         for (n, p) in factorizations.items():
             self.assertEqual(lehman(n), p)
 
     def test_pollard_p_minus_1(self):
         factorizations = {
-            1112470797641561909L: 1056689261L,
-            615028785027771754392800840284305067659311379685188908444467L: 75005167927L,
+            1112470797641561909: 1056689261,
+            615028785027771754392800840284305067659311379685188908444467: 75005167927,
         }
         for (n, p) in factorizations.items():
             self.assertEqual(pollard_p_minus_1(n), p)
 
     def test_pollard_rho(self):
         factorizations = {
-            414876509374946224887319096986555104270201L: set([711628063L]),
-            615028785027771754392800840284305067659311379685188908444467L: set([21207101L, 258065887L])
+            414876509374946224887319096986555104270201: set([711628063]),
+            615028785027771754392800840284305067659311379685188908444467: set([21207101, 258065887])
         }
         for (n, p_set) in factorizations.items():
             self.assertIn(pollard_rho(n), p_set)
 
     def test_pollard_rho_brent(self):
         factorizations = {
-            414876509374946224887319096986555104270201L: set([711628063L]),
-            615028785027771754392800840284305067659311379685188908444467L: set([21207101L, 258065887L])
+            414876509374946224887319096986555104270201: set([711628063]),
+            615028785027771754392800840284305067659311379685188908444467: set([21207101, 258065887])
         }
         for (n, p_set) in factorizations.items():
             self.assertIn(pollard_rho_brent(n), p_set)

@@ -23,8 +23,8 @@ class TestClassification(unittest.TestCase):
             88, 90, 92, 96, 98, 99
         ]
 
-        true_computed = [e for e in xrange(1, 100) if is_squarefree(e)]
-        false_computed = [e for e in xrange(1, 100) if not is_squarefree(e)]
+        true_computed = [e for e in range(1, 100) if is_squarefree(e)]
+        false_computed = [e for e in range(1, 100) if not is_squarefree(e)]
 
         self.assertEqual(true_values, true_computed)
         self.assertEqual(false_values, false_computed)
@@ -38,7 +38,7 @@ class TestClassification(unittest.TestCase):
         for k in [2, 3, 5, 7, 11]:
             self.assertEqual(is_power(k), False)
 
-        for k in xrange(10):
+        for k in range(10):
             a = random.randint(10, 100)
             b = random.randint(10, 100)
             n = a**b
@@ -46,7 +46,7 @@ class TestClassification(unittest.TestCase):
 
             self.assertTrue(x**y == n)
 
-        for k in xrange(10):
+        for k in range(10):
             a = random.randint(10, 100)
             b = random.randint(10, 100)
             n = a**b
@@ -59,7 +59,7 @@ class TestClassification(unittest.TestCase):
             343, 361, 400, 441, 484, 512, 529, 576, 625, 676, 729, 784, 841, 900, 961, 1000
         ]
 
-        powers = [e for e in xrange(1, 1001) if is_power(e)]
+        powers = [e for e in range(1, 1001) if is_power(e)]
 
         self.assertEqual(values, powers)
 
@@ -88,6 +88,6 @@ class TestClassification(unittest.TestCase):
             576, 625, 676, 729, 784, 841, 900, 961
         ]
 
-        squares = [a for a in xrange(1000) if is_square(a) is not False]
+        squares = [a for a in range(1000) if is_square(a) is not False]
 
         self.assertEqual(squares, values)

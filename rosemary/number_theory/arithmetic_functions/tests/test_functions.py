@@ -28,7 +28,7 @@ class TestCore(unittest.TestCase):
             192, 96, 12, 42, 196, 30, 198, 20
         ]
 
-        computed = [carmichael_lambda(e) for e in xrange(1, 201)]
+        computed = [carmichael_lambda(e) for e in range(1, 201)]
         self.assertEqual(values, computed)
 
     def test_euler_phi(self):
@@ -46,7 +46,7 @@ class TestCore(unittest.TestCase):
             144, 60, 160, 92, 108, 72, 190, 64, 192, 96, 96, 84, 196, 60, 198, 80
         ]
 
-        computed = [euler_phi(e) for e in xrange(1, 201)]
+        computed = [euler_phi(e) for e in range(1, 201)]
         self.assertEqual(values, computed)
 
     def test_factorial(self):
@@ -74,7 +74,7 @@ class TestCore(unittest.TestCase):
             30414093201713378043612608166064768844377641568960512000000000000
         ]
 
-        computed = [factorial(k) for k in xrange(1, 51)]
+        computed = [factorial(k) for k in range(1, 51)]
 
         self.assertEqual(values, computed)
 
@@ -91,7 +91,7 @@ class TestCore(unittest.TestCase):
             0, -1, 0, -1, 0
         ]
 
-        computed = [moebius_mu(k) for k in xrange(1, 201)]
+        computed = [moebius_mu(k) for k in range(1, 201)]
         self.assertEqual(values, computed)
 
         factorizations = [
@@ -102,7 +102,7 @@ class TestCore(unittest.TestCase):
 
         values = [1, -1, 0]
 
-        for i in xrange(3):
+        for i in range(3):
             self.assertEqual(moebius_mu(factorizations[i]), values[i])
 
     def test_primorial(self):
@@ -137,7 +137,7 @@ class TestCore(unittest.TestCase):
             19078266889580195013601891820992757757219839668357012055907516904309700014933909014729740190
         ]
 
-        computed = [primorial(k) for k in xrange(1, 51)]
+        computed = [primorial(k) for k in range(1, 51)]
 
         self.assertEqual(values, computed)
 
@@ -168,8 +168,8 @@ class TestCore(unittest.TestCase):
                 6131066257802, 10250010815226]
         ]
 
-        for i in xrange(11):
-            computed = [divisor_sigma(n, i) for n in xrange(1, 21)]
+        for i in range(11):
+            computed = [divisor_sigma(n, i) for n in range(1, 21)]
             self.assertEqual(values[i], computed)
 
         factorizations = [
@@ -180,7 +180,7 @@ class TestCore(unittest.TestCase):
 
         values = [12, 72, 28]
 
-        for i in xrange(3):
+        for i in range(3):
             self.assertEqual(divisor_sigma(factorizations[i]), values[i])
 
     def test_divisor_tau(self):
@@ -197,7 +197,7 @@ class TestCore(unittest.TestCase):
             8, 6, 10, 4, 4, 2, 18, 2, 8, 4, 8, 4, 8, 4, 6, 8, 8, 2, 14, 2, 4, 8, 9, 2, 12, 2, 12
         ]
 
-        computed = [divisor_tau(k) for k in xrange(1, 201)]
+        computed = [divisor_tau(k) for k in range(1, 201)]
         self.assertEqual(computed, values)
 
 if __name__ == "__main__":

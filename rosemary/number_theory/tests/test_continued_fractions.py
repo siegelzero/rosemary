@@ -43,7 +43,7 @@ class TestCore(unittest.TestCase):
         cf = QuadraticIrrational(10, 1)
         self.assertEqual(str(cf), 'Continued Fraction Expansion of 1 + sqrt(10)')
         pq = cf.partial_quotients()
-        self.assertEqual([pq.next() for _ in xrange(10)], [4, 6, 6, 6, 6, 6, 6, 6, 6, 6])
+        self.assertEqual([next(pq) for _ in range(10)], [4, 6, 6, 6, 6, 6, 6, 6, 6, 6])
 
     def test_quadratic_irrational4(self):
         """Test string representation."""

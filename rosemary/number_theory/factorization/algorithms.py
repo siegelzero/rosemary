@@ -137,7 +137,7 @@ def fermat(n):
     if n % 2 == 0:
         return 2
 
-    for a in xrange(integer_sqrt(n) + 1, (n + 9)//6 + 1):
+    for a in range(integer_sqrt(n) + 1, (n + 9)//6 + 1):
         t = a*a - n
         b = integer_sqrt(t)
         if b*b == t:
@@ -190,7 +190,7 @@ def lehman(n):
     if d < n:
         return d
 
-    for k in xrange(1, bound + 1):
+    for k in range(1, bound + 1):
         if k % 2 == 0:
             r = 1
             m = 2
@@ -339,7 +339,7 @@ def pollard_rho(n, iterations=None):
     if iterations is None:
         X = itertools.count()
     else:
-        X = xrange(iterations)
+        X = range(iterations)
 
     for k in X:
         u = (u*u + a) % n
@@ -408,12 +408,12 @@ def pollard_rho_brent(n):
 
     while True:
         x = y
-        for i in xrange(r):
+        for i in range(r):
             y = (y*y + c) % n
 
         for k in itertools.count(0, step):
             ys = y
-            for i in xrange(min(step, r - k)):
+            for i in range(min(step, r - k)):
                 y = (y*y + c) % n
                 prod = prod*(x - y) % n
             g = gcd(prod, n)
@@ -529,7 +529,7 @@ def cfrac(n, k=None):
     a_list = []
 
     while num_smooths_found <= num_primes:
-        (i, a, q) = aq_pairs.next()
+        (i, a, q) = next(aq_pairs)
 
         # This is from the batch smoothness test given as Algorithm 3.3.1
         # in [1].
@@ -548,17 +548,17 @@ def cfrac(n, k=None):
 
     kernel = _z2_gaussian_elimination(exponent_matrix)
 
-    for i in xrange(len(kernel)):
+    for i in range(len(kernel)):
         y = 1
         x2_exponents = [0]*num_primes
-        for j in xrange(len(kernel[i])):
+        for j in range(len(kernel[i])):
             if kernel[i][j]:
                 y = (a_list[j]*y) % n
-                for f in xrange(num_primes):
+                for f in range(num_primes):
                     x2_exponents[f] += exponent_matrix[j][f]
 
         x = 1
-        for j in xrange(num_primes):
+        for j in range(num_primes):
             x *= factor_base[j]**(x2_exponents[j]//2)
 
         for val in [x - y, x + y]:
@@ -617,7 +617,7 @@ def _z2_gaussian_elimination(exponents):
     reduced = []
     for vector in exponents:
         value = 0
-        for i in xrange(num_cols):
+        for i in range(num_cols):
             if vector[i] % 2 != 0:
                 value += 1 << (num_cols - i - 1)
         reduced.append(value)
@@ -625,7 +625,7 @@ def _z2_gaussian_elimination(exponents):
     # history is the identity matrix with 'num_rows' rows and columns.
     history = []
     value = 1 << (num_rows - 1)
-    for i in xrange(num_rows):
+    for i in range(num_rows):
         history.append(value)
         value >>= 1
 
@@ -638,7 +638,7 @@ def _z2_gaussian_elimination(exponents):
     max_size = 1 << (num_cols - 1)
     while bit <= max_size:
         pivot_found = False
-        for i in xrange(num_rows):
+        for i in range(num_rows):
             entry = reduced[i]
             if entry & bit and entry % bit == 0:
                 pivot_found = True
@@ -647,7 +647,7 @@ def _z2_gaussian_elimination(exponents):
         # If we haven't found a pivot yet, move to the next column left and
         # look again.
         if pivot_found:
-            for m in xrange(i + 1, num_rows):
+            for m in range(i + 1, num_rows):
                 if reduced[m] & bit:
                     reduced[m] ^= entry
                     history[m] ^= his
@@ -656,7 +656,7 @@ def _z2_gaussian_elimination(exponents):
 
     # Now convert the binary encoded vectors back to exponent lists.
     vectors = []
-    for i in xrange(num_rows):
+    for i in range(num_rows):
         value = history[i]
         if reduced[i] != 0 or value == 0:
             continue
@@ -728,7 +728,7 @@ def smooth_factor(n, factor_base):
             exponents[0] = 1
             n *= -1
 
-    for i in xrange(start, num_primes):
+    for i in range(start, num_primes):
         p = factor_base[i]
         if n % p == 0:
             e = 1
@@ -776,13 +776,13 @@ def _cfrac_aq_pairs(n):
     Examples
     --------
     >>> X = _cfrac_aq_pairs(1000009)
-    >>> X.next()
+    >>> next(X)
     (1, 1000, 9)
-    >>> X.next()
+    >>> next(X)
     (2, 222001, 445)
-    >>> X.next()
+    >>> next(X)
     (3, 889004, 873)
-    >>> X.next()
+    >>> next(X)
     (4, 1000000, 81)
     """
     g = integer_sqrt(n)
@@ -842,7 +842,7 @@ def _cfrac_multiplier(n):
     prime_list = [3, 5, 7, 11, 13, 17, 19, 23, 29, 31]
     choices = {}
     # Look for multpliers in the range [1, 1000).
-    for k in xrange(1, 1000):
+    for k in range(1, 1000):
         if jacobi_symbol(k*n, 3) >= 0 and jacobi_symbol(k*n, 5) >= 0:
             # Find the multiplier k that allows the largest number of
             # primes <= 31 into the factor base.

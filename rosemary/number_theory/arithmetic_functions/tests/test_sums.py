@@ -26,7 +26,7 @@ class TestCore(unittest.TestCase):
             11166, 11230, 11422, 11518, 11614, 11698, 11894, 11954, 12152, 12232
         ]
 
-        computed = [euler_phi_sum(k) for k in xrange(1, 201)]
+        computed = [euler_phi_sum(k) for k in range(1, 201)]
 
         self.assertEqual(values, computed)
 
@@ -51,7 +51,7 @@ class TestCore(unittest.TestCase):
             1619777, 1635777
         ]
 
-        computed = [euler_phi_weighted_sum(k) for k in xrange(1, 201)]
+        computed = [euler_phi_weighted_sum(k) for k in range(1, 201)]
 
         self.assertEqual(values, computed)
 
@@ -69,7 +69,7 @@ class TestCore(unittest.TestCase):
             -6, -6, -7, -7, -8, -8
         ]
 
-        computed = [moebius_sum(k) for k in xrange(1, 201)]
+        computed = [moebius_sum(k) for k in range(1, 201)]
 
         self.assertEqual(values, computed)
 
@@ -88,7 +88,7 @@ class TestCore(unittest.TestCase):
             8224670422194237,
         ]
 
-        for k in xrange(9):
+        for k in range(9):
             self.assertEqual(sigma_sum(10**k), values[k])
 
 

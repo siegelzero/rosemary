@@ -3,7 +3,7 @@ import unittest
 from rosemary.number_theory.arithmetic_functions.sieves import (
     euler_phi_list,
     moebius_list,
-    moebius_xrange,
+    moebius_range,
     sigma_list,
     tau_list,
 )
@@ -41,7 +41,7 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(moebius_list(200), values)
 
-    def test_moebius_xrange(self):
+    def test_moebius_range(self):
         values = [
             (1, 1), (2, -1), (3, -1), (4, 0), (5, -1), (6, 1), (7, -1), (8, 0), (9, 0), (10, 1), (11, -1), (12, 0),
             (13, -1), (14, 1), (15, 1), (16, 0), (17, -1), (18, 0), (19, -1), (20, 0), (21, 1), (22, 1), (23, -1),
@@ -54,9 +54,9 @@ class TestCore(unittest.TestCase):
             (90, 0), (91, 1), (92, 0), (93, 1), (94, 1), (95, 1), (96, 0), (97, -1), (98, 0), (99, 0),
         ]
 
-        self.assertEqual(values, list(moebius_xrange(100)))
-        self.assertEqual(sum(v for n, v in moebius_xrange(1, 1000)), 2)
-        self.assertEqual(sum(v for n, v in moebius_xrange(10, 1)), 0)
+        self.assertEqual(values, list(moebius_range(100)))
+        self.assertEqual(sum(v for n, v in moebius_range(1, 1000)), 2)
+        self.assertEqual(sum(v for n, v in moebius_range(10, 1)), 0)
 
     def test_sigma_list(self):
         self.assertRaisesRegexp(ValueError, "sigma_list: Must have n > 0.", sigma_list, -1)
@@ -85,7 +85,7 @@ class TestCore(unittest.TestCase):
                 6131066257802, 10250010815226]
         ]
 
-        for i in xrange(11):
+        for i in range(11):
             computed = sigma_list(20, i)
             self.assertEqual([0] + values[i], computed)
 

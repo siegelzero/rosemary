@@ -5,7 +5,7 @@ from rosemary.number_theory.primes.sieves import (
     eratosthenes1,
     eratosthenes2,
     luo,
-    prime_xrange,
+    prime_range,
     primes,
     primes_first_n,
     pritchard,
@@ -100,7 +100,7 @@ class TestCore(unittest.TestCase):
         value = sum(luo(2*10**5))
         self.assertEqual(value, self.sum_of_primes_to_200000)
 
-    def test_prime_xrange(self):
+    def test_prime_range(self):
         primes = [
             1000000000039, 1000000000061, 1000000000063, 1000000000091, 1000000000121, 1000000000163, 1000000000169,
             1000000000177, 1000000000189, 1000000000193, 1000000000211, 1000000000271, 1000000000303, 1000000000331,
@@ -110,18 +110,18 @@ class TestCore(unittest.TestCase):
             1000000000949, 1000000000997,
         ]
 
-        values = prime_xrange(10**12, 10**12 + 10**3)
+        values = prime_range(10**12, 10**12 + 10**3)
         self.assertEqual(list(values), primes)
 
-        values = prime_xrange(1, 10**3)
+        values = prime_range(1, 10**3)
         self.assertEqual(list(values), self.primes_to_1000)
-        self.assertEqual(sum(prime_xrange(2*10**6)), self.sum_of_primes_to_2000000)
+        self.assertEqual(sum(prime_range(2*10**6)), self.sum_of_primes_to_2000000)
 
         # Case where b >= 10^7 and a < sqrt(b)
-        self.assertEqual(sum(prime_xrange(10**3, 10**7 + 10**3)), 3203934952888)
+        self.assertEqual(sum(prime_range(10**3, 10**7 + 10**3)), 3203934952888)
 
         # Case where b >= 10^7 and a > sqrt(b)
-        self.assertEqual(sum(prime_xrange(10**6, 2*10**7)), 12235027416029)
+        self.assertEqual(sum(prime_range(10**6, 2*10**7)), 12235027416029)
 
     def test_primes(self):
         values = primes(1000)

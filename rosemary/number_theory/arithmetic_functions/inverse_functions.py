@@ -42,7 +42,7 @@ def euler_phi_inverse(n):
         by Bosma and Cannon. For a different method, see the paper "Euler's
         Totient Function and its Inverse" by Gupta.
     """
-    if isinstance(n, (int, long)):
+    if isinstance(n, int):
         if n == 1:
             return [1, 2]
         elif n > 1 and n % 2 == 1:
@@ -59,7 +59,7 @@ def euler_phi_inverse(n):
 
     powers_of_two = set([1])
     if n % 2 == 0:
-        for i in xrange(1, n_factorization[0][1] + 1):
+        for i in range(1, n_factorization[0][1] + 1):
             powers_of_two.add(2**i)
 
     # Odd primes p that divide n must have the property that p - 1 divides m.

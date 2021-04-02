@@ -23,7 +23,7 @@ from rosemary.number_theory.core import (
 
 class TestCore(unittest.TestCase):
     def test_bit_count(self):
-        for k in xrange(20):
+        for k in range(20):
             self.assertTrue(bit_count(-k) == bit_count(k) == bin(k).count('1'))
 
     def test_chinese(self):
@@ -62,7 +62,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(ext_gcd(12, -18), (-1, -1, 6))
         self.assertEqual(ext_gcd(-3, -1), (0, -1, 1))
 
-        for i in xrange(20):
+        for i in range(20):
             x = random.randint(10, 100)
             y = random.randint(10, 100)
             (a, b, d) = ext_gcd(x, y)
@@ -100,8 +100,8 @@ class TestCore(unittest.TestCase):
         ]
 
         i = 0
-        for a in xrange(1, 21):
-            for b in xrange(1, 21):
+        for a in range(1, 21):
+            for b in range(1, 21):
                 self.assertEqual(gcd(a, b), values[i])
                 i += 1
 
@@ -121,7 +121,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(integer_log(5, 2), 0)
         self.assertEqual(integer_log(5, 125), 3)
 
-        for i in xrange(20):
+        for i in range(20):
             b = random.randint(2, 20)
             n = random.randint(10**6, 10**7)
             k = integer_log(b, n)
@@ -134,7 +134,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(integer_nth_root(1, 10), 10)
         self.assertEqual(integer_nth_root(3, 1), 1)
 
-        for i in xrange(100):
+        for i in range(100):
             a = random.randint(100, 1000)
             b = random.randint(100, 1000)
             m = a**b
@@ -147,7 +147,7 @@ class TestCore(unittest.TestCase):
     def test_integer_sqrt(self):
         self.assertRaisesRegexp(ValueError, "integer_sqrt: Must have n >= 0.", integer_sqrt, -1)
 
-        for i in xrange(100):
+        for i in range(100):
             a = random.randint(100, 1000)
             b = random.randint(100, 1000)
             n = a**b
@@ -162,7 +162,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(inverse_mod(5, 17), 7)
         self.assertEqual(inverse_mod(2, 9), 5)
 
-        for k in xrange(1, 101):
+        for k in range(1, 101):
             a = inverse_mod(k, 101)
             self.assertEqual(a*k % 101, 1)
 
@@ -180,8 +180,8 @@ class TestCore(unittest.TestCase):
         ]
 
         i = 0
-        for a in xrange(1, 21):
-            for b in xrange(1, 21, 2):
+        for a in range(1, 21):
+            for b in range(1, 21, 2):
                 self.assertEqual(jacobi_symbol(a, b), values[i])
                 i += 1
 
@@ -189,8 +189,8 @@ class TestCore(unittest.TestCase):
         self.assertTrue(lcm(10, 0) == lcm(0, 10) == 0)
         self.assertEqual(lcm(0, 0), 0)
 
-        for a in xrange(10):
-            for b in xrange(10):
+        for a in range(10):
+            for b in range(10):
                 self.assertTrue(lcm(a, b) == lcm(b, a) == lcm(-a, b) == lcm(a, -b))
 
         values = [
@@ -213,8 +213,8 @@ class TestCore(unittest.TestCase):
         ]
 
         i = 0
-        for a in xrange(1, 21):
-            for b in xrange(1, 21):
+        for a in range(1, 21):
+            for b in range(1, 21):
                 self.assertTrue(lcm(a, b) == lcm(b, a) == values[i])
                 i += 1
 
@@ -231,7 +231,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(power_mod(3, 100, 3), 0)
         self.assertEqual(power_mod(3, 0, 19), 1)
 
-        for i in xrange(20):
+        for i in range(20):
             a = random.randint(2, 100)
             b = random.randint(2, 100)
             m = random.randint(2, 100)
@@ -257,7 +257,7 @@ class TestCore(unittest.TestCase):
         ]
 
         i = 0
-        for a in xrange(2, 101):
+        for a in range(2, 101):
             for p in [2, 3, 5, 7, 11]:
                 self.assertEqual(valuation(p, a), values[i])
                 i += 1

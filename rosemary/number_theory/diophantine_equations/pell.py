@@ -270,7 +270,7 @@ def pell_minimal_positive_solutions(D, N):
 
     # Find the fundamental solutions for each class.
     for r in residues:
-        for x in xrange(r, B, D):
+        for x in range(r, B, D):
             y = is_square((x*x - N) // D)
             if y > 0 and y is not False:
                 if (-x*x - D*y*y) % N == 0 and 2*x*y % N == 0:

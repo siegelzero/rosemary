@@ -14,11 +14,11 @@ class TestCore(unittest.TestCase):
         self.assertEqual(euler_phi_inverse([(2, 2), (5, 2)]), [101, 125, 202, 250])
         values = defaultdict(list)
 
-        for k in xrange(1, 1001):
+        for k in range(1, 1001):
             phi = euler_phi(k)
             values[phi].append(k)
 
-        for v in xrange(1, 201):
+        for v in range(1, 201):
             inv = euler_phi_inverse(v)
             self.assertEqual(inv, values[v])
 

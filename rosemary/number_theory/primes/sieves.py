@@ -139,14 +139,14 @@ def eratosthenes1(n):
     block = bytearray([1])*m
     sqrt = integer_sqrt(m)
 
-    for i in xrange(1, sqrt + 1):
+    for i in range(1, sqrt + 1):
         if block[i]:
             k = 2*i + 1
             start = k*k//2
             count = (m - start)//k + ((m - start) % k > 0)
             block[start::k] = bytearray([0])*count
 
-    return [2] + [2*i + 1 for i in xrange(1, n//2 + n % 2) if block[i]]
+    return [2] + [2*i + 1 for i in range(1, n//2 + n % 2) if block[i]]
 
 
 def eratosthenes2(n):
@@ -197,7 +197,7 @@ def eratosthenes2(n):
     if n <= 1:
         return []
     elif n <= 3:
-        return range(2, n + 1)
+        return list(range(2, n + 1))
 
     n += 1
     offset = (n % 6 > 1)
@@ -208,7 +208,7 @@ def eratosthenes2(n):
     block[0] = 0
     sqrt = integer_sqrt(n)
 
-    for i in xrange(sqrt//3 + 1):
+    for i in range(sqrt//3 + 1):
         if block[i]:
             k = (3*i + 1) | 1
             kk = k*k
@@ -217,7 +217,7 @@ def eratosthenes2(n):
             block[a::2*k] = bytearray([0])*((m - a)//(2*k) + ((m - a) % (2*k) > 0))
             block[b::2*k] = bytearray([0])*((m - b)//(2*k) + ((m - b) % (2*k) > 0))
 
-    return [2, 3] + [(3*i + 1) | 1 for i in xrange(1, n//3 - offset) if block[i]]
+    return [2, 3] + [(3*i + 1) | 1 for i in range(1, n//3 - offset) if block[i]]
 
 
 def luo(n):
@@ -280,7 +280,7 @@ def luo(n):
     block = bytearray([1])*(n//3)
     a, k, t = 0, 1, 2
 
-    for i in xrange(1, sqrt + 1):
+    for i in range(1, sqrt + 1):
         k = 3 - k
         a += 4*k*i
         t += 4*k
@@ -290,7 +290,7 @@ def luo(n):
             block[a::t] = bytearray([0])*((m - a)//t + ((m - a) % t > 0))
             block[b::t] = bytearray([0])*((m - b)//t + ((m - b) % t > 0))
 
-    return [2, 3] + [(3*i + 1) | 1 for i in xrange(1, m - offset) if block[i]]
+    return [2, 3] + [(3*i + 1) | 1 for i in range(1, m - offset) if block[i]]
 
 
 def chartres(n):
@@ -430,7 +430,7 @@ def pritchard(n):
     block[0] = 0
     block[1] = 0
 
-    for f in xrange(2, n//2 + 1):
+    for f in range(2, n//2 + 1):
         for p in prime_list:
             if p*f > n:
                 break
@@ -440,7 +440,7 @@ def pritchard(n):
             if f % p == 0:
                 break
 
-    return [i for i in xrange(2, n + 1) if block[i]]
+    return [i for i in range(2, n + 1) if block[i]]
 
 
 ################################################################################
@@ -448,7 +448,7 @@ def pritchard(n):
 ################################################################################
 
 
-def prime_xrange(a, b=None):
+def prime_range(a, b=None):
     r"""Returns generator of primes in interval [a, b).
 
     Parameters
@@ -476,7 +476,7 @@ def prime_xrange(a, b=None):
 
     Examples
     --------
-    >>> list(prime_xrange(10, 20))
+    >>> list(prime_range(10, 20))
     [11, 13, 17, 19]
     """
     def sieve_interval(a, b, sqrt, prime_list):
@@ -491,7 +491,7 @@ def prime_xrange(a, b=None):
         block_size = min((bb - aa)//2, 8*sqrt)
         offsets = {p: -(aa + 1 + p)//2 % p for p in prime_list}
 
-        for start in xrange(aa, bb, 2*block_size):
+        for start in range(aa, bb, 2*block_size):
             block = [1]*block_size
 
             for p in prime_list:
@@ -501,7 +501,7 @@ def prime_xrange(a, b=None):
                 block[offset::p] = [0]*(diff//p + (diff % p > 0))
                 offsets[p] = (-diff) % p
 
-            for j in xrange(block_size):
+            for j in range(block_size):
                 if block[j]:
                     m = start + 2*j + 1
                     if a <= m < b:
@@ -520,7 +520,7 @@ def prime_xrange(a, b=None):
     if b <= cutoff:
         prime_list = primes(b)
         idx = bisect_left(prime_list, a)
-        for i in xrange(idx, len(prime_list)):
+        for i in range(idx, len(prime_list)):
             yield prime_list[i]
     else:
         # Otherwise use a segmented sieve on the interval.
@@ -532,7 +532,7 @@ def prime_xrange(a, b=None):
         if a <= sqrt:
             # If a*a <= b, iterate over the primes a <= p <= sqrt(b) first.
             idx = bisect(prime_list, a)
-            for i in xrange(idx, len(prime_list)):
+            for i in range(idx, len(prime_list)):
                 yield prime_list[i]
 
             # Then iterate over the primes sqrt(b) < p <= b.

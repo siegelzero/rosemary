@@ -53,7 +53,7 @@ def euler_phi_sum(n):
 
     # for i <= sqrt(n), compute the sum directly
     cache = {1: 1}
-    for i in xrange(2, sqrt + 1):
+    for i in range(2, sqrt + 1):
         cache[i] = cache[i - 1] + phi_list[i]
 
     def S(n):
@@ -63,7 +63,7 @@ def euler_phi_sum(n):
         sqrt_n = int(n**(0.5))
         value = n - sqrt_n*cache[sqrt_n]
 
-        for d in xrange(2, sqrt_n + 1):
+        for d in range(2, sqrt_n + 1):
             value += (S(n//d) + phi_list[d]*(n//d))
 
         cache[n] = n*(n + 1)//2 - value
@@ -90,7 +90,7 @@ def euler_phi_weighted_sum(n):
     Examples:
         >>> euler_phi_weighted_sum(100)
         203085
-        >>> sum(k*euler_phi(k) for k in xrange(1, 101))
+        >>> sum(k*euler_phi(k) for k in range(1, 101))
         203085
         >>> euler_phi_weighted_sum(0)
         Traceback (most recent call last):
@@ -111,7 +111,7 @@ def euler_phi_weighted_sum(n):
 
     # for i <= sqrt(n), compute the sum directly
     cache = {1: 1}
-    for i in xrange(2, sqrt + 1):
+    for i in range(2, sqrt + 1):
         cache[i] = cache[i - 1] + i*totients[i]
 
     def T(n):
@@ -119,9 +119,9 @@ def euler_phi_weighted_sum(n):
             return cache[n]
 
         sqrt_n = int(n**(0.5)) + 1
-        s1 = sum(d*totients[d]*(n//d - d + 1)*(n//d + d)//2 for d in xrange(1, sqrt_n))
-        s2 = sum(d*(T(n//d) - T(d - 1)) for d in xrange(2, sqrt_n))
-        s3 = sum(d*d*totients[d] for d in xrange(1, sqrt_n))
+        s1 = sum(d*totients[d]*(n//d - d + 1)*(n//d + d)//2 for d in range(1, sqrt_n))
+        s2 = sum(d*(T(n//d) - T(d - 1)) for d in range(2, sqrt_n))
+        s3 = sum(d*d*totients[d] for d in range(1, sqrt_n))
 
         cache[n] = n*(n + 1)*(2*n + 1)//6 - (s1 + s2 - s3)
         return cache[n]
@@ -172,7 +172,7 @@ def moebius_sum(n):
 
     # for i <= sqrt(n), compute the sum directly
     cache = {1: 1}
-    for i in xrange(2, sqrt + 1):
+    for i in range(2, sqrt + 1):
         cache[i] = cache[i - 1] + mu_list[i]
 
     def M(n):
@@ -180,7 +180,7 @@ def moebius_sum(n):
             return cache[n]
         sqrt_n = int(n**(0.5)) + 1
         value = n - 1
-        for d in xrange(2, sqrt_n):
+        for d in range(2, sqrt_n):
             value += M(n//d) - M(d - 1)
             value += mu_list[d]*(n//d - d)
         cache[n] = 1 - value
@@ -225,7 +225,7 @@ def sigma_sum(n):
     sqrt = int(n**(0.5))
     value = -sqrt*(sqrt + 1)
 
-    for k in xrange(1, sqrt + 1):
+    for k in range(1, sqrt + 1):
         nk = n//k
         tt = nk - k + 1
         value += 2*k*tt

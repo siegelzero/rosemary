@@ -29,26 +29,26 @@ class TestCore(unittest.TestCase):
         }
 
     def test_legendre(self):
-        for (n, pi_n) in self.prime_counts.iteritems():
+        for (n, pi_n) in self.prime_counts.items():
             value = legendre(n)
             self.assertEqual(value, pi_n)
 
     def test_lehmer(self):
-        for (n, pi_n) in self.prime_counts.iteritems():
+        for (n, pi_n) in self.prime_counts.items():
             value = lehmer(n)
             self.assertEqual(value, pi_n)
 
     def test_lmo(self):
-        for (n, pi_n) in self.prime_counts.iteritems():
+        for (n, pi_n) in self.prime_counts.items():
             value = lmo(n)
             self.assertEqual(value, pi_n)
 
     def test_lmo_bit(self):
-        for (n, pi_n) in self.prime_counts.iteritems():
+        for (n, pi_n) in self.prime_counts.items():
             value = lmo_bit(n)
             self.assertEqual(value, pi_n)
 
     def test_meissel(self):
-        for (n, pi_n) in self.prime_counts.iteritems():
+        for (n, pi_n) in self.prime_counts.items():
             value = meissel(n)
             self.assertEqual(value, pi_n)

@@ -23,11 +23,11 @@ class _IsSquare(object):
     # The following tables are built when the module is imported.
     # We keep track of the squares modulo 64 and 45045 = 11*63*65.
     q64 = [0]*64
-    for k in xrange(32):
+    for k in range(32):
         q64[k*k % 64] = 1
 
     q45045 = [0]*45045
-    for k in xrange(22522):
+    for k in range(22522):
         q45045[k*k % 45045] = 1
 
     @classmethod
@@ -211,7 +211,7 @@ def is_power(n, k=None, detect_only=False):
                 return (root, k)
             return False
 
-        for k in xrange(2, n.bit_length() + 1):
+        for k in range(2, n.bit_length() + 1):
             base = integer_nth_root(k, n)
             if base**k == n:
                 exponent = k

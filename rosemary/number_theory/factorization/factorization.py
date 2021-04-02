@@ -192,11 +192,11 @@ def divisors(n=None, factorization=None):
 
     p_divisors = [p for (p, e) in factorization]
     div_list = []
-    iter_list = (xrange(e + 1) for (p, e) in factorization)
+    iter_list = (range(e + 1) for (p, e) in factorization)
 
     for exp_tuple in itertools.product(*iter_list):
         prod = 1
-        for i in xrange(len(exp_tuple)):
+        for i in range(len(exp_tuple)):
             prod *= p_divisors[i]**exp_tuple[i]
         div_list += [prod]
 
@@ -316,7 +316,7 @@ def xdivisors(n=None, factorization=None):
             factorization = factorization[1:]
 
     p_divisors = [p for (p, e) in factorization]
-    iter_list = (xrange(e + 1) for (p, e) in factorization)
+    iter_list = (range(e + 1) for (p, e) in factorization)
 
     for exp_tuple in itertools.product(*iter_list):
         prod = 1
@@ -337,7 +337,7 @@ def unitary_divisors(n=None, factorization=None):
     pk_divisors = [p**k for (p, k) in factorization]
     div_list = [1, n]
 
-    for i in xrange(1, len(pk_divisors)):
+    for i in range(1, len(pk_divisors)):
         for subset in itertools.combinations(pk_divisors, i):
             prod = 1
             for pk in subset:
@@ -348,7 +348,7 @@ def unitary_divisors(n=None, factorization=None):
     return div_list
 
 
-def factored_xrange(a, b=None):
+def factored_range(a, b=None):
     """Returns an iterator over the factorizations of the numbers in [a, b).
 
     Given positive integers a and b with a < b, this returns an iterator over
@@ -367,7 +367,7 @@ def factored_xrange(a, b=None):
             factorization of n.
 
     Examples:
-        >>> list(factored_xrange(10, 20))
+        >>> list(factored_range(10, 20))
         [(10, [(2, 1), (5, 1)]),
          (11, [(11, 1)]),
          (12, [(2, 2), (3, 1)]),
@@ -399,20 +399,20 @@ def factored_xrange(a, b=None):
         yield (1, [(1, 1)])
         a += 1
 
-    for start in xrange(a, b, block_size):
-        block = range(start, start + block_size)
-        factorizations = [[] for _ in xrange(block_size)]
+    for start in range(a, b, block_size):
+        block = list(range(start, start + block_size))
+        factorizations = [[] for _ in range(block_size)]
 
         for p in prime_list:
             offset = ((p*(start//p + 1) - a) % block_size) % p
-            for i in xrange(offset, block_size, p):
+            for i in range(offset, block_size, p):
                 k = 0
                 while block[i] % p == 0:
                     block[i] /= p
                     k += 1
                 factorizations[i].append((p, k))
 
-        for i in xrange(block_size):
+        for i in range(block_size):
             if start + i >= b:
                 return
             if block[i] != 1:

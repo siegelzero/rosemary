@@ -46,7 +46,7 @@ def _validate_input(n):
     # Name of calling function
     caller_name = inspect.stack()[1][3]
 
-    if isinstance(n, (int, long)):
+    if isinstance(n, int):
         if n == 1:
             return [(1, 1)]
         elif n <= 0:
@@ -431,7 +431,7 @@ def carmichael_lambda(n):
     ...
     ValueError: carmichael_lambda: Must have n > 0.
     """
-    if isinstance(n, (int, long)):
+    if isinstance(n, int):
         if n == 1:
             return 1
         elif n <= 0:
@@ -490,7 +490,7 @@ def factorial(n):
         return 1
 
     prod = 1
-    for k in xrange(1, n.bit_length()):
+    for k in range(1, n.bit_length()):
         lower = (n >> k) + 1
         upper = (n >> (k - 1)) + 1
 
@@ -498,7 +498,7 @@ def factorial(n):
             lower += 1
 
         partial = 1
-        for j in xrange(lower, upper, 2):
+        for j in range(lower, upper, 2):
             partial *= j
         prod *= (partial**k)
 

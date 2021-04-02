@@ -62,7 +62,7 @@ def gcd_list(L):
         return L[0]
 
     partial = gcd(L[0], L[1])
-    for i in xrange(2, num_values):
+    for i in range(2, num_values):
         partial = gcd(partial, L[i])
     return partial
 
@@ -180,7 +180,7 @@ def lcm_list(L):
         return L[0]
 
     partial = lcm(L[0], L[1])
-    for i in xrange(2, num_values):
+    for i in range(2, num_values):
         partial = lcm(partial, L[i])
     return partial
 
@@ -636,7 +636,7 @@ def crt_preconditioning_data(moduli):
     partial_products = [1]*r
     inverse_list = [1]*r
 
-    for i in xrange(1, r):
+    for i in range(1, r):
         partial_products[i] = partial_products[i - 1]*moduli[i - 1]
         inverse_list[i] = inverse_mod(partial_products[i], moduli[i])
 
@@ -693,7 +693,7 @@ def chinese_preconditioned(congruences, preconditioning_data):
     residues = [a for (a, _) in congruences]
     x = residues[0]
 
-    for i in xrange(1, r):
+    for i in range(1, r):
         u = (residues[i] - x)*inverse_list[i] % moduli[i]
         x += u*partial_products[i]
     return x % product

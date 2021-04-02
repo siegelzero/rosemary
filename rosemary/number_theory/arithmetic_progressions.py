@@ -74,7 +74,7 @@ def longest_ap(A):
     n = len(A)
     longest = 2
 
-    for j in xrange(n - 2, 0, -1):
+    for j in range(n - 2, 0, -1):
         i = j - 1
         k = j + 1
         while i >= 0 and k <= n - 1:
@@ -96,7 +96,7 @@ def longest_ap(A):
     for (i, j) in L:
         if L[i, j] == longest:
             diff = A[j] - A[i]
-            progs.append(tuple(A[i] + diff*k for k in xrange(longest)))
+            progs.append(tuple(A[i] + diff*k for k in range(longest)))
 
     progs.sort()
     return progs

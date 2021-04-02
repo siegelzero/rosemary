@@ -178,7 +178,7 @@ def primitive_root(n, n_factorization=None, phi=None, phi_divisors=None):
     if phi_divisors is None:
         phi_divisors = factor.prime_divisors(phi)
 
-    for g in xrange(1, n):
+    for g in range(1, n):
         if is_primitive_root(g, n, phi=phi, phi_divisors=phi_divisors):
             return g
 
@@ -328,7 +328,7 @@ def sqrts_mod_p(a, p):
         D = pow(d, t, p)
         m = 0
 
-        for i in xrange(s):
+        for i in range(s):
             if pow(A*D**m, 2**(s - 1 - i), p) == p - 1:
                 m += 2**i
 
@@ -404,7 +404,7 @@ def _quadratic_lift(a, r, p, k):
     else:
         # Here, r lifts to p incongruent solutions modulo p**k.
         if (r*r - a) % (p**(k + 1)) == 0:
-            for t in xrange(p):
+            for t in range(p):
                 root = r + t*p**k
                 solutions.append(root)
 
@@ -423,14 +423,14 @@ def _sqrts_mod_pk(a, p, k):
         if k == 2:
             # For k = 2, there are two or no roots depending on whether
             # a = 1 or 3 (mod 4).
-            solutions = [e for e in xrange(4) if e*e % 4 == a % 4]
+            solutions = [e for e in range(4) if e*e % 4 == a % 4]
         else:
             # For k > 2, there are four or no roots depending on whether
             # a = 1 (mod 8) or a != 1 (mod 8). We find all solutions (mod 8),
             # and lift to higher powers.
-            solutions = [e for e in xrange(8) if e*e % 8 == a % 8]
+            solutions = [e for e in range(8) if e*e % 8 == a % 8]
             if k > 3 and solutions:
-                for e in xrange(3, k):
+                for e in range(3, k):
                     lifted_solutions = []
                     for root in solutions:
                         lifts = _quadratic_lift(a, root, p, e)
@@ -438,7 +438,7 @@ def _sqrts_mod_pk(a, p, k):
                     solutions = list(lifted_solutions)
     else:
         solutions = sqrts_mod_p(a, p)
-        for e in xrange(1, k):
+        for e in range(1, k):
             lifted_solutions = []
             for root in solutions:
                 lifts = _quadratic_lift(a, root, p, e)
@@ -547,7 +547,7 @@ def nth_roots_of_unity_mod_p(n, p, g=None):
 
     roots = []
     val = 1
-    for _ in xrange(d):
+    for _ in range(d):
         roots.append(val)
         val = (val*h) % p
     roots.sort()
@@ -665,13 +665,13 @@ def discrete_log(a, b, p):
 
     cache = {}
     val = am
-    for k in xrange(1, m + 1):
+    for k in range(1, m + 1):
         cache[val] = k
         val = (val*am) % p
 
     val = b
     x = 1
-    for k in xrange(m + 1):
+    for k in range(m + 1):
         if val in cache:
             x = cache[val]*m - k
             break
@@ -731,7 +731,7 @@ def linear_congruence(a, b, n):
     # x0 is our particular solution.
     # There will be exactly d incongruent solutions modulo n.
     x0 = b*u//d
-    solutions = [(x0 + k*n//d) % n for k in xrange(d)]
+    solutions = [(x0 + k*n//d) % n for k in range(d)]
 
     solutions.sort()
     return solutions

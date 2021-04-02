@@ -51,7 +51,7 @@ def legendre(n):
             return (x + 1)//2
 
         value = (x + 1)//2
-        for i in xrange(2, a + 1):
+        for i in range(2, a + 1):
             p = primes[i - 1]
             if p > x:
                 break
@@ -129,7 +129,7 @@ def meissel(n):
 
         else:
             value = (x + 1)//2
-            for i in xrange(1, a):
+            for i in range(1, a):
                 if primes[i] > x:
                     break
                 value -= phi(x//primes[i], i)
@@ -139,7 +139,7 @@ def meissel(n):
 
     def phi2(n, a, b):
         total = (a - b)*(b + a - 1)//2
-        for i in xrange(a, b):
+        for i in range(a, b):
             total += pi_cache[n//primes[i]]
         return total
 
@@ -209,7 +209,7 @@ def lehmer(n):
 
         else:
             value = (x + 1)//2
-            for i in xrange(1, a):
+            for i in range(1, a):
                 if primes[i] > x:
                     break
                 value -= phi(x//primes[i], i)
@@ -219,15 +219,15 @@ def lehmer(n):
 
     def phi2(n, a, b):
         s1 = 0
-        for i in xrange(a, b):
+        for i in range(a, b):
             s1 += phi(n//primes[i], b) + b - 1
         return s1
 
     def phi3(n, a, b, c):
         s2 = 0
-        for i in xrange(a, c):
+        for i in range(a, c):
             bi = phi(integer_sqrt(n//primes[i]), b) + b - 1
-            for j in xrange(i, bi):
+            for j in range(i, bi):
                 idx = phi(n//(primes[i]*primes[j]), b) + b - 1
                 s2 += idx - j
         return s2
@@ -251,7 +251,7 @@ def lmo(x):
 
     value = (b + c - 2)*(b - c + 1)//2
 
-    for i in xrange(c, b):
+    for i in range(c, b):
         idx = bisect(primes, x//primes[i])
         value -= idx
 
@@ -310,7 +310,7 @@ def lmo_bit(x):
 
     value = (b + c - 2)*(b - c + 1)//2
 
-    for i in xrange(c, b):
+    for i in range(c, b):
         idx = bisect(primes, x//primes[i])
         value -= idx
 
@@ -364,13 +364,13 @@ def prime_sum2(n):
 
     sum_table = [0]*(root + 1)
     accumulation = primes[:]
-    for i in xrange(1, len(accumulation)):
+    for i in range(1, len(accumulation)):
         accumulation[i] += accumulation[i - 1]
 
     for (p, total) in zip(primes, accumulation):
         sum_table[p] = total
 
-    for i in xrange(2, root + 1):
+    for i in range(2, root + 1):
         if not sum_table[i]:
             sum_table[i] = sum_table[i - 1]
 
@@ -384,7 +384,7 @@ def prime_sum2(n):
             return x*(x + 1)//2
 
         value = x*(x + 1)//2
-        for i in xrange(1, a + 1):
+        for i in range(1, a + 1):
             p = primes[i - 1]
             if p > x:
                 break
@@ -462,11 +462,9 @@ def prime_count(n):
     S = {i: (i + 1)//2 for i in V}
 
     for p in range(2, r + 1):
-        if S[p] > S[p-1]:
-            sp = S[p-1]
-            p2 = p*p
+        if S[p] > S[p - 1]:
             for v in V:
-                if v < p2:
+                if v < p*p:
                     break
-                S[v] -= (S[v//p] - sp)
+                S[v] -= (S[v//p] - S[p - 1])
     return S
