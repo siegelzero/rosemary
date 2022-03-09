@@ -350,7 +350,7 @@ def gabow(graph, k=None):
     mark = marked.add
     unmark = marked.discard
 
-    edges = sorted(graph.edge_set(), key=lambda (u, v): weight[(u, v)])
+    edges = sorted(graph.edge_set(), key=lambda uv: weight[uv])
     vertices = graph.vertices()
 
     # arbitrary root vertex

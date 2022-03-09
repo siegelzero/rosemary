@@ -9,6 +9,7 @@ from rosemary.number_theory.zn_arithmetic import (
     fibonacci_primitive_roots,
     is_primitive_root,
     linear_congruence,
+    multiplicative_order,
     nth_roots_of_minus1_mod_p,
     nth_roots_of_unity_mod_p,
     primitive_root,
@@ -165,6 +166,12 @@ class TestCore(unittest.TestCase):
             except:
                 continue
             self.assertEqual(g, self.roots[n][0])
+
+    def test_multiplicative_order(self):
+        self.assertEqual(
+            [multiplicative_order(k, 7) for k in range(1, 7)]
+            [1, 3, 6, 3, 6, 2]
+        )
 
     def test__qudratic_lift(self):
         self.assertRaisesRegexp(ValueError, "_quadratic_lift: Must have k >= 1.", _quadratic_lift, 2, 18, 101, -2)

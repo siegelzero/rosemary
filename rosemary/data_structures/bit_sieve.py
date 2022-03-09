@@ -6,12 +6,12 @@ class BITSieve(object):
         A = {}
         parent = {}
 
-        for j in xrange(1, n + 1):
+        for j in range(1, n + 1):
             A[0, j] = 1
 
         i = 1
         while n >> i:
-            for j in xrange(1, (n >> i) + 1):
+            for j in range(1, (n >> i) + 1):
                 A[i, j] = A[i - 1, 2*j - 1] + A[i - 1, 2*j]
                 parent[i - 1, 2*j - 1] = (i, j)
                 parent[i - 1, 2*j] = (i, j)
@@ -23,27 +23,27 @@ class BITSieve(object):
         self.parent = parent
 
     def entries(self):
-        return [self.A[0, i] for i in xrange(1, self.n + 1)]
+        return [self.A[0, i] for i in range(1, self.n + 1)]
 
     def update(self):
         A = self.A
         n = self.n
         i = 1
         while n >> i:
-            for j in xrange(1, (n >> i) + 1):
+            for j in range(1, (n >> i) + 1):
                 A[i, j] = A[i - 1, 2*j - 1] + A[i - 1, 2*j]
             i += 1
 
     def mark_multiples(self, p):
         # A = self.A
-        # for i in xrange(p, self.n + 1, p):
+        # for i in range(p, self.n + 1, p):
         #     A[0, i] = 0
 
         # self.update()
 
         A = self.A
         parent = self.parent
-        for i in xrange(p, self.n + 1, p):
+        for i in range(p, self.n + 1, p):
             if A[0, i] == 0:
                 continue
 
@@ -80,7 +80,7 @@ class BITSieveArray(object):
         i = 1
         while n >> i:
             A.append([0]*((n >> i) + 1))
-            for j in xrange(1, (n >> i) + 1):
+            for j in range(1, (n >> i) + 1):
                 A[i][j] = A[i - 1][2*j - 1] + A[i - 1][2*j]
 
             i += 1
@@ -94,12 +94,12 @@ class BITSieveArray(object):
     def mark_multiples(self, p):
         A = self.A
 
-        for i in xrange(p, self.n + 1, p):
+        for i in range(p, self.n + 1, p):
             if A[0][i] == 0:
                 continue
 
             y = i
-            for x in xrange(len(A)):
+            for x in range(len(A)):
                 if y >= len(A[x]):
                     break
                 A[x][y] -= 1

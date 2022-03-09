@@ -49,7 +49,7 @@ def branch_and_bound(graph):
         discard = allowed.discard
 
         while allowed and size + len(allowed) > best[0]:
-            for i in xrange(last_i, num_vertices):
+            for i in range(last_i, num_vertices):
                 if vertices[i] in allowed:
                     u = vertices[i]
                     last_i = i + 1

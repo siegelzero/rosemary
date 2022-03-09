@@ -683,6 +683,50 @@ def discrete_log(a, b, p):
         raise ValueError("discrete_log: No solution found.")
 
 
+def multiplicative_order(
+    a: int,
+    n: int,
+    phi: int = None,
+    phi_divisors: list[int] = None
+) -> int:
+    """Returns the multiplicative order of a (mod n); i.e. the smallest
+    positive integer k with a^k = 1 (mod n).
+
+    Input:
+        * a: int
+        * n: int
+
+    Returns:
+        * k: int
+
+    Raises:
+        * ValueError: If gcd(a, n) != 1
+
+    Examples:
+        >>> multiplicative_order(4, 7)
+        3
+        >>> pow(4, 3, 7) == 1
+        True
+        >>> multiplicative_order(2, 10)
+        Traceback (most recent call last):
+        ...
+        ValueError: multiplicative_order: Need gcd(a, n) == 1
+    """
+    if gcd(a, n) != 1:
+        raise ValueError("multiplicative_order: Need gcd(a, n) == 1")
+
+    if phi is None:
+        phi = functions.euler_phi(n)
+
+    if phi_divisors is None:
+        phi_divisors = factor.divisors(phi)
+
+    # Guaranteed to exist since (a, n) = 1
+    for d in phi_divisors:
+        if pow(a, d, n) == 1:
+            return d
+
+
 ################################################################################
 # solutions to congruences
 ################################################################################
@@ -796,7 +840,7 @@ def quadratic_congruence(coeff_list, n, n_factorization=None):
         d = gcd(n, a2)
         while d > 1:
             a1 *= d
-            a2 /= d
+            a2 //= d
             d = gcd(n, a2)
 
         # We solve the congruence y^2 = b^2 - 4*a*c (mod a1*n) for y.

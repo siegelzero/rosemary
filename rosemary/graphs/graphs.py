@@ -32,7 +32,7 @@ class Graph(object):
         """
         Iterator over the keys of the grap dict of self.
         """
-        return self.graph_dict.iterkeys()
+        yield from self.graph_dict.keys()
 
     def copy(self):
         """

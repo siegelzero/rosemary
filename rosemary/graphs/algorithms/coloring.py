@@ -81,7 +81,7 @@ def dsatur(graph, classes=True):
 
         # Color this vertex with the least possible color. If a new color
         # is used, increase the color count.
-        for color in xrange(num_colors + 1):
+        for color in range(num_colors + 1):
             if color not in neighbor_colors:
                 color_map[u] = color
                 if color == num_colors:
@@ -91,8 +91,8 @@ def dsatur(graph, classes=True):
     if not classes:
         return (num_colors, color_map)
     else:
-        color_classes = [[] for i in xrange(num_colors)]
-        for (u, color) in color_map.iteritems():
+        color_classes = [[] for i in range(num_colors)]
+        for (u, color) in color_map.items():
             color_classes[color].append(u)
 
         return (num_colors, color_classes)
@@ -166,14 +166,14 @@ def greedy_sequential(graph, vertices=None, passes=1, classes=True):
     color_map[v] = 0
     num_colors = 1
 
-    for i in xrange(1, len(vertices)):
+    for i in range(1, len(vertices)):
         v = vertices[i]
         adjacent_colors = set([])
         for u in graph[v]:
             if u in color_map:
                 adjacent_colors.add(color_map[u])
 
-        for color in xrange(num_colors + 1):
+        for color in range(num_colors + 1):
             if color not in adjacent_colors:
                 color_map[v] = color
                 if color == num_colors:
@@ -181,8 +181,8 @@ def greedy_sequential(graph, vertices=None, passes=1, classes=True):
                 break
 
     if classes or passes > 1:
-        color_classes = [[] for i in xrange(num_colors)]
-        for (u, color) in color_map.iteritems():
+        color_classes = [[] for i in range(num_colors)]
+        for (u, color) in color_map.items():
             color_classes[color].append(u)
 
         if classes and passes == 1:
@@ -286,8 +286,8 @@ def maxis(graph, classes=True, color_limit=58, mis_limit=100, use_greedy=False, 
     num_vertices = len(vertices)
 
     if verbose:
-        print "Using color_limit={}, mis_limit={}".format(color_limit, mis_limit)
-        print "Graph density: {}".format(graph.density())
+        print("Using color_limit={}, mis_limit={}".format(color_limit, mis_limit))
+        print("Graph density: {}".format(graph.density()))
 
     color_classes = []
     num_colors = 0
@@ -296,16 +296,16 @@ def maxis(graph, classes=True, color_limit=58, mis_limit=100, use_greedy=False, 
         if num_vertices > mis_limit:
             if use_greedy:
                 if verbose:
-                    print "Finding approximate (greedy) MIS..."
+                    print("Finding approximate (greedy) MIS...")
                 (size, independent_set) = greedy(reduced_graph)
 
             else:
                 if verbose:
-                    print "Finding approximate MIS..."
+                    print("Finding approximate MIS...")
                 (size, independent_set) = approximate(reduced_graph)
         else:
             if verbose:
-                print "Finding exact MIS..."
+                print("Finding exact MIS...")
             (size, independent_set) = exact(reduced_graph)
 
         color_classes.append(independent_set)
@@ -316,12 +316,12 @@ def maxis(graph, classes=True, color_limit=58, mis_limit=100, use_greedy=False, 
         num_vertices -= size
 
         if verbose:
-            print "Color class of size {} found.".format(size),
-            print "Remaining vertices: {}".format(num_vertices)
+            print("Color class of size {} found.".format(size))
+            print("Remaining vertices: {}".format(num_vertices))
 
     if num_vertices:
         if verbose:
-            print "Using exact coloring techniques for last {} vertices".format(num_vertices)
+            print("Using exact coloring techniques for last {} vertices".format(num_vertices))
         num, colors = exact_coloring(reduced_graph, classes=True)
         num_colors += num
         color_classes += colors
@@ -393,7 +393,7 @@ def branch_and_bound(graph, classes=True):
 
             # If there is any color j, 1 <= j <= num_colors, such that no
             # vertex adjacent to u has color j, then return num_colors.
-            for j in xrange(1, num_colors + 1):
+            for j in range(1, num_colors + 1):
                 if j not in adjacent_colors:
                     color_map[u] = j
                     if num_colors < best[0]:
@@ -435,7 +435,7 @@ def branch_and_bound(graph, classes=True):
             if num_adjacent_colors == best_number - 1:
                 return best_number
 
-            for j in xrange(1, num_colors + 1):
+            for j in range(1, num_colors + 1):
                 if j not in adjacent_colors:
                     color_map[u] = j
                     pop(u)
@@ -474,7 +474,7 @@ def branch_and_bound(graph, classes=True):
     if not classes:
         return (num_colors, color_map)
     else:
-        color_classes = [[] for _ in xrange(num_colors)]
+        color_classes = [[] for _ in range(num_colors)]
 
         for v in color_map:
             color = color_map[v] - 1
@@ -584,12 +584,12 @@ def korman(graph, classes=True):
                 find_next_s = False
 
             adjacent_colors = {color[v] for v in graph_dict[s]}
-            for i in xrange(color[s] + 1, num_vertices + 1):
+            for i in range(color[s] + 1, num_vertices + 1):
                 if i not in adjacent_colors:
                     s_color = i
                     break
 
-            if s_color < best and s_color <= max([color[order[i]] + 1 for i in xrange(idx)]):
+            if s_color < best and s_color <= max([color[order[i]] + 1 for i in range(idx)]):
                 color[s] = s_color
                 uncolored.discard(s)
                 if idx == num_vertices - 1:
@@ -600,7 +600,7 @@ def korman(graph, classes=True):
                     while color[order[idx]] < best:
                         idx += 1
 
-                    for i in xrange(idx, num_vertices):
+                    for i in range(idx, num_vertices):
                         color[order[i]] = 0
                         uncolored.add(order[i])
 
@@ -619,12 +619,12 @@ def korman(graph, classes=True):
         # color map from DSATUR has colors indexed starting at 0.
         # We need to fix this to make it consistent with the color map
         # found in the korman algorithm.
-        best_coloring = {v: c + 1 for (v, c) in initial_coloring.iteritems()}
+        best_coloring = {v: c + 1 for (v, c) in initial_coloring.items()}
 
     if not classes:
         return (best, best_coloring)
     else:
-        color_classes = [[] for _ in xrange(best)]
+        color_classes = [[] for _ in range(best)]
 
         for v in best_coloring:
             color_classes[best_coloring[v] - 1].append(v)

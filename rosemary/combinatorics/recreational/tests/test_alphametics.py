@@ -45,17 +45,17 @@ class TestAlphametics(unittest.TestCase):
 
         nonunique_puzzles = [(
             (["violin", "violin", "viola"], ["trio", "sonata"]),
-            (([354652, 354652, 35468], [1954, 742818]),
-             ([354652, 354652, 35469], [1854, 742919]),
-             ([176478, 176478, 17640], [2576, 368020]),
-             ([176478, 176478, 17645], [2076, 368525]))
+            (([354652, 354652, 35469], [1854, 742919]),
+             ([354652, 354652, 35468], [1954, 742818]),
+             ([176478, 176478, 17645], [2076, 368525]),
+             ([176478, 176478, 17640], [2576, 368020]))
         )]
 
         self.nonunique_puzzles = nonunique_puzzles
 
     def test_solve(self):
         for (words, numbers) in self.unique_puzzles:
-            self.assertEqual(solve(*words).next(), numbers)
+            self.assertEqual(next(solve(*words)), numbers)
 
         for (words, numbers) in self.nonunique_puzzles:
             self.assertEqual(tuple(solve(*words)), numbers)

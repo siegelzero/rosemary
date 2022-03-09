@@ -408,7 +408,7 @@ def factored_range(a, b=None):
             for i in range(offset, block_size, p):
                 k = 0
                 while block[i] % p == 0:
-                    block[i] /= p
+                    block[i] //= p
                     k += 1
                 factorizations[i].append((p, k))
 

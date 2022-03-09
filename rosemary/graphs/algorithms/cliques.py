@@ -289,7 +289,7 @@ def pardalos(graph):
         last_i = 0
         num_candidates = len(candidates)
         while candidates and size + num_candidates > max_clique[0]:
-            for i in xrange(last_i, num_vertices):
+            for i in range(last_i, num_vertices):
                 if vertices[i] in candidates:
                     u = vertices[i]
                     last_i = i + 1
@@ -374,7 +374,7 @@ def pardalos_binary(graph):
 
     bits = max_clique[1]
     clique = []
-    for i in xrange(num_vertices):
+    for i in range(num_vertices):
         if bits & (1 << i):
             clique.append(vertices[i])
 
@@ -440,7 +440,7 @@ def ostergard(graph):
         num_candidates = len(candidates)
         while candidates and size + num_candidates > max_clique[0]:
             # Find the candidate vertex v_i of least index in our ordering.
-            for i in xrange(last_i, num_vertices):
+            for i in range(last_i, num_vertices):
                 if vertices[i] in candidates:
                     u = vertices[i]
                     last_i = i + 1
@@ -463,10 +463,10 @@ def ostergard(graph):
 
     # S[i] is the set of vertices {v_i, v_{i + 1}, ..., v_{n - 1}}.
     S = [0]*num_vertices
-    for i in xrange(num_vertices):
+    for i in range(num_vertices):
         S[i] = set(vertices[i:])
 
-    for i in xrange(num_vertices - 1, -1, -1):
+    for i in range(num_vertices - 1, -1, -1):
         found = [False]
         u = vertices[i]
         push(u)
@@ -562,10 +562,10 @@ def ostergard_binary(graph):
 
     # S[i] is the set of vertices {v_i, v_{i + 1}, ..., v_{n - 1}}.
     S = [0]*num_vertices
-    for i in xrange(num_vertices):
+    for i in range(num_vertices):
         S[i] = (all_vertices >> i) << i
 
-    for i in xrange(num_vertices - 1, -1, -1):
+    for i in range(num_vertices - 1, -1, -1):
         found = [False]
         u = 1 << i
         backtrack(u, S[i] & neighbors[u], 1)
@@ -573,7 +573,7 @@ def ostergard_binary(graph):
 
     bits = max_clique[1]
     clique = []
-    for i in xrange(num_vertices):
+    for i in range(num_vertices):
         if bits & (1 << i):
             clique.append(vertices[i])
 
@@ -686,7 +686,7 @@ def maximum_weight_clique(graph, weight_map=None):
                 return
 
             # Find the candidate vertex v_i of least index in our ordering.
-            for i in xrange(last_i, num_vertices):
+            for i in range(last_i, num_vertices):
                 if vertices[i] in candidates:
                     u = vertices[i]
                     last_i = i + 1
@@ -704,13 +704,13 @@ def maximum_weight_clique(graph, weight_map=None):
 
     # Each S[i] is the set of vertices {v_i, v_{i + 1}, ..., v_{n - 1}}.
     S = [0]*num_vertices
-    for i in xrange(num_vertices):
+    for i in range(num_vertices):
         S[i] = set(vertices[i:])
 
     # largest[i] is the weight of the maximum weight clique in S[i].
     largest = [0]*num_vertices
 
-    for i in xrange(num_vertices - 1, -1, -1):
+    for i in range(num_vertices - 1, -1, -1):
         u = vertices[i]
         backtrack(S[i] & neighbors[u], [u], weight_map[u])
         largest[i] = max_clique[0]

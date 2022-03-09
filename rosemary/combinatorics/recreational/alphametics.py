@@ -43,7 +43,7 @@ def solve(lhs, rhs):
     # out the digits in the order described above.
     valuation = {}
 
-    for (char, sig) in signature.iteritems():
+    for (char, sig) in signature.items():
         valuation[char] = 1
         while sig and sig % 10 == 0:
             valuation[char] *= 10
