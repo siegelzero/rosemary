@@ -58,24 +58,24 @@ class TestCliques(unittest.TestCase):
         ]
 
     def test_maximal_cliques(self):
-        print "Testing Bron-Kerbosh algorithm"
+        print("Testing Bron-Kerbosh algorithm")
         cliques = [sorted(e) for e in bron_kerbosch(self.petersen_graph)]
         self.assertEqual(sorted(cliques), self.petersen_cliques)
 
-        print "Testing binary Bron-Kerbosh algorithm"
+        print("Testing binary Bron-Kerbosh algorithm")
         cliques = [sorted(e) for e in bron_kerbosch_binary(self.petersen_graph)]
         self.assertEqual(sorted(cliques), self.petersen_cliques)
 
-        print "Testing Tomita algorithm"
+        print("Testing Tomita algorithm")
         cliques = [sorted(e) for e in tomita(self.petersen_graph)]
         self.assertEqual(sorted(cliques), self.petersen_cliques)
 
-        print "Testing generic maximal cliques algorithm"
+        print("Testing generic maximal cliques algorithm")
         for algorithm in ['tomita', 'bron_kerbosch', 'bron_kerbosch_binary']:
             cliques = [sorted(e) for e in maximal_cliques(self.petersen_graph, algorithm=algorithm)]
             self.assertEqual(sorted(cliques), self.petersen_cliques)
 
-        print "Testing with random graphs"
+        print("Testing with random graphs")
         cliques1 = list(bron_kerbosch(self.random_graph10_5))
         cliques2 = list(bron_kerbosch_binary(self.random_graph10_5))
         cliques3 = list(tomita(self.random_graph10_5))
@@ -91,23 +91,23 @@ class TestCliques(unittest.TestCase):
         self.assertEqual(len(cliques2), len(cliques3))
 
     def test_maximum_clique(self):
-        print "Testing Ostergard algorithm"
+        print("Testing Ostergard algorithm")
         size, clique = ostergard(self.random_graph)
         self.assertEqual(size, 5)
         self.assertEqual(sorted(clique), self.random_graph_clique2)
 
-        print "Testing Pardalos algorithm"
+        print("Testing Pardalos algorithm")
         size, clique = pardalos(self.random_graph)
         self.assertEqual(size, 5)
         self.assertEqual(sorted(clique), self.random_graph_clique)
 
-        print "Testing generic maximum-clique algorithm"
+        print("Testing generic maximum-clique algorithm")
         for algorithm in ['pardalos', 'ostergard']:
             size, clique = maximum_clique(self.random_graph, algorithm=algorithm)
             self.assertEqual(size, 5)
 
     def test_maximum_weight_clique(self):
-        print "Testing Maximum-weight clique algorithm"
+        print("Testing Maximum-weight clique algorithm")
         size, clique = maximum_weight_clique(self.coprime_graph10)
         self.assertEqual(size, self.coprime_graph10_weight)
         self.assertEqual(sorted(clique), self.coprime_graph10_clique)

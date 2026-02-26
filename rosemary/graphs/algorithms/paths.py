@@ -164,11 +164,11 @@ def dijkstra_iterator(graph, s):
                      ('b', 'd', 2), ('b', 'e', 3), ('c', 'e', 4),
                      ('d', 'e', 2)])
     >>> X = dijkstra_iterator(G, 'a')
-    >>> X.next()
+    >>> next(X)
     ('a', 0, ['a'])
-    >>> X.next()
+    >>> next(X)
     ('c', 1, ['a', 'c'])
-    >>> X.next()
+    >>> next(X)
     ('b', 2, ['a', 'b'])
     """
     graph_dict = graph.graph_dict
@@ -296,7 +296,7 @@ def dijkstra_buckets(graph, s):
 
             for v in graph_dict[u]:
                 # Ensure that all weights are integral.
-                if not isinstance(graph_dict[u][v], (int, long)):
+                if not isinstance(graph_dict[u][v], int):
                     raise ValueError("dijkstra_buckets: Weights must be integral.")
                 d = min_weight + graph_dict[u][v]
                 if d < estimate[v]:

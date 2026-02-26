@@ -84,7 +84,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(discrete_log(2, 6, 19), 14)
         self.assertEqual(discrete_log(59, 67, 113), 11)
         self.assertEqual(discrete_log(5, 3, 2017), 1030)
-        self.assertRaisesRegexp(ValueError, "discrete_log: No solution found.", discrete_log, 2, 77, 100)
+        self.assertRaisesRegex(ValueError, "discrete_log: No solution found.", discrete_log, 2, 77, 100)
 
     def test_fibonacci_primitive_roots(self):
         values = [
@@ -131,13 +131,13 @@ class TestCore(unittest.TestCase):
         roots = [a for a in range(1, p) if is_primitive_root(a, p, phi=p - 1)]
         self.assertEqual(roots, self.roots[p])
 
-        self.assertRaisesRegexp(ValueError, 'is_primitive_root: n must be >= 2.', is_primitive_root, 3, -1)
+        self.assertRaisesRegex(ValueError, 'is_primitive_root: n must be >= 2.', is_primitive_root, 3, -1)
 
     def test_linear_congruence(self):
         self.assertEqual(linear_congruence(10, 6, 12), [3, 9])
         self.assertEqual(linear_congruence(12, 9, 15), [2, 7, 12])
         self.assertEqual(linear_congruence(10, 3, 12), [])
-        self.assertRaisesRegexp(ValueError, 'linear_congruence: Must have n >= 2.', linear_congruence, 2, 3, 0)
+        self.assertRaisesRegex(ValueError, 'linear_congruence: Must have n >= 2.', linear_congruence, 2, 3, 0)
 
     def test_nth_roots_of_minus1_mod_p(self):
         self.assertEqual(nth_roots_of_minus1_mod_p(5, 11), [2, 6, 7, 8, 10])
@@ -169,14 +169,14 @@ class TestCore(unittest.TestCase):
 
     def test_multiplicative_order(self):
         self.assertEqual(
-            [multiplicative_order(k, 7) for k in range(1, 7)]
+            [multiplicative_order(k, 7) for k in range(1, 7)],
             [1, 3, 6, 3, 6, 2]
         )
 
     def test__qudratic_lift(self):
-        self.assertRaisesRegexp(ValueError, "_quadratic_lift: Must have k >= 1.", _quadratic_lift, 2, 18, 101, -2)
-        self.assertRaisesRegexp(ValueError, "_quadratic_lift: Must have p >= 2.", _quadratic_lift, 1, 18, 1, 2)
-        self.assertRaisesRegexp(ValueError, "_quadratic_lift: Must have r*.", _quadratic_lift, 2, 17, 101, 2)
+        self.assertRaisesRegex(ValueError, "_quadratic_lift: Must have k >= 1.", _quadratic_lift, 2, 18, 101, -2)
+        self.assertRaisesRegex(ValueError, "_quadratic_lift: Must have p >= 2.", _quadratic_lift, 1, 18, 1, 2)
+        self.assertRaisesRegex(ValueError, "_quadratic_lift: Must have r*.", _quadratic_lift, 2, 17, 101, 2)
         self.assertEqual(_quadratic_lift(119, 5154, 11213, 1), [5869553])
         self.assertEqual(_quadratic_lift(0, 0, 7, 1), [0, 7, 14, 21, 28, 35, 42])
 
@@ -200,7 +200,7 @@ class TestCore(unittest.TestCase):
                 self.assertEqual(values[a], sqrts_mod_n(a, n))
 
     def test_sqrts_mod_p(self):
-        self.assertRaisesRegexp(ValueError, "sqrts_mod_p: Must have p >= 2 be prime.", sqrts_mod_p, 10, 1)
+        self.assertRaisesRegex(ValueError, "sqrts_mod_p: Must have p >= 2 be prime.", sqrts_mod_p, 10, 1)
 
         for p in [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]:
             values = defaultdict(list)

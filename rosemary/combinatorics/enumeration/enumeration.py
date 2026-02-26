@@ -28,7 +28,7 @@ def bell_number(n):
         115975
 
     Details:
-        The algorithm uses the recurrence $B(m) = \sum_{i = 0}^{m - 1} \binom{m
+        The algorithm uses the recurrence $B(m) = \\sum_{i = 0}^{m - 1} \\binom{m
         - 1}{i} B(i)$. See Theorem 3.9 of Combinatorial Algorithms by Kreher and
           Stinson for a proof of the recurrence.
     """
@@ -38,13 +38,13 @@ def bell_number(n):
     B = [0]*(n + 1)
     B[0] = 1
 
-    for i in xrange(1, n + 1):
+    for i in range(1, n + 1):
         coeff = 1
         value = 0
-        for k in xrange(1, i + 1):
+        for k in range(1, i + 1):
             value += coeff*B[i - k]
             coeff *= (i - k)
-            coeff /= k
+            coeff //= k
         B[i] = value
     return B[n]
 
@@ -53,14 +53,14 @@ def stirling_number2(m, n):
     S = {}
     S[0, 0] = 1
 
-    for i in xrange(1, m + 1):
+    for i in range(1, m + 1):
         S[i, 0] = 0
 
-    for i in xrange(m + 1):
+    for i in range(m + 1):
         S[i, i + 1] = 0
 
-    for i in xrange(1, m + 1):
-        for j in xrange(1, min(i, n) + 1):
+    for i in range(1, m + 1):
+        for j in range(1, min(i, n) + 1):
             S[i, j] = j*S[i - 1, j] + S[i - j, j - 1]
 
     return S[m, n]
@@ -86,10 +86,10 @@ def binomial(n, k):
     """
     pp = 1
     k = min(k, n - k)
-    for e in xrange(n - k + 1, n + 1):
+    for e in range(n - k + 1, n + 1):
         pp = pp * e
-    for e in xrange(2, k + 1):
-        pp = pp / e
+    for e in range(2, k + 1):
+        pp = pp // e
     return pp
 
 
@@ -120,7 +120,7 @@ def multinomial(n, k):
     den = 1
     for e in k:
         den *= factorial(e)
-    return num / den
+    return num // den
 
 
 def bipartitions(m, n):
@@ -147,13 +147,13 @@ def bipartitions(m, n):
     Details:
         See 7.2.1.5 of TAOCP Vol 4 for more details.
     """
-    p = [[1]*(n + 1) for i in xrange(m + 1)]
+    p = [[1]*(n + 1) for i in range(m + 1)]
 
-    for i in xrange(m + 1):
-        for j in xrange(n + 1):
+    for i in range(m + 1):
+        for j in range(n + 1):
             if i + j > 1:
-                for k in xrange(i, m + 1):
-                    for l in xrange(j, n + 1):
+                for k in range(i, m + 1):
+                    for l in range(j, n + 1):
                         p[k][l] += p[k - i][l - j]
 
     return p[m][n]
@@ -168,12 +168,12 @@ def partition_list(n):
     values[0] = 1
     values[1] = 1
 
-    for m in xrange(2, n + 1):
+    for m in range(2, n + 1):
         max_idx = int((1 + (1 + 24*m)**(0.5))/6)
         sign = (-1)**(max_idx + 1)
         total = 0
 
-        for k in xrange(max_idx, 0, -1):
+        for k in range(max_idx, 0, -1):
             v1 = m - k*(3*k - 1)//2
             t1 = values[v1]
 
@@ -208,13 +208,13 @@ def rth_power_partition_number(r, n):
     Pr[0] = 1
 
     # it's faster to compute these in descending order
-    P = [partition_number(k) for k in xrange(0, n + 1)]
+    P = [partition_number(k) for k in range(0, n + 1)]
 
     # this bit uses the j.c.p. pure power recurrence to compute the rth
     # power coefficients of the partition generating function
-    for k in xrange(1, n + 1):
+    for k in range(1, n + 1):
         ss = 0
-        for i in xrange(1, k + 1):
+        for i in range(1, k + 1):
             ss += P[i] * ((r + 1) * i - k) * Pr[k - i]
         Pr[k] = ss // k
 
@@ -395,7 +395,7 @@ def necklaces(n, k, weights=None):
         j = gcd(weights)
         ss = 0
         for d in xdivisors(j):
-            ll = [e/d for e in weights]
+            ll = [e//d for e in weights]
             ss += euler_phi(d)*multinomial(n//d, ll)
         return ss//n
     else:

@@ -38,14 +38,15 @@ class TestShortestPaths(unittest.TestCase):
     def test_bellman_ford(self):
         distance, previous = bellman_ford(self.graph, 'a')
         self.assertEqual(distance, self.distance)
-        self.assertEqual(previous, self.previous)
+        # predecessor dict is not checked: vertex 'e' has two valid predecessors
+        # ('b' and 'c', both at distance 5) so the result is order-dependent.
 
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "bellman_ford: 0 is not a vertex of graph.",
                                 bellman_ford, self.graph, 0)
 
         self.graph['a']['b'] = -10
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 'bellman_ford: Negative cycle detected.',
                                 bellman_ford, self.graph, 'a')
 
@@ -58,7 +59,7 @@ class TestShortestPaths(unittest.TestCase):
         self.assertEqual(distance, self.distance)
         self.assertEqual(previous, self.previous)
 
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "dijkstra: 0 is not a vertex of graph.",
                                 dijkstra, self.graph, 0)
 
@@ -67,11 +68,11 @@ class TestShortestPaths(unittest.TestCase):
         self.assertEqual(previous, self.previous2)
 
     def test_dijkstra_bidirectional(self):
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "dijkstra_bidirectional: 0 is not a vertex of graph.",
                                 dijkstra_bidirectional, self.graph, 0, 'a')
 
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "dijkstra_bidirectional: 2 is not a vertex of graph.",
                                 dijkstra_bidirectional, self.graph, 'a', 2)
 
@@ -87,7 +88,7 @@ class TestShortestPaths(unittest.TestCase):
         self.assertEqual(distance, self.distance)
         self.assertEqual(previous, self.previous)
 
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "dijkstra_buckets: 0 is not a vertex of graph.",
                                 dijkstra_buckets, self.graph, 0)
 
@@ -96,13 +97,13 @@ class TestShortestPaths(unittest.TestCase):
         self.assertEqual(previous, self.previous2)
 
         self.graph['a']['b'] = 1.4
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "dijkstra_buckets: Weights must be integral.",
                                 dijkstra_buckets, self.graph, 'a')
 
     def test_dijkstra_iterator(self):
         f = lambda g, u: list(dijkstra_iterator(g, u))
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "dijkstra_iterator: 0 is not a vertex of graph.",
                                 f, self.graph, 0)
 
@@ -113,7 +114,7 @@ class TestShortestPaths(unittest.TestCase):
                 self.assertEqual(dist, ddist[node])
 
     def test_dijkstra_pairing_heap(self):
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "dijkstra_pairing_heap: 0 is not a vertex of graph.",
                                 dijkstra_pairing_heap, self.graph, 0)
 

@@ -61,9 +61,9 @@ def factor(n, skip_trial_division=False, skip_power_detection=True, use_cfrac=Fa
     >>> factor(537869)
     [(37, 1), (14537, 1)]
     >>> factor(2**91 - 1)
-    [(127, 1), (911, 1), (8191, 1), (112901153L, 1), (23140471537L, 1)]
+    [(127, 1), (911, 1), (8191, 1), (112901153, 1), (23140471537, 1)]
     >>> factor(10**22 + 1)
-    [(89, 1), (101, 1), (1052788969L, 1), (1056689261L, 1)]
+    [(89, 1), (101, 1), (1052788969, 1), (1056689261, 1)]
     """
     fac = collections.defaultdict(int)
 
@@ -320,7 +320,7 @@ def xdivisors(n=None, factorization=None):
 
     for exp_tuple in itertools.product(*iter_list):
         prod = 1
-        for (p, e) in itertools.izip(p_divisors, exp_tuple):
+        for (p, e) in zip(p_divisors, exp_tuple):
             prod *= p**e
         yield prod
 

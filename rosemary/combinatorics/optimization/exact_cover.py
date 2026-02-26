@@ -3,14 +3,14 @@ from collections import defaultdict
 
 def to_string(entries):
     s = []
-    for i in xrange(9):
-        for j in xrange(9):
+    for i in range(9):
+        for j in range(9):
             s.append(str(entries[i][j]))
     return ''.join(s)
 
 
 def parse(digits):
-    M = [[0]*9 for _ in xrange(9)]
+    M = [[0]*9 for _ in range(9)]
     for (i, d) in enumerate(digits):
         M[i//9][i % 9] = int(d)
     return M
@@ -20,7 +20,7 @@ def algorithmx(target, sets):
     solution = []
 
     Y = {}
-    for i in xrange(len(sets)):
+    for i in range(len(sets)):
         Y[i] = list(sets[i])
 
     X = {j: set() for j in target}
@@ -64,7 +64,7 @@ def algorithm_dlx(target, sets):
     solution = []
 
     Y = {}
-    for i in xrange(len(sets)):
+    for i in range(len(sets)):
         Y[i] = list(sets[i])
 
     X = {j: set() for j in target}
@@ -116,7 +116,7 @@ class ExactCover(object):
         self.sets = sets.copy()
         universe = set()
 
-        for (key, value) in sets.iteritems():
+        for (key, value) in sets.items():
             universe.update(value)
 
         self.universe = universe
@@ -188,7 +188,7 @@ class ExactCoverBinary(ExactCover):
 
 def langford_ints(n):
     L = []
-    for p in xrange(1, n + 1):
+    for p in range(1, n + 1):
         c = 1 << (3*n - p)
         l = 2*n - 1
         r = l - p - 1
@@ -210,7 +210,7 @@ def langford_pairings(n):
 
 def domino_ints(n):
     L = []
-    for i in xrange(n*n):
+    for i in range(n*n):
         if i + n < n*n:
             L.append((1 << i) | (1 << (i + n)))
 
@@ -230,20 +230,20 @@ def domino_tilings(n):
 def latin_square_ints(n):
     ints = []
     all_blocks = {}
-    for i in xrange(n):
+    for i in range(n):
         all_blocks[i] = []
-        for j in xrange(n):
-            blocks = [[0]*n for _ in xrange(n)]
+        for j in range(n):
+            blocks = [[0]*n for _ in range(n)]
             blocks[j][i] = 1
             all_blocks[i].append(blocks)
 
-    for p in xrange(n):
+    for p in range(n):
         for (i, a) in enumerate(all_blocks[p]):
             for (j, b) in enumerate(all_blocks[p]):
                 t = []
                 for s in a + b:
                     t.extend(s)
-                val = sum(2**(2*n*n - k - 1) for k in xrange(2*n*n) if t[k])
+                val = sum(2**(2*n*n - k - 1) for k in range(2*n*n) if t[k])
                 ints.append((val << (n*n)) | (1 << (n*n - j*n - i - 1)))
 
     return ints
@@ -292,7 +292,7 @@ def sudoku_dlx(a):
     for e in vecs:
         target.update(e)
 
-    sol = algorithmx(target, vecs).next()
+    sol = next(algorithmx(target, vecs))
 
     for entry in sol:
         for e in entry:

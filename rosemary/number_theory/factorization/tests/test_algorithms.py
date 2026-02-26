@@ -41,8 +41,8 @@ class TestCore(unittest.TestCase):
                 break
 
     def test__cfrac_multiplier(self):
-        self.assertEquals(_cfrac_multiplier(5**77 - 1), 781)
-        self.assertEquals(_cfrac_multiplier(2**128 + 1), 273)
+        self.assertEqual(_cfrac_multiplier(5**77 - 1), 781)
+        self.assertEqual(_cfrac_multiplier(2**128 + 1), 273)
 
     def test__z2_gaussian_elimination(self):
         vectors = [
@@ -110,7 +110,7 @@ class TestCore(unittest.TestCase):
     def test_smooth_factor(self):
         self.assertEqual(smooth_factor(100, [2, 5]), [2, 2])
         self.assertEqual(smooth_factor(100, [2, 3, 5, 7]), [2, 0, 2, 0])
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "smooth_factor: n does not factor over the given factor base",
                                 smooth_factor, 100, [3, 5])
 

@@ -145,7 +145,7 @@ def integer_partitions(n, **kwargs):
             idx = 0
             if last_idx != 0:
                 idx = last_idx + distinct
-            for i in xrange(idx, total_number):
+            for i in range(idx, total_number):
                 part = parts[i]
                 for partition in backtrack(partial_sum + part,
                                            used + [part], num_used + 1, i):

@@ -4,13 +4,13 @@ import random
 
 def euclidean_distance_matrix(points):
     num_points = len(points)
-    distance_matrix = [[0]*num_points for _ in xrange(num_points)]
+    distance_matrix = [[0]*num_points for _ in range(num_points)]
     inf = float('inf')
 
-    for i in xrange(num_points):
+    for i in range(num_points):
         distance_matrix[i][i] = inf
         (x1, y1) = points[i]
-        for j in xrange(i):
+        for j in range(i):
             (x2, y2) = points[j]
             dist = ((x2 - x1)**2 + (y2 - y1)**2)**(0.5)
             distance_matrix[i][j] = dist
@@ -21,7 +21,7 @@ def euclidean_distance_matrix(points):
 
 def cost(path, distance_matrix, num_vertices):
     total = distance_matrix[path[-1]][path[0]]
-    for i in xrange(num_vertices - 1):
+    for i in range(num_vertices - 1):
         total += distance_matrix[path[i]][path[i + 1]]
     return total
 
@@ -67,18 +67,18 @@ def branch_and_bound(points, distance_matrix=None):
         val = 0
         num_vertices = len(matrix)
 
-        for i in xrange(num_vertices):
+        for i in range(num_vertices):
             m = min(matrix[i])
-            for j in xrange(num_vertices):
+            for j in range(num_vertices):
                 matrix[i][j] -= m
             val += m
 
-        for j in xrange(num_vertices):
+        for j in range(num_vertices):
             m = matrix[0][j]
-            for i in xrange(1, num_vertices):
+            for i in range(1, num_vertices):
                 if matrix[i][j] < m:
                     m = matrix[i][j]
-            for i in xrange(num_vertices):
+            for i in range(num_vertices):
                 matrix[i][j] -= m
             val += m
 
@@ -91,7 +91,7 @@ def branch_and_bound(points, distance_matrix=None):
 
         other_vertices = [e for e in vertices if e not in X]
         d = len(other_vertices) + 1
-        MM = [[0]*d for _ in xrange(d)]
+        MM = [[0]*d for _ in range(d)]
 
         MM[0][0] = inf
         j = 1
@@ -114,7 +114,7 @@ def branch_and_bound(points, distance_matrix=None):
             i += 1
 
         ans = reduce_matrix(MM)
-        for i in xrange(1, m):
+        for i in range(1, m):
             ans += distance_matrix[X[i - 1]][X[i]]
 
         return ans
@@ -245,8 +245,8 @@ def steepest_ascent_two_opt(points, distance_matrix=None):
     while not done:
         done = True
         g0 = 0
-        for i in xrange(num_points):
-            for j in xrange(i + 2, num_points):
+        for i in range(num_points):
+            for j in range(i + 2, num_points):
                 g = G(best_sol, i, j)
                 if g > g0:
                     g0 = g
@@ -254,11 +254,11 @@ def steepest_ascent_two_opt(points, distance_matrix=None):
                     j0 = j
         if g0 > 0.0000001:
             new_best = []
-            for i in xrange(i0 + 1):
+            for i in range(i0 + 1):
                 new_best.append(best_sol[i])
-            for i in xrange(j0, i0, -1):
+            for i in range(j0, i0, -1):
                 new_best.append(best_sol[i])
-            for i in xrange(j0 + 1, num_points):
+            for i in range(j0 + 1, num_points):
                 new_best.append(best_sol[i])
 
             best_sol = new_best
@@ -274,18 +274,18 @@ def two_opt(points, distance_matrix=None):
 
     num_points = len(points)
 
-    best_sol = range(num_points)
+    best_sol = list(range(num_points))
     best_cost = cost(best_sol, distance_matrix, num_points)
 
     done = False
     while not done:
         done = True
         g0 = 0
-        for i in xrange(num_points):
+        for i in range(num_points):
             xi = best_sol[i]
             xii = best_sol[(i + 1) % num_points]
 
-            for j in xrange(i + 2, num_points):
+            for j in range(i + 2, num_points):
                 xj = best_sol[j]
                 xjj = best_sol[(j + 1) % num_points]
 
@@ -316,7 +316,7 @@ def simulated_annealing_two_opt(points, distance_matrix=None):
     inf = float('inf')
     best_value = inf
     old_value = inf
-    best_sol = range(num_vertices)
+    best_sol = list(range(num_vertices))
     random.shuffle(best_sol)
     best_value = cost(best_sol, distance_matrix, num_vertices)
     count = 0
@@ -327,7 +327,7 @@ def simulated_annealing_two_opt(points, distance_matrix=None):
             if count == 1000:
                 break
         else:
-            print best_value
+            print(best_value)
             old_value = best_value
             count = 0
 
@@ -336,7 +336,7 @@ def simulated_annealing_two_opt(points, distance_matrix=None):
         temp = 1000
         alpha = 0.99
 
-        for i in xrange(cmax):
+        for i in range(cmax):
             if temp < 0.0001:
                 break
             k = random.randint(2, num_vertices - 1)

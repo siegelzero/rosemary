@@ -431,7 +431,7 @@ def integer_nth_root(n, m):
         >>> integer_nth_root(2, 10)
         3
         >>> integer_nth_root(32, 2**32)
-        2L
+        2
         >>> integer_nth_root(0, 10)
         Traceback (most recent call last):
         ...

@@ -11,7 +11,7 @@ from rosemary.number_theory.arithmetic_functions.sieves import (
 
 class TestCore(unittest.TestCase):
     def test_euler_phi_list(self):
-        self.assertRaisesRegexp(ValueError, "euler_phi_list: Must have n > 0.", euler_phi_list, 0)
+        self.assertRaisesRegex(ValueError, "euler_phi_list: Must have n > 0.", euler_phi_list, 0)
 
         values = [
             0, 1, 1, 2, 2, 4, 2, 6, 4, 6, 4, 10, 4, 12, 6, 8, 8, 16, 6, 18, 8, 12, 10, 22, 8, 20, 12, 18, 12, 28, 8, 30,
@@ -27,7 +27,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(euler_phi_list(200), values)
 
     def test_moebius_list(self):
-        self.assertRaisesRegexp(ValueError, "moebius_list: Must have n > 0.", moebius_list, 0)
+        self.assertRaisesRegex(ValueError, "moebius_list: Must have n > 0.", moebius_list, 0)
 
         values = [
             0, 1, -1, -1, 0, -1, 1, -1, 0, 0, 1, -1, 0, -1, 1, 1, 0, -1, 0, -1, 0, 1, 1, -1, 0, 0, 1, 0, 0, -1, -1, -1,
@@ -59,8 +59,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(sum(v for n, v in moebius_range(10, 1)), 0)
 
     def test_sigma_list(self):
-        self.assertRaisesRegexp(ValueError, "sigma_list: Must have n > 0.", sigma_list, -1)
-        self.assertRaisesRegexp(ValueError, "sigma_list: Must have k >= 0.", sigma_list, 10, -1)
+        self.assertRaisesRegex(ValueError, "sigma_list: Must have n > 0.", sigma_list, -1)
+        self.assertRaisesRegex(ValueError, "sigma_list: Must have k >= 0.", sigma_list, 10, -1)
 
         values = [
             [1, 2, 2, 3, 2, 4, 2, 4, 3, 4, 2, 6, 2, 4, 4, 5, 2, 6, 2, 6],
@@ -92,7 +92,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(sum(sigma_list(10**5)), 8224740835)
 
     def test_tau_list(self):
-        self.assertRaisesRegexp(ValueError, "tau_list: Must have n > 0.", tau_list, -1)
+        self.assertRaisesRegex(ValueError, "tau_list: Must have n > 0.", tau_list, -1)
 
         values = [
             1, 2, 2, 3, 2, 4, 2, 4, 3, 4, 2, 6, 2, 4, 4, 5, 2, 6, 2, 6, 4, 4, 2, 8, 3, 4, 4, 6, 2, 8, 2, 6, 4, 4, 4, 9,

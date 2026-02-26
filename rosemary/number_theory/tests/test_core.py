@@ -37,7 +37,7 @@ class TestCore(unittest.TestCase):
         solution = chinese([(2, 3), (3, 5), (2, 7)])
         self.assertEqual(solution, 23)
 
-        self.assertRaisesRegexp(ValueError, 'chinese: Moduli must be coprime.', chinese, [(3, 8), (5, 10)])
+        self.assertRaisesRegex(ValueError, 'chinese: Moduli must be coprime.', chinese, [(3, 8), (5, 10)])
 
     def test_crt_preconditioning_data(self):
         moduli = [3, 5, 7]
@@ -113,8 +113,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(gcd_list([2]), 2)
 
     def test_integer_log(self):
-        self.assertRaisesRegexp(ValueError, "integer_log: Must have b >= 2.", integer_log, 1, 40)
-        self.assertRaisesRegexp(ValueError, "integer_log: Must have n >= 1.", integer_log, 3, 0)
+        self.assertRaisesRegex(ValueError, "integer_log: Must have b >= 2.", integer_log, 1, 40)
+        self.assertRaisesRegex(ValueError, "integer_log: Must have n >= 1.", integer_log, 3, 0)
 
         self.assertEqual(integer_log(2, 100), 6)
         self.assertEqual(integer_log(5, 30), 2)
@@ -128,8 +128,8 @@ class TestCore(unittest.TestCase):
             self.assertTrue(b**k <= n < b**(k + 1))
 
     def test_integer_nth_root(self):
-        self.assertRaisesRegexp(ValueError, "integer_nth_root: Must have n >= 1", integer_nth_root, 0, 10)
-        self.assertRaisesRegexp(ValueError, "integer_nth_root: Must have m >= 0", integer_nth_root, 3, -1)
+        self.assertRaisesRegex(ValueError, "integer_nth_root: Must have n >= 1", integer_nth_root, 0, 10)
+        self.assertRaisesRegex(ValueError, "integer_nth_root: Must have m >= 0", integer_nth_root, 3, -1)
 
         self.assertEqual(integer_nth_root(1, 10), 10)
         self.assertEqual(integer_nth_root(3, 1), 1)
@@ -145,7 +145,7 @@ class TestCore(unittest.TestCase):
             self.assertTrue(r**n <= m < (r + 1)**n)
 
     def test_integer_sqrt(self):
-        self.assertRaisesRegexp(ValueError, "integer_sqrt: Must have n >= 0.", integer_sqrt, -1)
+        self.assertRaisesRegex(ValueError, "integer_sqrt: Must have n >= 0.", integer_sqrt, -1)
 
         for i in range(100):
             a = random.randint(100, 1000)
@@ -156,8 +156,8 @@ class TestCore(unittest.TestCase):
             self.assertTrue(r**2 <= n < (r + 1)**2)
 
     def test_inverse_mod(self):
-        self.assertRaisesRegexp(ValueError, "inverse_mod: Integers must be relatively prime.", inverse_mod, 2, 4)
-        self.assertRaisesRegexp(ValueError, "inverse_mod: Must have m >= 2.", inverse_mod, 10, 1)
+        self.assertRaisesRegex(ValueError, "inverse_mod: Integers must be relatively prime.", inverse_mod, 2, 4)
+        self.assertRaisesRegex(ValueError, "inverse_mod: Must have m >= 2.", inverse_mod, 10, 1)
 
         self.assertEqual(inverse_mod(5, 17), 7)
         self.assertEqual(inverse_mod(2, 9), 5)
@@ -167,7 +167,7 @@ class TestCore(unittest.TestCase):
             self.assertEqual(a*k % 101, 1)
 
     def test_jacobi_symbol(self):
-        self.assertRaisesRegexp(ValueError, "jacobi_symbol: Must have m odd.", jacobi_symbol, 19, 4)
+        self.assertRaisesRegex(ValueError, "jacobi_symbol: Must have m odd.", jacobi_symbol, 19, 4)
 
         values = [
             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, 1, 0, -1, -1, 0, 1, 1, 0, -1, -1, 1, 1, 1,
@@ -222,9 +222,9 @@ class TestCore(unittest.TestCase):
         self.assertEqual(lcm_list(range(1, 31)), 2329089562800)
 
     def test_power_mod(self):
-        self.assertRaisesRegexp(ValueError, "power_mod: Must have a >= 0.", power_mod, -2, 3, 10)
-        self.assertRaisesRegexp(ValueError, "power_mod: Must have k >= 0.", power_mod, 2, -1, 10)
-        self.assertRaisesRegexp(ValueError, "power_mod: Must have m >= 1.", power_mod, 2, 3, 0)
+        self.assertRaisesRegex(ValueError, "power_mod: Must have a >= 0.", power_mod, -2, 3, 10)
+        self.assertRaisesRegex(ValueError, "power_mod: Must have k >= 0.", power_mod, 2, -1, 10)
+        self.assertRaisesRegex(ValueError, "power_mod: Must have m >= 1.", power_mod, 2, 3, 0)
 
         self.assertEqual(power_mod(2, 45, 17), 15)
         self.assertEqual(power_mod(3, 100, 101), 1)

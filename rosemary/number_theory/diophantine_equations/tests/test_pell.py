@@ -13,15 +13,15 @@ class TestPell(unittest.TestCase):
         self.assertEqual(pell_fundamental_solution(13, 1), (649, 180))
         self.assertEqual(pell_fundamental_solution(13, -1), (18, 5))
 
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "pell_fundamental_solution: Solution nonexistent.",
                                 pell_fundamental_solution, 15, -1)
 
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "pell_fundamental_solution: Must have D > 0 not a perfect square and n*",
                                 pell_fundamental_solution, 15, -2)
 
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "pell_fundamental_solution: Must have D > 0 not a perfect square and n*",
                                 pell_fundamental_solution, 16, 1)
 

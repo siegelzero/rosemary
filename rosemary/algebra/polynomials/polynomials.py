@@ -324,9 +324,9 @@ class Polynomial(object):
             qq = Polynomial([0], self.variable)
             return (qq, self)
         q = [0] * (m - n + 1)
-        for k in xrange(m - n, -1, -1):
+        for k in range(m - n, -1, -1):
             q[k] = u[n + k] * v[n]**k
-            for j in xrange(n + k - 1, -1, -1):
+            for j in range(n + k - 1, -1, -1):
                 if j < k:
                     u[j] = v[n] * u[j]
                 else:
@@ -363,9 +363,9 @@ class Polynomial(object):
         q = [0] * (k - l + 1)
         if a[k - 1] % lc != 0:
             raise ValueError("Non-Integral Coefficients")
-        for i in xrange(k - l, -1, -1):
+        for i in range(k - l, -1, -1):
             q[i] = r[i + l - 1] // lc
-            for j in xrange(l):
+            for j in range(l):
                 r[i + j] -= q[i] * b[j]
         qq = Polynomial(q, self.variable)
         rr = Polynomial(r, self.variable)

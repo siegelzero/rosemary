@@ -12,10 +12,10 @@ class TravelingSalesman(object):
         n = self.n
         k = min(n, 20)
 
-        for i in xrange(n):
+        for i in range(n):
             neighbors = []
             xi, yi = points[i]
-            for j in xrange(n):
+            for j in range(n):
                 if i == j:
                     continue
                 xj, yj = points[j]
@@ -30,7 +30,7 @@ class TravelingSalesman(object):
         x0, y0 = points[path[0]]
         x1, y1 = points[path[-1]]
         total = ((x0 - x1)**2 + (y0 - y1)**2)**(0.5)
-        for i in xrange(self.n - 1):
+        for i in range(self.n - 1):
             x0, y0 = points[path[i]]
             x1, y1 = points[path[i + 1]]
             total += ((x0 - x1)**2 + (y0 - y1)**2)**(0.5)
@@ -104,12 +104,12 @@ class TravelingSalesman(object):
         return (self.cost(path), path)
 
     def select(self, popsize):
-        print "Creating initial population"
+        print("Creating initial population")
         population = []
 
-        for i in xrange(popsize):
-            print "{}/{}".format(i + 1, popsize)
-            path = range(self.n)
+        for i in range(popsize):
+            print("{}/{}".format(i + 1, popsize))
+            path = list(range(self.n))
             random.shuffle(path)
             cost, opt = self.two_opt(path)
             population.append((cost, opt))
@@ -126,7 +126,7 @@ class TravelingSalesman(object):
             C = [0]*n
             T = set()
 
-            for i in xrange(h):
+            for i in range(h):
                 C[i] = P1[(i + j) % n]
                 T.add(C[i])
 
@@ -146,15 +146,15 @@ class TravelingSalesman(object):
     def solve(self, popsize, cmax):
         population = self.select(popsize)
 
-        for i in xrange(popsize):
+        for i in range(popsize):
             population.append((float('inf'), []))
 
         population.sort()
 
         best_cost, Xbest = population[0]
 
-        for c in xrange(cmax):
-            for i in xrange(popsize//2):
+        for c in range(cmax):
+            for i in range(popsize//2):
                 p2i = population[2*i][1]
                 p2i1 = population[2*i + 1][1]
                 ((A_cost, A), (B_cost, B)) = self.mgkrec(p2i, p2i1)
@@ -168,7 +168,7 @@ class TravelingSalesman(object):
             if current_cost < best_cost:
                 Xbest = list(population[1])
                 best_cost = current_cost
-                print c, best_cost
+                print(c, best_cost)
 
         return (best_cost, Xbest)
 
@@ -184,4 +184,4 @@ if __name__ == "__main__":
     ]
 
     t = TravelingSalesman(berlin52)
-    print t.solve(16, 400)
+    print(t.solve(16, 400))

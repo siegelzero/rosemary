@@ -33,8 +33,8 @@ def mul_classical(M, N):
     if m == 0 or n == 0:
         return []
     P = [0] * (m + n - 1)
-    for i in xrange(m):
-        for j in xrange(n):
+    for i in range(m):
+        for j in range(n):
             P[i + j] += M[i] * N[j]
     return P
 
@@ -139,9 +139,9 @@ def power_jcp(A, k):
     P = [0] * new_deg
     a0 = B[0]
     P[0] = a0**k
-    for i in xrange(1, new_deg):
+    for i in range(1, new_deg):
         ss = 0
-        for j in xrange(1, min(n, i + 1)):
+        for j in range(1, min(n, i + 1)):
             ss += B[j] * ((k + 1) * j - i) * P[i - j]
         P[i] = ss // (i * a0)
     return [0]*shift*k + P

@@ -1007,7 +1007,7 @@ class Graph(object):
             complement_graph.add_vertex(u)
 
         for (i, u) in enumerate(vertices):
-            for j in xrange(i):
+            for j in range(i):
                 v = vertices[j]
                 if u not in self[v]:
                     complement_graph.add_edge(u, v)
@@ -1041,8 +1041,8 @@ def complete_graph(n):
     """
     Kn = Graph()
 
-    for u in xrange(n):
-        for v in xrange(u):
+    for u in range(n):
+        for v in range(u):
             Kn.add_edge(u, v)
 
     return Kn
@@ -1193,8 +1193,8 @@ def coprime_pairs_graph(n):
         return x
 
     graph = Graph()
-    for i in xrange(1, n + 1):
-        for j in xrange(1, i):
+    for i in range(1, n + 1):
+        for j in range(1, i):
             if gcd(i, j) == 1:
                 graph.add_edge(i, j)
 
@@ -1254,8 +1254,8 @@ def odd_graph(k):
 def grid_graph(n):
     graph = Graph()
 
-    for i in xrange(n):
-        for j in xrange(n):
+    for i in range(n):
+        for j in range(n):
             u = i*n + j
             if j < n - 1:
                 graph.add_edge(u, u + 1)

@@ -10,7 +10,7 @@ from rosemary.number_theory.arithmetic_functions.sums import (
 
 class TestCore(unittest.TestCase):
     def test_euler_phi_sum(self):
-        self.assertRaisesRegexp(ValueError, "euler_phi_sum: Must have n > 0.", euler_phi_sum, -1)
+        self.assertRaisesRegex(ValueError, "euler_phi_sum: Must have n > 0.", euler_phi_sum, -1)
 
         values = [
             1, 2, 4, 6, 10, 12, 18, 22, 28, 32, 42, 46, 58, 64, 72, 80, 96, 102, 120, 128, 140, 150, 172, 180, 200, 212,
@@ -31,7 +31,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(values, computed)
 
     def test_euler_phi_weighted_sum(self):
-        self.assertRaisesRegexp(ValueError, "euler_phi_weighted_sum: Must have n > 0.", euler_phi_weighted_sum, 0)
+        self.assertRaisesRegex(ValueError, "euler_phi_weighted_sum: Must have n > 0.", euler_phi_weighted_sum, 0)
 
         values = [
             1, 3, 9, 17, 37, 49, 91, 123, 177, 217, 327, 375, 531, 615, 735, 863, 1135, 1243, 1585, 1745, 1997, 2217,
@@ -56,7 +56,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(values, computed)
 
     def test_moebius_sum(self):
-        self.assertRaisesRegexp(ValueError, "moebius_sum: Must have n > 0.", moebius_sum, 0)
+        self.assertRaisesRegex(ValueError, "moebius_sum: Must have n > 0.", moebius_sum, 0)
 
         values = [
             1, 0, -1, -1, -2, -1, -2, -2, -2, -1, -2, -2, -3, -2, -1, -1, -2, -2, -3, -3, -2, -1, -2, -2, -2, -1, -1,
@@ -74,7 +74,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(values, computed)
 
     def test_sigma_sum(self):
-        self.assertRaisesRegexp(ValueError, "sigma_sum: Must have n > 0.", sigma_sum, -1)
+        self.assertRaisesRegex(ValueError, "sigma_sum: Must have n > 0.", sigma_sum, -1)
 
         values = [
             1,

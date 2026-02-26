@@ -10,7 +10,7 @@ from rosemary.number_theory.arithmetic_functions.inverse_functions import (
 
 class TestCore(unittest.TestCase):
     def test_euler_phi_inverse(self):
-        self.assertRaisesRegexp(ValueError, "euler_phi_inverse: Must have n > 0.", euler_phi_inverse, -1)
+        self.assertRaisesRegex(ValueError, "euler_phi_inverse: Must have n > 0.", euler_phi_inverse, -1)
         self.assertEqual(euler_phi_inverse([(2, 2), (5, 2)]), [101, 125, 202, 250])
         values = defaultdict(list)
 

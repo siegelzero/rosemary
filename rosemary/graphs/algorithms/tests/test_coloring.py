@@ -85,7 +85,7 @@ class TestColoring(unittest.TestCase):
                                      14: 1, 15: 2, 16: 1, 17: 8, 18: 1, 19: 9, 20: 1, 21: 2, 22: 1, 23: 10, 24: 1, 25:
                                      3, 26: 1, 27: 2, 28: 1, 29: 11, 30: 1})
 
-        for i in xrange(10):
+        for i in range(10):
             graph = random_graph(20, 0.5)
             k_num, classes = korman(graph)
             b_num, classes = branch_and_bound(graph)
@@ -95,7 +95,7 @@ class TestColoring(unittest.TestCase):
     test_exact = test_korman
 
     def test_branch_and_bound(self):
-        print "Testing branch and bound coloring algorithm"
+        print("Testing branch and bound coloring algorithm")
         (num_colors, classes) = branch_and_bound(self.petersen_graph)
         self.assertEqual(num_colors, self.petersen_colors)
         self.assertTrue(is_valid_color_classes(self.petersen_graph, classes))
@@ -126,13 +126,13 @@ class TestColoring(unittest.TestCase):
         (num_colors, classes) = branch_and_bound(graph)
         self.assertTrue(is_valid_color_classes(graph, classes))
 
-        for i in xrange(10):
+        for i in range(10):
             graph = random_graph(10, 0.8)
             _, classes = branch_and_bound(graph)
             self.assertTrue(is_valid_color_classes(graph, classes))
 
     def test_greedy_sequential(self):
-        print "Testing greedy sequential coloring algorithm"
+        print("Testing greedy sequential coloring algorithm")
         (num_colors, classes) = greedy_sequential(self.petersen_graph)
         self.assertTrue(num_colors == self.petersen_colors)
         self.assertTrue(is_valid_color_classes(self.petersen_graph, classes))
@@ -145,13 +145,13 @@ class TestColoring(unittest.TestCase):
         self.assertTrue(num_colors <= self.coprime_graph30_colors)
         self.assertTrue(is_valid_color_classes(self.coprime_graph30, classes))
 
-        for i in xrange(10):
+        for i in range(10):
             graph = random_graph(10, 0.8)
             _, classes = greedy_sequential(graph)
             self.assertTrue(is_valid_color_classes(graph, classes))
 
     def test_dsatur(self):
-        print "Testing DSATUR coloring algorithm"
+        print("Testing DSATUR coloring algorithm")
         (num_colors, classes) = dsatur(self.petersen_graph)
         self.assertTrue(num_colors <= self.petersen_colors)
         self.assertTrue(is_valid_color_classes(self.petersen_graph, classes))
@@ -164,13 +164,13 @@ class TestColoring(unittest.TestCase):
         self.assertTrue(num_colors <= self.coprime_graph30_colors)
         self.assertTrue(is_valid_color_classes(self.coprime_graph30, classes))
 
-        for i in xrange(10):
+        for i in range(10):
             graph = random_graph(10, 0.8)
             _, classes = dsatur(graph)
             self.assertTrue(is_valid_color_classes(graph, classes))
 
     def test_maxis(self):
-        print "Testing MAXIS coloring algorithm"
+        print("Testing MAXIS coloring algorithm")
 
         (num_colors, color_map) = maxis(self.petersen_graph, classes=False)
         self.assertEqual(num_colors, self.petersen_colors)
@@ -200,7 +200,7 @@ class TestColoring(unittest.TestCase):
         (num_colors, classes) = maxis(graph, use_greedy=True, color_limit=30)
         self.assertTrue(is_valid_color_classes(graph, classes))
 
-        for i in xrange(10):
+        for i in range(10):
             graph = random_graph(10, 0.8)
             _, classes = maxis(graph, verbose=True)
             self.assertTrue(is_valid_color_classes(graph, classes))
@@ -208,9 +208,9 @@ class TestColoring(unittest.TestCase):
 
 def is_valid_color_classes(graph, classes):
     for color_class in classes:
-        for i in xrange(len(color_class)):
+        for i in range(len(color_class)):
             u = color_class[i]
-            for j in xrange(i):
+            for j in range(i):
                 v = color_class[j]
                 if u in graph[v]:
                     return False

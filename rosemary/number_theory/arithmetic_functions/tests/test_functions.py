@@ -13,7 +13,7 @@ from rosemary.number_theory.arithmetic_functions.functions import (
 
 class TestCore(unittest.TestCase):
     def test_carmichael_lambda(self):
-        self.assertRaisesRegexp(ValueError, "carmichael_lambda: Must have n > 0.", carmichael_lambda, -1)
+        self.assertRaisesRegex(ValueError, "carmichael_lambda: Must have n > 0.", carmichael_lambda, -1)
 
         self.assertEqual(carmichael_lambda([(2, 3), (5, 2)]), 20)
 
@@ -32,8 +32,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(values, computed)
 
     def test_euler_phi(self):
-        self.assertRaisesRegexp(ValueError, "euler_phi: Must have n > 0.", euler_phi, -1)
-        self.assertRaisesRegexp(ValueError, "euler_phi: Must have n > 0.", euler_phi, -1)
+        self.assertRaisesRegex(ValueError, "euler_phi: Must have n > 0.", euler_phi, -1)
+        self.assertRaisesRegex(ValueError, "euler_phi: Must have n > 0.", euler_phi, -1)
 
         values = [
             1, 1, 2, 2, 4, 2, 6, 4, 6, 4, 10, 4, 12, 6, 8, 8, 16, 6, 18, 8, 12, 10, 22, 8, 20, 12, 18, 12, 28, 8, 30,
@@ -50,7 +50,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(values, computed)
 
     def test_factorial(self):
-        self.assertRaisesRegexp(ValueError, "factorial: Must have n >= 0.", factorial, -1)
+        self.assertRaisesRegex(ValueError, "factorial: Must have n >= 0.", factorial, -1)
 
         values = [
             1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800, 479001600, 6227020800, 87178291200,
@@ -79,7 +79,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(values, computed)
 
     def test_moebius_mu(self):
-        self.assertRaisesRegexp(ValueError, "moebius_mu: Must have n > 0.", moebius_mu, -1)
+        self.assertRaisesRegex(ValueError, "moebius_mu: Must have n > 0.", moebius_mu, -1)
 
         values = [
             1, -1, -1, 0, -1, 1, -1, 0, 0, 1, -1, 0, -1, 1, 1, 0, -1, 0, -1, 0, 1, 1, -1, 0, 0, 1, 0, 0, -1, -1, -1, 0,
@@ -106,7 +106,7 @@ class TestCore(unittest.TestCase):
             self.assertEqual(moebius_mu(factorizations[i]), values[i])
 
     def test_primorial(self):
-        self.assertRaisesRegexp(ValueError, "primorial: Must have n >= 1.", primorial, 0)
+        self.assertRaisesRegex(ValueError, "primorial: Must have n >= 1.", primorial, 0)
 
         values = [
             2, 6, 30, 210, 2310, 30030, 510510, 9699690, 223092870, 6469693230, 200560490130, 7420738134810,
@@ -142,8 +142,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(values, computed)
 
     def test_divisor_sigma(self):
-        self.assertRaisesRegexp(ValueError, "divisor_sigma: Must have n > 0.", divisor_sigma, -1)
-        self.assertRaisesRegexp(ValueError, "divisor_sigma: Must have k >= 0.", divisor_sigma, 10, -1)
+        self.assertRaisesRegex(ValueError, "divisor_sigma: Must have n > 0.", divisor_sigma, -1)
+        self.assertRaisesRegex(ValueError, "divisor_sigma: Must have k >= 0.", divisor_sigma, 10, -1)
 
         values = [
             [1, 2, 2, 3, 2, 4, 2, 4, 3, 4, 2, 6, 2, 4, 4, 5, 2, 6, 2, 6],
@@ -184,7 +184,7 @@ class TestCore(unittest.TestCase):
             self.assertEqual(divisor_sigma(factorizations[i]), values[i])
 
     def test_divisor_tau(self):
-        self.assertRaisesRegexp(ValueError, "divisor_tau: Must have n > 0.", divisor_tau, -1)
+        self.assertRaisesRegex(ValueError, "divisor_tau: Must have n > 0.", divisor_tau, -1)
 
         self.assertEqual(divisor_tau([(2, 1), (5, 1)]), 4)
 

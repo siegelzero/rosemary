@@ -148,7 +148,7 @@ def number_of_hamiltonian_paths_bits(graph):
         return cache[bits]
 
     count = 0
-    for i in xrange(n):
+    for i in range(n):
         count += extend(2**(n + i) + (all_bits - 2**i))
     return count
 
@@ -223,7 +223,7 @@ def number_of_hamiltonian_paths_bits_con(graph):
         return cache[bits]
 
     count = 0
-    for i in xrange(n):
+    for i in range(n):
         count += extend(2**(n + i) + (all_bits - 2**i))
     return count
 
@@ -239,7 +239,7 @@ def walks(graph, a, n, allowed):
     for u in neighbors[a]:
         num_walks[u] += 1
 
-    for i in xrange(n - 1):
+    for i in range(n - 1):
         num_walks2 = {u: 0 for u in allowed}
         for u in allowed:
             for v in neighbors[u]:
@@ -260,7 +260,7 @@ def number_of_hamiltonian_paths5(graph):
     vertices = graph.vertex_set()
     n = len(vertices)
 
-    for s in xrange(n + 1):
+    for s in range(n + 1):
         for allowed in itertools.combinations(vertices, s):
             for a in allowed:
                 num_walks = walks(graph, a, n - 1, set(allowed))
@@ -283,7 +283,7 @@ def number_of_hamiltonian_paths5_con(graph):
         if is_connected2(graph, graph.vertex_set() - set(partial)):
             yield partial
 
-            for i in xrange(idx, n):
+            for i in range(idx, n):
                 for foo in extend(partial + [vertices[i]], i + 1):
                     yield foo
 

@@ -4,8 +4,8 @@ optimization knapsack problem:
 
 Given values v_0, v_1, ..., v_{n - 1}, weights w_0, w_1, ..., w_{n - 1}, and a
 maximum capacity M, find a 0,1 n-tuple [x_0, x_1, ..., x_{n - 1}] such that
-P = \sum_{i = 0}^{n - 1} v_i x_i is maximized, subject to the capacity
-constraint \sum_{i = 0}^{n - 1} w_i x_i <= M.
+P = \\sum_{i = 0}^{n - 1} v_i x_i is maximized, subject to the capacity
+constraint \\sum_{i = 0}^{n - 1} w_i x_i <= M.
 """
 
 import math
@@ -65,12 +65,12 @@ def depth_first(items, capacity):
 
 def dynamic_programming(items, capacity):
     n = len(items)
-    M = [[0]*(n + 1) for _ in xrange(capacity + 1)]
+    M = [[0]*(n + 1) for _ in range(capacity + 1)]
     keep = set()
 
-    for i in xrange(n):
+    for i in range(n):
         v, w = items[i]
-        for k in xrange(capacity + 1):
+        for k in range(capacity + 1):
             if k < w:
                 M[k][i + 1] = M[k][i]
             else:
@@ -82,7 +82,7 @@ def dynamic_programming(items, capacity):
 
     used = []
     w = capacity
-    for i in xrange(n, 0, -1):
+    for i in range(n, 0, -1):
         if (w, i) in keep:
             used.append(items[i - 1])
             w -= items[i - 1][1]
@@ -103,7 +103,7 @@ def branch_and_bound_depth_first(items, capacity):
             return 0
         value = 0
         weight = 0
-        triples = (unit_cost[i] for i in xrange(idx, num_items))
+        triples = (unit_cost[i] for i in range(idx, num_items))
         for (u, v, w, _) in triples:
             if weight + w > target:
                 break
@@ -187,12 +187,12 @@ def simulated_annealing(items, capacity):
 
     def P(X):
         total = 0
-        for i in xrange(n):
+        for i in range(n):
             if X[i]:
                 total += items[i][0]
         return total
 
-    for i in xrange(cmax):
+    for i in range(cmax):
         # Let Y be a random neighbor of the current configuration.
         j = random.randint(0, n - 1)
         neighbor = list(current_items)

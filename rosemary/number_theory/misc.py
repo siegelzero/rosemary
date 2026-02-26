@@ -35,7 +35,7 @@ def largest_divisor(n, b):
     L = []
     for (p, e) in n_factorization:
         pp = p
-        for _ in xrange(e):
+        for _ in range(e):
             L.append(pp)
             pp *= p
 
@@ -90,7 +90,7 @@ def maximize_divisors(B):
         >>> maximize_divisors(1000)
         (32, 840)
         >>> maximize_divisors(10**30)
-        (13271040, 950542574818669103079134726400L)
+        (13271040, 950542574818669103079134726400)
 
     Details:
         The algorithm uses the following fact: If n <= B has the maximal number
@@ -155,20 +155,20 @@ def bernoulli_list(n):
 
     Details:
         The Bernoulli numbers are defined by the recursion
-            (m + 1)*B_m = -\sum_{k = 0}^{m - 1} \binom{m + 1}{k} B_k.
+            (m + 1)*B_m = -\\sum_{k = 0}^{m - 1} \\binom{m + 1}{k} B_k.
         We use this recursion directly.
     """
     values = [0]*(n + 1)
     values[0] = 1
     values[1] = Fraction(-1, 2)
 
-    for m in xrange(2, n + 1, 2):
+    for m in range(2, n + 1, 2):
         total = 1
         # binom holds the value binomial(m + 1, k) below.
         binom = 1
-        for k in xrange(1, m):
+        for k in range(1, m):
             binom *= (m + 2 - k)
-            binom /= k
+            binom //= k
             if values[k]:
                 total += binom*values[k]
         values[m] = -total/(m + 1)

@@ -67,11 +67,11 @@ def is_graphic(S):
             return True
 
         T = sorted(T, reverse=True)
-        print T
+        print(T)
         d = T.pop(0)
 
         # Subtract 1 from the next d largest elements.
-        for i in xrange(d):
+        for i in range(d):
             T[i] -= 1
 
 
@@ -79,9 +79,9 @@ def is_graphic_erdos_gallai(S):
     T = sorted(S, reverse=True)
     d_sum = 0
 
-    for k in xrange(len(T)):
+    for k in range(len(T)):
         d_sum += T[k]
-        rhs = k*(k + 1) + sum(min(k + 1, T[i]) for i in xrange(k + 1, len(T)))
+        rhs = k*(k + 1) + sum(min(k + 1, T[i]) for i in range(k + 1, len(T)))
 
         if d_sum > rhs:
             return False

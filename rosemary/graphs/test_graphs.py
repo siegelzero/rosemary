@@ -12,7 +12,7 @@ class TestGraphs(unittest.TestCase):
     def test_vertices(self):
         graph = random_graph(10, 0.5)
 
-        self.assertTrue(graph.vertices() == range(10))
+        self.assertTrue(graph.vertices() == list(range(10)))
         self.assertTrue(graph.vertex_set() == set(range(10)))
 
         self.assertTrue(graph.num_vertices() == 10)

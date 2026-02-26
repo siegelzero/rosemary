@@ -31,9 +31,9 @@ class TestClassification(unittest.TestCase):
 
 
     def test_is_power(self):
-        self.assertRaisesRegexp(ValueError, "is_power: Must have k >= 1.", is_power, 10, 0)
-        self.assertRaisesRegexp(ValueError, "is_power: Must have n >= 1.", is_power, 0, 3)
-        self.assertRaisesRegexp(ValueError, "is_power: Must have n >= 1.", is_power, [(-1, 1), (2, 2)])
+        self.assertRaisesRegex(ValueError, "is_power: Must have k >= 1.", is_power, 10, 0)
+        self.assertRaisesRegex(ValueError, "is_power: Must have n >= 1.", is_power, 0, 3)
+        self.assertRaisesRegex(ValueError, "is_power: Must have n >= 1.", is_power, [(-1, 1), (2, 2)])
 
         for k in [2, 3, 5, 7, 11]:
             self.assertEqual(is_power(k), False)

@@ -121,7 +121,7 @@ class QuadraticIrrational(object):
 
         Examples:
             >>> X = QuadraticIrrational(13).partial_quotients()
-            >>> [X.next() for _ in xrange(10)]
+            >>> [next(X) for _ in range(10)]
             [3, 1, 1, 1, 1, 6, 1, 1, 1, 1]
         """
         terms = itertools.chain(self.pre_period,
@@ -139,7 +139,7 @@ class QuadraticIrrational(object):
 
         Examples:
             >>> X = QuadraticIrrational(2).convergents()
-            >>> [X.next() for _ in xrange(7)]
+            >>> [next(X) for _ in range(7)]
             [(1, 1), (3, 2), (7, 5), (17, 12), (41, 29), (99, 70), (239, 169)]
 
         Details:

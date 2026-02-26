@@ -29,12 +29,12 @@ class TestCore(unittest.TestCase):
                          [(1, 1), (3, 2), (13, 9), (29, 20), (42, 29), (365, 252)])
 
     def test_pure_sqrt2(self):
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "QuadraticIrrational: d cannot be a perfect square.",
                                 QuadraticIrrational, 100)
 
     def test_quadratic_irrational2(self):
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegex(ValueError,
                                 "QuadraticIrrational: d cannot be a perfect square.",
                                 QuadraticIrrational, 100, 2, 3)
 

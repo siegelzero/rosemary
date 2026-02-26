@@ -82,7 +82,7 @@ def prim(graph, root=None, edge_list=True):
     """
     # Choose a root vertex if none is given
     if root is None:
-        root = graph.graph_dict.keys()[0]
+        root = next(iter(graph.graph_dict))
 
     inf = float('inf')
 
@@ -101,7 +101,7 @@ def prim(graph, root=None, edge_list=True):
             continue
         add(u)
 
-        for (v, w) in graph[u].iteritems():
+        for (v, w) in graph[u].items():
             if v not in visited and w < cost[v]:
                 cost[v] = w
                 previous[v] = u
@@ -249,7 +249,7 @@ def cheriton_tarjan(graph):
         PQ[u] = LeftistHeap(triples)
 
     while num_edges < num_vertices - 1:
-        u = choice(PQ.keys())
+        u = choice(list(PQ.keys()))
         Tu = find(u)
 
         while True:

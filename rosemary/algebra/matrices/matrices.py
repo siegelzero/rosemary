@@ -31,12 +31,12 @@ class Matrix(object):
             [5 7]
         """
         if n is None:
-            if isinstance(m, (int, long)):
-                entries = [[0]*m for _ in xrange(m)]
+            if isinstance(m, int):
+                entries = [[0]*m for _ in range(m)]
             else:
                 entries = list(m)
-        elif isinstance(n, (int, long)):
-            entries = [[0]*n for _ in xrange(m)]
+        elif isinstance(n, int):
+            entries = [[0]*n for _ in range(m)]
 
         self.__entries = entries
         self.__nrows = len(entries)
@@ -52,16 +52,16 @@ class Matrix(object):
         entries = self.__entries
 
         # Find the length of the longest element in self for aligment purposes.
-        for i in xrange(nrows):
-            for j in xrange(ncols):
+        for i in range(nrows):
+            for j in range(ncols):
                 item = str(entries[i][j])
                 if len(item) > max_len:
                     max_len = len(item)
 
         items = []
-        for i in xrange(nrows):
+        for i in range(nrows):
             items.append('[')
-            for j in xrange(ncols):
+            for j in range(ncols):
                 element = entries[i][j]
                 str_form = str(element).rjust(max_len)
                 items.append(str_form)
@@ -74,13 +74,13 @@ class Matrix(object):
         return rep
 
     def __getitem__(self, key):
-        if isinstance(key, (int, long)):
+        if isinstance(key, int):
             return self.__entries[key]
         elif isinstance(key, (tuple, list)):
             return self.__entries[key[0]][key[1]]
 
     def __setitem__(self, key, value):
-        if isinstance(key, (int, long)):
+        if isinstance(key, int):
             self.__entries[key] = value
         elif isinstance(key, (tuple, list)):
             self.__entries[key[0]][key[1]] = value
@@ -110,10 +110,10 @@ class Matrix(object):
 
         entries = self.__entries
         other_entries = other.__entries
-        result = [[0]*self_ncols for _ in xrange(self_nrows)]
+        result = [[0]*self_ncols for _ in range(self_nrows)]
 
-        for i in xrange(self_nrows):
-            for j in xrange(self_ncols):
+        for i in range(self_nrows):
+            for j in range(self_ncols):
                 result[i][j] = entries[i][j] + other_entries[i][j]
 
         parent_class = self.__class__
@@ -136,11 +136,11 @@ class Matrix(object):
         """
         ncols = self.__ncols
         nrows = self.__nrows
-        result = [[0]*ncols for _ in xrange(nrows)]
+        result = [[0]*ncols for _ in range(nrows)]
         entries = self.__entries
 
-        for i in xrange(nrows):
-            for j in xrange(ncols):
+        for i in range(nrows):
+            for j in range(ncols):
                 result[i][j] = -entries[i][j]
 
         parent_class = self.__class__
@@ -165,10 +165,10 @@ class Matrix(object):
         nrows = self.__nrows
         entries = list(self.__entries)
         other_entries = list(other.__entries)
-        result = [[0]*ncols for _ in xrange(nrows)]
+        result = [[0]*ncols for _ in range(nrows)]
 
-        for i in xrange(nrows):
-            for j in xrange(ncols):
+        for i in range(nrows):
+            for j in range(ncols):
                 result[i][j] = entries[i][j] - other_entries[i][j]
 
         return parent_class(result)
@@ -192,9 +192,9 @@ class Matrix(object):
 
         if not isinstance(other, Matrix):
             try:
-                result = [[0]*ncols for _ in xrange(nrows)]
-                for i in xrange(nrows):
-                    for j in xrange(ncols):
+                result = [[0]*ncols for _ in range(nrows)]
+                for i in range(nrows):
+                    for j in range(ncols):
                         result[i][j] = other*entries[i][j]
                 return parent_class(result)
             except:
@@ -207,12 +207,12 @@ class Matrix(object):
             raise ValueError("Incompatible Matrix dimensions")
 
         other_entries = other.__entries
-        result = [[0]*nrows for _ in xrange(other_ncols)]
+        result = [[0]*nrows for _ in range(other_ncols)]
 
-        for i in xrange(nrows):
-            for j in xrange(other_ncols):
+        for i in range(nrows):
+            for j in range(other_ncols):
                 total = 0
-                for k in xrange(ncols):
+                for k in range(ncols):
                     total += entries[i][k]*other_entries[k][j]
                 result[i][j] = total
 
@@ -220,20 +220,20 @@ class Matrix(object):
 
     def __rmul__(self, other):
         """
-        Multiplies two polynomials.
+        Multiplies two matrices.
 
-        This returns the polynomial other*self.
+        This returns the matrix other*self.
         """
         parent_class = self.__class__
         ncols = self.__ncols
         nrows = self.__nrows
-        result = [[0]*ncols for _ in xrange(nrows)]
+        result = [[0]*ncols for _ in range(nrows)]
         entries = self.__entries
 
         if not isinstance(other, Matrix):
             try:
-                for i in xrange(nrows):
-                    for j in xrange(ncols):
+                for i in range(nrows):
+                    for j in range(ncols):
                         result[i][j] = other*entries[i][j]
                 return parent_class(result)
             except:
@@ -246,12 +246,12 @@ class Matrix(object):
             raise ValueError("Incompatible Matrix dimensions")
 
         other_entries = other.__entries
-        result = [[0]*other_ncols for _ in xrange(nrows)]
+        result = [[0]*other_ncols for _ in range(nrows)]
 
-        for i in xrange(other_nrows):
-            for j in xrange(ncols):
+        for i in range(other_nrows):
+            for j in range(ncols):
                 total = 0
-                for k in xrange(other_ncols):
+                for k in range(other_ncols):
                     total += entries[i][k]*other_entries[k][j]
                 result[i][j] = total
 
@@ -315,11 +315,11 @@ class Matrix(object):
 
         m = self.__entries
 
-        for k in xrange(ncols):
+        for k in range(ncols):
             pivot = m[k][k]
             if pivot == 0:
                 # Find the first nonzero entry m[i][k] in column k.
-                for i in xrange(k + 1, ncols):
+                for i in range(k + 1, ncols):
                     if m[i][k] != 0:
                         break
 
@@ -328,12 +328,12 @@ class Matrix(object):
                 if i == ncols - 1:
                     return 0
                 # Othwerwise, we perform exchanges.
-                for j in xrange(k, ncols):
+                for j in range(k, ncols):
                     m[i][j], m[k][j] = m[k][j], m[i][j]
                 sign *= -1
                 pivot = m[k][k]
-            for i in xrange(k + 1, ncols):
-                for j in xrange(k + 1, ncols):
+            for i in range(k + 1, ncols):
+                for j in range(k + 1, ncols):
                     # This is exact division.
                     m[i][j] = (pivot*m[i][j] - m[i][k]*m[k][j])//den
             den = pivot

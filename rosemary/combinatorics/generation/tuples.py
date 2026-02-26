@@ -33,7 +33,7 @@ def n_tuples(n, M=None):
         if len(M) == n:
             M = [2] + M
     else:
-        if isinstance(M, (int, long)):
+        if isinstance(M, int):
             bd = M
         else:
             bd = 2
